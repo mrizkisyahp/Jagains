@@ -2,42 +2,85 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Carbon;
 
-/**
- * @property int $id
- * @property string $name
- * @property string $email
- * @property Carbon|null $email_verified_at
- * @property string $password
- * @property string|null $remember_token
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- */
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    protected $table = 'users';
+
+    protected $fillable = [
+        'username',
+        'password',
+        'email_hash',
+        'peran',
+        'kelurahan_id',
+        'kelurahan_diubah_pada',
+        'instansi_id',
+        'status_akun',
+        'poin_peringatan',
+        'wajib_ganti_sandi',
+        'aktivitas_terakhir_pada',
+    ];
+
+    protected $hidden = [
+        'password',
+        'email_hash',
+    ];
+
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'kelurahan_diubah_pada' => 'datetime',
+            'aktivitas_terakhir_pada' => 'datetime',
+            'poin_peringatan' => 'integer',
+            'wajib_ganti_sandi' => 'boolean',
         ];
+    }
+
+    public function kelurahan(): BelongsTo
+    {
+        return $this->belongsTo(Wilayah::class, 'kelurahan_id');
+    }
+
+    public function instansi(): BelongsTo
+    {
+        return $this->belongsTo(Instansi::class, 'instansi_id');
+    }
+
+    public function laporan(): HasMany
+    {
+        return $this->hasMany(Laporan::class, 'pelapor_id');
+    }
+
+    public function dukungan(): HasMany
+    {
+        return $this->hasMany(Dukungan::class, 'warga_id');
+    }
+
+    public function verifikasiWarga(): HasMany
+    {
+        return $this->hasMany(VerifikasiWarga::class, 'warga_id');
+    }
+
+    public function notifikasi(): HasMany
+    {
+        return $this->hasMany(Notifikasi::class, 'pengguna_id');
+    }
+
+    public function auditLog(): HasMany
+    {
+        return $this->hasMany(AuditLog::class, 'pelaku_id');
+    }
+
+    public function tokenSekaliPakai(): HasMany
+    {
+        return $this->hasMany(TokenSekaliPakai::class, 'pengguna_id');
     }
 }
