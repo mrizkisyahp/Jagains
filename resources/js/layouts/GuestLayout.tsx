@@ -1,12 +1,17 @@
 import { ReactNode } from "react"
+import { Toaster } from "@/components/ui/toast"
 
-interface GuestLayoutProps{
+interface GuestLayoutProps {
     children: ReactNode
 }
-const GuestLayouts = ({children}: GuestLayoutProps) => {
-    return <div className="h-screen w-full grid place-items-center p-12">
-        {children}
-    </div>
+
+const GuestLayouts = ({ children }: GuestLayoutProps) => {
+    return (
+        <div className="min-h-screen w-full grid place-items-center p-6 md:p-12">
+            {children}
+            <Toaster />
+        </div>
+    )
 }
 
 export default GuestLayouts;

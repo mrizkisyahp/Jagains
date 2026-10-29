@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\EmailPrivacyService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(EmailPrivacyService::class, fn () => new EmailPrivacyService(
+            (string) config('auth.email_hmac_key', config('app.key'))
+        ));
     }
 
     /**
