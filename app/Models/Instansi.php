@@ -14,12 +14,10 @@ class Instansi extends Model
     protected $table = 'instansi';
 
     protected $fillable = [
-        'wilayah_id',
         'nama',
         'singkatan',
+        'wilayah_id',
         'aktif',
-        'jenis',
-        'kontak',
     ];
 
     protected function casts(): array
