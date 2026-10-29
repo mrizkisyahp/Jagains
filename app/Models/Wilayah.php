@@ -14,6 +14,7 @@ class Wilayah extends Model
     protected $table = 'wilayah';
 
     protected $fillable = [
+        'id',
         'induk_id',
         'tingkat',
         'nama',

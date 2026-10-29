@@ -1,13 +1,18 @@
 import { useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import GuestLayouts from '@/layouts/GuestLayout';
-import { MapPin } from 'lucide-react';
+import { MapPin, CheckCircle2 } from 'lucide-react';
 
-export default function Login() {
+interface LoginProps {
+    status?: string;
+    success?: string;
+}
+
+export default function Login({ status, success }: LoginProps) {
     const { data, setData, post, processing, errors } = useForm({
         username: '',
         password: '',
@@ -83,6 +88,13 @@ export default function Login() {
                             </p>
                         </div>
 
+                        {(success || status) && (
+                            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                                <span>{success || status}</span>
+                            </div>
+                        )}
+
                         {/* Login Form */}
                         <form onSubmit={handleSubmit} className="space-y-8">
                             <FieldGroup className="w-full">
@@ -123,10 +135,25 @@ export default function Login() {
                             <Button 
                                 type="submit" 
                                 disabled={processing} 
-                                className="w-full h-11 bg-black hover:bg-zinc-800 text-white font-medium rounded-lg transition-all"
+                                className="w-full h-11 bg-black hover:bg-zinc-800 text-white font-medium rounded-lg transition-all cursor-pointer"
                             >
                                 {processing ? 'Memproses...' : 'Masuk'}
                             </Button>
+
+                            <div className="flex items-center justify-between text-xs pt-2">
+                                <Link
+                                    href="/lupa-sandi"
+                                    className="text-zinc-500 hover:text-zinc-900 underline underline-offset-4"
+                                >
+                                    Lupa kata sandi?
+                                </Link>
+                                <Link
+                                    href="/daftar"
+                                    className="font-semibold text-zinc-900 hover:text-blue-600 underline underline-offset-4"
+                                >
+                                    Daftar akun warga
+                                </Link>
+                            </div>
                         </form>
                     </div>
 
