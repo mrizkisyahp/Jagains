@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('pesan', 500);
             // Kunci unik deduplikasi agar tugas otomatis tidak mengirim notifikasi berulang (idempoten)
             $table->string('kunci_dedup', 120)->nullable();
+            // Waktu notifikasi dibaca pengguna (null jika belum dibaca)
+            $table->timestampTz('dibaca_pada')->nullable();
             // Waktu notifikasi dikirimkan
             $table->timestampTz('created_at')->useCurrent();
         });

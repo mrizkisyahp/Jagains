@@ -14,11 +14,18 @@ class Instansi extends Model
     protected $table = 'instansi';
 
     protected $fillable = [
-        'wilayah_id',
         'nama',
-        'jenis',
-        'kontak',
+        'singkatan',
+        'wilayah_id',
+        'aktif',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'aktif' => 'boolean',
+        ];
+    }
 
     public function wilayah(): BelongsTo
     {
