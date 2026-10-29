@@ -20,6 +20,8 @@ return [
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
+    'email_hmac_key' => env('EMAIL_HMAC_KEY', env('APP_KEY')),
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Guards

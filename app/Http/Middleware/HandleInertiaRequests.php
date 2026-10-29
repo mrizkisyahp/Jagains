@@ -39,7 +39,12 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user()?->loadMissing('kelurahan:id,nama,tingkat', 'instansi:id,nama,singkatan'),
+            ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success') ?? $request->session()->get('flash.success'),
+                'error' => fn () => $request->session()->get('error') ?? $request->session()->get('flash.error'),
+                'status' => fn () => $request->session()->get('status'),
             ],
         ];
     }
