@@ -11,6 +11,16 @@ class DeteksiKelurahanRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('lintang') && ! $this->has('latitude')) {
+            $this->merge(['latitude' => $this->input('lintang')]);
+        }
+        if ($this->has('bujur') && ! $this->has('longitude')) {
+            $this->merge(['longitude' => $this->input('bujur')]);
+        }
+    }
+
     public function rules(): array
     {
         return [

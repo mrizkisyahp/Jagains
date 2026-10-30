@@ -1,0 +1,2638 @@
+[
+  {
+    "nama": "Kabupaten Administrasi Kepulauan Seribu",
+    "kode_bps": "3101",
+    "min_lintang": -5.984277,
+    "max_lintang": -5.4916,
+    "min_bujur": 106.48699,
+    "max_bujur": 106.702658,
+    "districts": [
+      {
+        "nama": "Kepulauan Seribu Utara",
+        "kode_bps": "310101",
+        "min_lintang": -5.710373,
+        "max_lintang": -5.4916,
+        "min_bujur": 106.528299,
+        "max_bujur": 106.570562,
+        "villages": [
+          {
+            "nama": "Pulau Panggang",
+            "kode_bps": "3101011001",
+            "min_lintang": -5.710373,
+            "max_lintang": -5.690373,
+            "min_bujur": 106.528299,
+            "max_bujur": 106.548299
+          },
+          {
+            "nama": "Pulau Kelapa",
+            "kode_bps": "3101011002",
+            "min_lintang": -5.654741,
+            "max_lintang": -5.634741,
+            "min_bujur": 106.550562,
+            "max_bujur": 106.570562
+          },
+          {
+            "nama": "Pulau Harapan",
+            "kode_bps": "3101011003",
+            "min_lintang": -5.5116,
+            "max_lintang": -5.4916,
+            "min_bujur": 106.540477,
+            "max_bujur": 106.560477
+          }
+        ]
+      },
+      {
+        "nama": "Kepulauan Seribu Selatan.",
+        "kode_bps": "310102",
+        "min_lintang": -5.984277,
+        "max_lintang": -5.788551,
+        "min_bujur": 106.48699,
+        "max_bujur": 106.702658,
+        "villages": [
+          {
+            "nama": "Pulau Untung Jawa",
+            "kode_bps": "3101021001",
+            "min_lintang": -5.984277,
+            "max_lintang": -5.964277,
+            "min_bujur": 106.682658,
+            "max_bujur": 106.702658
+          },
+          {
+            "nama": "Pulau Tidung",
+            "kode_bps": "3101021002",
+            "min_lintang": -5.808551,
+            "max_lintang": -5.788551,
+            "min_bujur": 106.48699,
+            "max_bujur": 106.50699
+          },
+          {
+            "nama": "Pulau Pari",
+            "kode_bps": "3101021003",
+            "min_lintang": -5.868596,
+            "max_lintang": -5.848596,
+            "min_bujur": 106.609091,
+            "max_bujur": 106.629091
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "nama": "Kota Administrasi Jakarta Pusat",
+    "kode_bps": "3171",
+    "min_lintang": -6.223965,
+    "max_lintang": -6.134178,
+    "min_bujur": 106.787762,
+    "max_bujur": 106.881569,
+    "districts": [
+      {
+        "nama": "Gambir",
+        "kode_bps": "317101",
+        "min_lintang": -6.186263,
+        "max_lintang": -6.152574,
+        "min_bujur": 106.79468,
+        "max_bujur": 106.839324,
+        "villages": [
+          {
+            "nama": "Gambir",
+            "kode_bps": "3171011001",
+            "min_lintang": -6.186263,
+            "max_lintang": -6.166263,
+            "min_bujur": 106.819324,
+            "max_bujur": 106.839324
+          },
+          {
+            "nama": "Cideng",
+            "kode_bps": "3171011002",
+            "min_lintang": -6.185987,
+            "max_lintang": -6.165987,
+            "min_bujur": 106.799469,
+            "max_bujur": 106.819469
+          },
+          {
+            "nama": "Petojo Utara",
+            "kode_bps": "3171011003",
+            "min_lintang": -6.174539,
+            "max_lintang": -6.154539,
+            "min_bujur": 106.80605,
+            "max_bujur": 106.82605
+          },
+          {
+            "nama": "Petojo Selatan",
+            "kode_bps": "3171011004",
+            "min_lintang": -6.185487,
+            "max_lintang": -6.165487,
+            "min_bujur": 106.806671,
+            "max_bujur": 106.826671
+          },
+          {
+            "nama": "Kebon Kelapa",
+            "kode_bps": "3171011005",
+            "min_lintang": -6.173945,
+            "max_lintang": -6.153945,
+            "min_bujur": 106.814668,
+            "max_bujur": 106.834668
+          },
+          {
+            "nama": "Duri Pulo",
+            "kode_bps": "3171011006",
+            "min_lintang": -6.172574,
+            "max_lintang": -6.152574,
+            "min_bujur": 106.79468,
+            "max_bujur": 106.81468
+          }
+        ]
+      },
+      {
+        "nama": "Sawah Besar",
+        "kode_bps": "317102",
+        "min_lintang": -6.172788,
+        "max_lintang": -6.134178,
+        "min_bujur": 106.818737,
+        "max_bujur": 106.846319,
+        "villages": [
+          {
+            "nama": "Pasar Baru",
+            "kode_bps": "3171021001",
+            "min_lintang": -6.172788,
+            "max_lintang": -6.152788,
+            "min_bujur": 106.823096,
+            "max_bujur": 106.843096
+          },
+          {
+            "nama": "Karang Anyar",
+            "kode_bps": "3171021002",
+            "min_lintang": -6.162917,
+            "max_lintang": -6.142917,
+            "min_bujur": 106.819523,
+            "max_bujur": 106.839523
+          },
+          {
+            "nama": "Kartini",
+            "kode_bps": "3171021003",
+            "min_lintang": -6.163071,
+            "max_lintang": -6.143071,
+            "min_bujur": 106.822449,
+            "max_bujur": 106.842449
+          },
+          {
+            "nama": "Gunung Sahari Utara",
+            "kode_bps": "3171021004",
+            "min_lintang": -6.158999,
+            "max_lintang": -6.138999,
+            "min_bujur": 106.826319,
+            "max_bujur": 106.846319
+          },
+          {
+            "nama": "Mangga Dua Selatan",
+            "kode_bps": "3171021005",
+            "min_lintang": -6.154178,
+            "max_lintang": -6.134178,
+            "min_bujur": 106.818737,
+            "max_bujur": 106.838737
+          }
+        ]
+      },
+      {
+        "nama": "Kemayoran",
+        "kode_bps": "317103",
+        "min_lintang": -6.180501,
+        "max_lintang": -6.148348,
+        "min_bujur": 106.834264,
+        "max_bujur": 106.879359,
+        "villages": [
+          {
+            "nama": "Kemayoran",
+            "kode_bps": "3171031001",
+            "min_lintang": -6.174042,
+            "max_lintang": -6.154042,
+            "min_bujur": 106.835659,
+            "max_bujur": 106.855659
+          },
+          {
+            "nama": "Kebon Kosong",
+            "kode_bps": "3171031002",
+            "min_lintang": -6.168562,
+            "max_lintang": -6.148562,
+            "min_bujur": 106.842596,
+            "max_bujur": 106.862596
+          },
+          {
+            "nama": "Harapan Mulia",
+            "kode_bps": "3171031003",
+            "min_lintang": -6.180501,
+            "max_lintang": -6.160501,
+            "min_bujur": 106.846678,
+            "max_bujur": 106.866678
+          },
+          {
+            "nama": "Serdang",
+            "kode_bps": "3171031004",
+            "min_lintang": -6.17028,
+            "max_lintang": -6.15028,
+            "min_bujur": 106.851208,
+            "max_bujur": 106.871208
+          },
+          {
+            "nama": "Gunung Sahari Selatan",
+            "kode_bps": "3171031005",
+            "min_lintang": -6.168348,
+            "max_lintang": -6.148348,
+            "min_bujur": 106.834264,
+            "max_bujur": 106.854264
+          },
+          {
+            "nama": "Cempaka Baru",
+            "kode_bps": "3171031006",
+            "min_lintang": -6.176813,
+            "max_lintang": -6.156813,
+            "min_bujur": 106.851652,
+            "max_bujur": 106.871652
+          },
+          {
+            "nama": "Sumur Batu",
+            "kode_bps": "3171031007",
+            "min_lintang": -6.174694,
+            "max_lintang": -6.154694,
+            "min_bujur": 106.859359,
+            "max_bujur": 106.879359
+          },
+          {
+            "nama": "Utan Panjang",
+            "kode_bps": "3171031008",
+            "min_lintang": -6.175647,
+            "max_lintang": -6.155647,
+            "min_bujur": 106.845634,
+            "max_bujur": 106.865634
+          }
+        ]
+      },
+      {
+        "nama": "Senen",
+        "kode_bps": "317104",
+        "min_lintang": -6.205007,
+        "max_lintang": -6.161819,
+        "min_bujur": 106.828259,
+        "max_bujur": 106.863355,
+        "villages": [
+          {
+            "nama": "Senen",
+            "kode_bps": "3171041001",
+            "min_lintang": -6.186398,
+            "max_lintang": -6.166398,
+            "min_bujur": 106.828259,
+            "max_bujur": 106.848259
+          },
+          {
+            "nama": "Kenari",
+            "kode_bps": "3171041002",
+            "min_lintang": -6.205007,
+            "max_lintang": -6.185007,
+            "min_bujur": 106.836537,
+            "max_bujur": 106.856537
+          },
+          {
+            "nama": "Paseban",
+            "kode_bps": "3171041003",
+            "min_lintang": -6.20443,
+            "max_lintang": -6.18443,
+            "min_bujur": 106.843355,
+            "max_bujur": 106.863355
+          },
+          {
+            "nama": "Kramat",
+            "kode_bps": "3171041004",
+            "min_lintang": -6.19236,
+            "max_lintang": -6.17236,
+            "min_bujur": 106.836304,
+            "max_bujur": 106.856304
+          },
+          {
+            "nama": "Kwitang",
+            "kode_bps": "3171041005",
+            "min_lintang": -6.193735,
+            "max_lintang": -6.173735,
+            "min_bujur": 106.829614,
+            "max_bujur": 106.849614
+          },
+          {
+            "nama": "Bungur",
+            "kode_bps": "3171041006",
+            "min_lintang": -6.181819,
+            "max_lintang": -6.161819,
+            "min_bujur": 106.837966,
+            "max_bujur": 106.857966
+          }
+        ]
+      },
+      {
+        "nama": "Cempaka Putih",
+        "kode_bps": "317105",
+        "min_lintang": -6.199655,
+        "max_lintang": -6.167547,
+        "min_bujur": 106.853386,
+        "max_bujur": 106.881569,
+        "villages": [
+          {
+            "nama": "Cempaka Putih Timur",
+            "kode_bps": "3171051001",
+            "min_lintang": -6.187547,
+            "max_lintang": -6.167547,
+            "min_bujur": 106.861569,
+            "max_bujur": 106.881569
+          },
+          {
+            "nama": "Cempaka Putih Barat",
+            "kode_bps": "3171051002",
+            "min_lintang": -6.1909,
+            "max_lintang": -6.1709,
+            "min_bujur": 106.853386,
+            "max_bujur": 106.873386
+          },
+          {
+            "nama": "Rawasari",
+            "kode_bps": "3171051003",
+            "min_lintang": -6.199655,
+            "max_lintang": -6.179655,
+            "min_bujur": 106.856682,
+            "max_bujur": 106.876682
+          }
+        ]
+      },
+      {
+        "nama": "Menteng",
+        "kode_bps": "317106",
+        "min_lintang": -6.212436,
+        "max_lintang": -6.175214,
+        "min_bujur": 106.81753,
+        "max_bujur": 106.858448,
+        "villages": [
+          {
+            "nama": "Menteng",
+            "kode_bps": "3171061001",
+            "min_lintang": -6.212436,
+            "max_lintang": -6.192436,
+            "min_bujur": 106.824967,
+            "max_bujur": 106.844967
+          },
+          {
+            "nama": "Pegangsaan",
+            "kode_bps": "3171061002",
+            "min_lintang": -6.211552,
+            "max_lintang": -6.191552,
+            "min_bujur": 106.838448,
+            "max_bujur": 106.858448
+          },
+          {
+            "nama": "Cikini",
+            "kode_bps": "3171061003",
+            "min_lintang": -6.200575,
+            "max_lintang": -6.180575,
+            "min_bujur": 106.830668,
+            "max_bujur": 106.850668
+          },
+          {
+            "nama": "Gondangdia",
+            "kode_bps": "3171061004",
+            "min_lintang": -6.200957,
+            "max_lintang": -6.180957,
+            "min_bujur": 106.81753,
+            "max_bujur": 106.83753
+          },
+          {
+            "nama": "Kebon Sirih",
+            "kode_bps": "3171061005",
+            "min_lintang": -6.195214,
+            "max_lintang": -6.175214,
+            "min_bujur": 106.822835,
+            "max_bujur": 106.842835
+          }
+        ]
+      },
+      {
+        "nama": "Tanah Abang",
+        "kode_bps": "317107",
+        "min_lintang": -6.223965,
+        "max_lintang": -6.174744,
+        "min_bujur": 106.787762,
+        "max_bujur": 106.827498,
+        "villages": [
+          {
+            "nama": "Gelora",
+            "kode_bps": "3171071001",
+            "min_lintang": -6.223965,
+            "max_lintang": -6.203965,
+            "min_bujur": 106.787762,
+            "max_bujur": 106.807762
+          },
+          {
+            "nama": "Bendungan Hilir",
+            "kode_bps": "3171071002",
+            "min_lintang": -6.21798,
+            "max_lintang": -6.19798,
+            "min_bujur": 106.798712,
+            "max_bujur": 106.818712
+          },
+          {
+            "nama": "Karet Tengsin",
+            "kode_bps": "3171071003",
+            "min_lintang": -6.218106,
+            "max_lintang": -6.198106,
+            "min_bujur": 106.807498,
+            "max_bujur": 106.827498
+          },
+          {
+            "nama": "Petamburan",
+            "kode_bps": "3171071004",
+            "min_lintang": -6.205987,
+            "max_lintang": -6.185987,
+            "min_bujur": 106.795931,
+            "max_bujur": 106.815931
+          },
+          {
+            "nama": "Kebon Melati",
+            "kode_bps": "3171071005",
+            "min_lintang": -6.206727,
+            "max_lintang": -6.186727,
+            "min_bujur": 106.805708,
+            "max_bujur": 106.825708
+          },
+          {
+            "nama": "Kebon Kacang",
+            "kode_bps": "3171071006",
+            "min_lintang": -6.200054,
+            "max_lintang": -6.180054,
+            "min_bujur": 106.8073,
+            "max_bujur": 106.8273
+          },
+          {
+            "nama": "Kampung Bali",
+            "kode_bps": "3171071007",
+            "min_lintang": -6.194744,
+            "max_lintang": -6.174744,
+            "min_bujur": 106.806204,
+            "max_bujur": 106.826204
+          }
+        ]
+      },
+      {
+        "nama": "Johar Baru",
+        "kode_bps": "317108",
+        "min_lintang": -6.193976,
+        "max_lintang": -6.166284,
+        "min_bujur": 106.839953,
+        "max_bujur": 106.868048,
+        "villages": [
+          {
+            "nama": "Johar Baru",
+            "kode_bps": "3171081001",
+            "min_lintang": -6.193976,
+            "max_lintang": -6.173976,
+            "min_bujur": 106.848048,
+            "max_bujur": 106.868048
+          },
+          {
+            "nama": "Kampung Rawa",
+            "kode_bps": "3171081002",
+            "min_lintang": -6.189553,
+            "max_lintang": -6.169553,
+            "min_bujur": 106.845937,
+            "max_bujur": 106.865937
+          },
+          {
+            "nama": "Galur",
+            "kode_bps": "3171081003",
+            "min_lintang": -6.186284,
+            "max_lintang": -6.166284,
+            "min_bujur": 106.845098,
+            "max_bujur": 106.865098
+          },
+          {
+            "nama": "Tanah Tinggi",
+            "kode_bps": "3171081004",
+            "min_lintang": -6.189196,
+            "max_lintang": -6.169196,
+            "min_bujur": 106.839953,
+            "max_bujur": 106.859953
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "nama": "Kota Administrasi Jakarta Utara",
+    "kode_bps": "3172",
+    "min_lintang": -6.178354,
+    "max_lintang": -6.0906,
+    "min_bujur": 106.725692,
+    "max_bujur": 106.969116,
+    "districts": [
+      {
+        "nama": "Penjaringan",
+        "kode_bps": "317201",
+        "min_lintang": -6.144975,
+        "max_lintang": -6.0906,
+        "min_bujur": 106.725692,
+        "max_bujur": 106.809428,
+        "villages": [
+          {
+            "nama": "Penjaringan",
+            "kode_bps": "3172011001",
+            "min_lintang": -6.129833,
+            "max_lintang": -6.109833,
+            "min_bujur": 106.789428,
+            "max_bujur": 106.809428
+          },
+          {
+            "nama": "Kamal Muara",
+            "kode_bps": "3172011002",
+            "min_lintang": -6.1106,
+            "max_lintang": -6.0906,
+            "min_bujur": 106.725692,
+            "max_bujur": 106.745692
+          },
+          {
+            "nama": "Kapuk Muara",
+            "kode_bps": "3172011003",
+            "min_lintang": -6.122677,
+            "max_lintang": -6.102677,
+            "min_bujur": 106.753196,
+            "max_bujur": 106.773196
+          },
+          {
+            "nama": "Pejagalan",
+            "kode_bps": "3172011004",
+            "min_lintang": -6.144975,
+            "max_lintang": -6.124975,
+            "min_bujur": 106.77324,
+            "max_bujur": 106.79324
+          },
+          {
+            "nama": "Pluit",
+            "kode_bps": "3172011005",
+            "min_lintang": -6.117616,
+            "max_lintang": -6.097616,
+            "min_bujur": 106.773831,
+            "max_bujur": 106.793831
+          }
+        ]
+      },
+      {
+        "nama": "Tanjung Priok",
+        "kode_bps": "317202",
+        "min_lintang": -6.161602,
+        "max_lintang": -6.099751,
+        "min_bujur": 106.848485,
+        "max_bujur": 106.897204,
+        "villages": [
+          {
+            "nama": "Tanjung Priok",
+            "kode_bps": "3172021001",
+            "min_lintang": -6.119751,
+            "max_lintang": -6.099751,
+            "min_bujur": 106.866692,
+            "max_bujur": 106.886692
+          },
+          {
+            "nama": "Sunter Jaya",
+            "kode_bps": "3172021002",
+            "min_lintang": -6.161602,
+            "max_lintang": -6.141602,
+            "min_bujur": 106.860307,
+            "max_bujur": 106.880307
+          },
+          {
+            "nama": "Papanggo",
+            "kode_bps": "3172021003",
+            "min_lintang": -6.137828,
+            "max_lintang": -6.117828,
+            "min_bujur": 106.858562,
+            "max_bujur": 106.878562
+          },
+          {
+            "nama": "Sungai Bambu",
+            "kode_bps": "3172021004",
+            "min_lintang": -6.135476,
+            "max_lintang": -6.115476,
+            "min_bujur": 106.875285,
+            "max_bujur": 106.895285
+          },
+          {
+            "nama": "Kebon Bawang",
+            "kode_bps": "3172021005",
+            "min_lintang": -6.12865,
+            "max_lintang": -6.10865,
+            "min_bujur": 106.877204,
+            "max_bujur": 106.897204
+          },
+          {
+            "nama": "Sunter Agung",
+            "kode_bps": "3172021006",
+            "min_lintang": -6.145666,
+            "max_lintang": -6.125666,
+            "min_bujur": 106.848485,
+            "max_bujur": 106.868485
+          },
+          {
+            "nama": "Warakas",
+            "kode_bps": "3172021007",
+            "min_lintang": -6.130953,
+            "max_lintang": -6.110953,
+            "min_bujur": 106.867606,
+            "max_bujur": 106.887606
+          }
+        ]
+      },
+      {
+        "nama": "Koja",
+        "kode_bps": "317203",
+        "min_lintang": -6.146873,
+        "max_lintang": -6.099406,
+        "min_bujur": 106.887584,
+        "max_bujur": 106.924497,
+        "villages": [
+          {
+            "nama": "Koja",
+            "kode_bps": "3172031001",
+            "min_lintang": -6.119406,
+            "max_lintang": -6.099406,
+            "min_bujur": 106.890472,
+            "max_bujur": 106.910472
+          },
+          {
+            "nama": "Tugu Utara",
+            "kode_bps": "3172031002",
+            "min_lintang": -6.13446,
+            "max_lintang": -6.11446,
+            "min_bujur": 106.904497,
+            "max_bujur": 106.924497
+          },
+          {
+            "nama": "Lagoa",
+            "kode_bps": "3172031003",
+            "min_lintang": -6.123527,
+            "max_lintang": -6.103527,
+            "min_bujur": 106.898939,
+            "max_bujur": 106.918939
+          },
+          {
+            "nama": "Rawa Badak Utara",
+            "kode_bps": "3172031004",
+            "min_lintang": -6.129987,
+            "max_lintang": -6.109987,
+            "min_bujur": 106.887584,
+            "max_bujur": 106.907584
+          },
+          {
+            "nama": "Tugu Selatan",
+            "kode_bps": "3172031005",
+            "min_lintang": -6.146873,
+            "max_lintang": -6.126873,
+            "min_bujur": 106.901539,
+            "max_bujur": 106.921539
+          },
+          {
+            "nama": "Rawa Badak Selatan",
+            "kode_bps": "3172031006",
+            "min_lintang": -6.142446,
+            "max_lintang": -6.122446,
+            "min_bujur": 106.888431,
+            "max_bujur": 106.908431
+          }
+        ]
+      },
+      {
+        "nama": "Cilincing",
+        "kode_bps": "317204",
+        "min_lintang": -6.160842,
+        "max_lintang": -6.092601,
+        "min_bujur": 106.909256,
+        "max_bujur": 106.969116,
+        "villages": [
+          {
+            "nama": "Cilincing",
+            "kode_bps": "3172041001",
+            "min_lintang": -6.117463,
+            "max_lintang": -6.097463,
+            "min_bujur": 106.93668,
+            "max_bujur": 106.95668
+          },
+          {
+            "nama": "Sukapura",
+            "kode_bps": "3172041002",
+            "min_lintang": -6.159254,
+            "max_lintang": -6.139254,
+            "min_bujur": 106.913872,
+            "max_bujur": 106.933872
+          },
+          {
+            "nama": "Marunda",
+            "kode_bps": "3172041003",
+            "min_lintang": -6.121046,
+            "max_lintang": -6.101046,
+            "min_bujur": 106.949116,
+            "max_bujur": 106.969116
+          },
+          {
+            "nama": "Kalibaru",
+            "kode_bps": "3172041004",
+            "min_lintang": -6.112601,
+            "max_lintang": -6.092601,
+            "min_bujur": 106.909256,
+            "max_bujur": 106.929256
+          },
+          {
+            "nama": "Semper Timur",
+            "kode_bps": "3172041005",
+            "min_lintang": -6.126071,
+            "max_lintang": -6.106071,
+            "min_bujur": 106.923552,
+            "max_bujur": 106.943552
+          },
+          {
+            "nama": "Rorotan",
+            "kode_bps": "3172041006",
+            "min_lintang": -6.160842,
+            "max_lintang": -6.140842,
+            "min_bujur": 106.946416,
+            "max_bujur": 106.966416
+          },
+          {
+            "nama": "Semper Barat",
+            "kode_bps": "3172041007",
+            "min_lintang": -6.13559,
+            "max_lintang": -6.11559,
+            "min_bujur": 106.911901,
+            "max_bujur": 106.931901
+          }
+        ]
+      },
+      {
+        "nama": "Pademangan",
+        "kode_bps": "317205",
+        "min_lintang": -6.150719,
+        "max_lintang": -6.115168,
+        "min_bujur": 106.826237,
+        "max_bujur": 106.860448,
+        "villages": [
+          {
+            "nama": "Pademangan Timur",
+            "kode_bps": "3172051001",
+            "min_lintang": -6.150719,
+            "max_lintang": -6.130719,
+            "min_bujur": 106.840448,
+            "max_bujur": 106.860448
+          },
+          {
+            "nama": "Pademangan Barat",
+            "kode_bps": "3172051002",
+            "min_lintang": -6.14328,
+            "max_lintang": -6.12328,
+            "min_bujur": 106.826237,
+            "max_bujur": 106.846237
+          },
+          {
+            "nama": "Ancol",
+            "kode_bps": "3172051003",
+            "min_lintang": -6.135168,
+            "max_lintang": -6.115168,
+            "min_bujur": 106.829637,
+            "max_bujur": 106.849637
+          }
+        ]
+      },
+      {
+        "nama": "Kelapa Gading",
+        "kode_bps": "317206",
+        "min_lintang": -6.178354,
+        "max_lintang": -6.144442,
+        "min_bujur": 106.887559,
+        "max_bujur": 106.924646,
+        "villages": [
+          {
+            "nama": "Kelapa Gading Timur",
+            "kode_bps": "3172061001",
+            "min_lintang": -6.178354,
+            "max_lintang": -6.158354,
+            "min_bujur": 106.894585,
+            "max_bujur": 106.914585
+          },
+          {
+            "nama": "Pegangsaan Dua",
+            "kode_bps": "3172061002",
+            "min_lintang": -6.168106,
+            "max_lintang": -6.148106,
+            "min_bujur": 106.904646,
+            "max_bujur": 106.924646
+          },
+          {
+            "nama": "Kelapa Gading Barat",
+            "kode_bps": "3172061003",
+            "min_lintang": -6.164442,
+            "max_lintang": -6.144442,
+            "min_bujur": 106.887559,
+            "max_bujur": 106.907559
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "nama": "Kota Administrasi Jakarta Barat",
+    "kode_bps": "3173",
+    "min_lintang": -6.233186,
+    "max_lintang": -6.098234,
+    "min_bujur": 106.687592,
+    "max_bujur": 106.834313,
+    "districts": [
+      {
+        "nama": "Cengkareng",
+        "kode_bps": "317301",
+        "min_lintang": -6.184939,
+        "max_lintang": -6.125474,
+        "min_bujur": 106.706956,
+        "max_bujur": 106.769246,
+        "villages": [
+          {
+            "nama": "Cengkareng Barat",
+            "kode_bps": "3173011001",
+            "min_lintang": -6.145474,
+            "max_lintang": -6.125474,
+            "min_bujur": 106.713102,
+            "max_bujur": 106.733102
+          },
+          {
+            "nama": "Duri Kosambi",
+            "kode_bps": "3173011002",
+            "min_lintang": -6.184939,
+            "max_lintang": -6.164939,
+            "min_bujur": 106.706956,
+            "max_bujur": 106.726956
+          },
+          {
+            "nama": "Rawa Buaya",
+            "kode_bps": "3173011003",
+            "min_lintang": -6.178164,
+            "max_lintang": -6.158164,
+            "min_bujur": 106.727594,
+            "max_bujur": 106.747594
+          },
+          {
+            "nama": "Kedaung Kali Angke",
+            "kode_bps": "3173011004",
+            "min_lintang": -6.160312,
+            "max_lintang": -6.140312,
+            "min_bujur": 106.749246,
+            "max_bujur": 106.769246
+          },
+          {
+            "nama": "Kapuk",
+            "kode_bps": "3173011005",
+            "min_lintang": -6.153194,
+            "max_lintang": -6.133194,
+            "min_bujur": 106.741896,
+            "max_bujur": 106.761896
+          },
+          {
+            "nama": "Cengkareng Timur",
+            "kode_bps": "3173011006",
+            "min_lintang": -6.153787,
+            "max_lintang": -6.133787,
+            "min_bujur": 106.729426,
+            "max_bujur": 106.749426
+          }
+        ]
+      },
+      {
+        "nama": "Grogol Petamburan",
+        "kode_bps": "317302",
+        "min_lintang": -6.189734,
+        "max_lintang": -6.141596,
+        "min_bujur": 106.767274,
+        "max_bujur": 106.805134,
+        "villages": [
+          {
+            "nama": "Grogol",
+            "kode_bps": "3173021001",
+            "min_lintang": -6.171454,
+            "max_lintang": -6.151454,
+            "min_bujur": 106.783553,
+            "max_bujur": 106.803553
+          },
+          {
+            "nama": "Tanjung Duren Utara",
+            "kode_bps": "3173021002",
+            "min_lintang": -6.18204,
+            "max_lintang": -6.16204,
+            "min_bujur": 106.774298,
+            "max_bujur": 106.794298
+          },
+          {
+            "nama": "Tomang",
+            "kode_bps": "3173021003",
+            "min_lintang": -6.182173,
+            "max_lintang": -6.162173,
+            "min_bujur": 106.785134,
+            "max_bujur": 106.805134
+          },
+          {
+            "nama": "Jelambar",
+            "kode_bps": "3173021004",
+            "min_lintang": -6.169343,
+            "max_lintang": -6.149343,
+            "min_bujur": 106.775397,
+            "max_bujur": 106.795397
+          },
+          {
+            "nama": "Tanjung Duren Selatan",
+            "kode_bps": "3173021005",
+            "min_lintang": -6.189734,
+            "max_lintang": -6.169734,
+            "min_bujur": 106.779899,
+            "max_bujur": 106.799899
+          },
+          {
+            "nama": "Jelambar Baru",
+            "kode_bps": "3173021006",
+            "min_lintang": -6.161596,
+            "max_lintang": -6.141596,
+            "min_bujur": 106.778368,
+            "max_bujur": 106.798368
+          },
+          {
+            "nama": "Wijaya Kusuma",
+            "kode_bps": "3173021007",
+            "min_lintang": -6.166604,
+            "max_lintang": -6.146604,
+            "min_bujur": 106.767274,
+            "max_bujur": 106.787274
+          }
+        ]
+      },
+      {
+        "nama": "Taman Sari",
+        "kode_bps": "317303",
+        "min_lintang": -6.165908,
+        "max_lintang": -6.128524,
+        "min_bujur": 106.803958,
+        "max_bujur": 106.834313,
+        "villages": [
+          {
+            "nama": "Taman Sari",
+            "kode_bps": "3173031001",
+            "min_lintang": -6.163861,
+            "max_lintang": -6.143861,
+            "min_bujur": 106.814313,
+            "max_bujur": 106.834313
+          },
+          {
+            "nama": "Krukut",
+            "kode_bps": "3173031002",
+            "min_lintang": -6.165908,
+            "max_lintang": -6.145908,
+            "min_bujur": 106.804647,
+            "max_bujur": 106.824647
+          },
+          {
+            "nama": "Maphar",
+            "kode_bps": "3173031003",
+            "min_lintang": -6.165262,
+            "max_lintang": -6.145262,
+            "min_bujur": 106.811327,
+            "max_bujur": 106.831327
+          },
+          {
+            "nama": "Tangki",
+            "kode_bps": "3173031004",
+            "min_lintang": -6.155786,
+            "max_lintang": -6.135786,
+            "min_bujur": 106.812898,
+            "max_bujur": 106.832898
+          },
+          {
+            "nama": "Mangga Besar",
+            "kode_bps": "3173031005",
+            "min_lintang": -6.154664,
+            "max_lintang": -6.134664,
+            "min_bujur": 106.808902,
+            "max_bujur": 106.828902
+          },
+          {
+            "nama": "Keagungan",
+            "kode_bps": "3173031006",
+            "min_lintang": -6.161817,
+            "max_lintang": -6.141817,
+            "min_bujur": 106.804455,
+            "max_bujur": 106.824455
+          },
+          {
+            "nama": "Glodok",
+            "kode_bps": "3173031007",
+            "min_lintang": -6.155125,
+            "max_lintang": -6.135125,
+            "min_bujur": 106.803958,
+            "max_bujur": 106.823958
+          },
+          {
+            "nama": "Pinangsia",
+            "kode_bps": "3173031008",
+            "min_lintang": -6.148524,
+            "max_lintang": -6.128524,
+            "min_bujur": 106.806773,
+            "max_bujur": 106.826773
+          }
+        ]
+      },
+      {
+        "nama": "Tambora",
+        "kode_bps": "317304",
+        "min_lintang": -6.169136,
+        "max_lintang": -6.12645,
+        "min_bujur": 106.786192,
+        "max_bujur": 106.820976,
+        "villages": [
+          {
+            "nama": "Tambora",
+            "kode_bps": "3173041001",
+            "min_lintang": -6.154893,
+            "max_lintang": -6.134893,
+            "min_bujur": 106.798983,
+            "max_bujur": 106.818983
+          },
+          {
+            "nama": "Kali Anyar",
+            "kode_bps": "3173041002",
+            "min_lintang": -6.167302,
+            "max_lintang": -6.147302,
+            "min_bujur": 106.789306,
+            "max_bujur": 106.809306
+          },
+          {
+            "nama": "Duri Utara",
+            "kode_bps": "3173041003",
+            "min_lintang": -6.164332,
+            "max_lintang": -6.144332,
+            "min_bujur": 106.794451,
+            "max_bujur": 106.814451
+          },
+          {
+            "nama": "Tanah Sereal",
+            "kode_bps": "3173041004",
+            "min_lintang": -6.164947,
+            "max_lintang": -6.144947,
+            "min_bujur": 106.800724,
+            "max_bujur": 106.820724
+          },
+          {
+            "nama": "Krendang",
+            "kode_bps": "3173041005",
+            "min_lintang": -6.161008,
+            "max_lintang": -6.141008,
+            "min_bujur": 106.793656,
+            "max_bujur": 106.813656
+          },
+          {
+            "nama": "Jembatan Besi",
+            "kode_bps": "3173041006",
+            "min_lintang": -6.161342,
+            "max_lintang": -6.141342,
+            "min_bujur": 106.787574,
+            "max_bujur": 106.807574
+          },
+          {
+            "nama": "Angke",
+            "kode_bps": "3173041007",
+            "min_lintang": -6.155963,
+            "max_lintang": -6.135963,
+            "min_bujur": 106.786192,
+            "max_bujur": 106.806192
+          },
+          {
+            "nama": "Jembatan Lima",
+            "kode_bps": "3173041008",
+            "min_lintang": -6.155226,
+            "max_lintang": -6.135226,
+            "min_bujur": 106.793933,
+            "max_bujur": 106.813933
+          },
+          {
+            "nama": "Pekojan",
+            "kode_bps": "3173041009",
+            "min_lintang": -6.147437,
+            "max_lintang": -6.127437,
+            "min_bujur": 106.794802,
+            "max_bujur": 106.814802
+          },
+          {
+            "nama": "Roa Malaka",
+            "kode_bps": "3173041010",
+            "min_lintang": -6.14645,
+            "max_lintang": -6.12645,
+            "min_bujur": 106.800976,
+            "max_bujur": 106.820976
+          },
+          {
+            "nama": "Duri Selatan",
+            "kode_bps": "3173041011",
+            "min_lintang": -6.169136,
+            "max_lintang": -6.149136,
+            "min_bujur": 106.794853,
+            "max_bujur": 106.814853
+          }
+        ]
+      },
+      {
+        "nama": "Kebon Jeruk",
+        "kode_bps": "317305",
+        "min_lintang": -6.233186,
+        "max_lintang": -6.157864,
+        "min_bujur": 106.746926,
+        "max_bujur": 106.786743,
+        "villages": [
+          {
+            "nama": "Kebon Jeruk",
+            "kode_bps": "3173051001",
+            "min_lintang": -6.206108,
+            "max_lintang": -6.186108,
+            "min_bujur": 106.758256,
+            "max_bujur": 106.778256
+          },
+          {
+            "nama": "Sukabumi Utara",
+            "kode_bps": "3173051002",
+            "min_lintang": -6.220456,
+            "max_lintang": -6.200456,
+            "min_bujur": 106.766743,
+            "max_bujur": 106.786743
+          },
+          {
+            "nama": "Sukabumi Selatan",
+            "kode_bps": "3173051003",
+            "min_lintang": -6.233186,
+            "max_lintang": -6.213186,
+            "min_bujur": 106.760941,
+            "max_bujur": 106.780941
+          },
+          {
+            "nama": "Kelapa Dua",
+            "kode_bps": "3173051004",
+            "min_lintang": -6.219407,
+            "max_lintang": -6.199407,
+            "min_bujur": 106.758998,
+            "max_bujur": 106.778998
+          },
+          {
+            "nama": "Duri Kepa",
+            "kode_bps": "3173051005",
+            "min_lintang": -6.184541,
+            "max_lintang": -6.164541,
+            "min_bujur": 106.76417,
+            "max_bujur": 106.78417
+          },
+          {
+            "nama": "Kedoya Utara",
+            "kode_bps": "3173051006",
+            "min_lintang": -6.177864,
+            "max_lintang": -6.157864,
+            "min_bujur": 106.747878,
+            "max_bujur": 106.767878
+          },
+          {
+            "nama": "Kedoya Selatan",
+            "kode_bps": "3173051007",
+            "min_lintang": -6.191246,
+            "max_lintang": -6.171246,
+            "min_bujur": 106.746926,
+            "max_bujur": 106.766926
+          }
+        ]
+      },
+      {
+        "nama": "Kalideres",
+        "kode_bps": "317306",
+        "min_lintang": -6.177702,
+        "max_lintang": -6.098234,
+        "min_bujur": 106.687592,
+        "max_bujur": 106.725091,
+        "villages": [
+          {
+            "nama": "Kalideres",
+            "kode_bps": "3173061001",
+            "min_lintang": -6.157381,
+            "max_lintang": -6.137381,
+            "min_bujur": 106.687592,
+            "max_bujur": 106.707592
+          },
+          {
+            "nama": "Semanan",
+            "kode_bps": "3173061002",
+            "min_lintang": -6.177702,
+            "max_lintang": -6.157702,
+            "min_bujur": 106.692416,
+            "max_bujur": 106.712416
+          },
+          {
+            "nama": "Tegal Alur",
+            "kode_bps": "3173061003",
+            "min_lintang": -6.12593,
+            "max_lintang": -6.10593,
+            "min_bujur": 106.705091,
+            "max_bujur": 106.725091
+          },
+          {
+            "nama": "Kamal",
+            "kode_bps": "3173061004",
+            "min_lintang": -6.118234,
+            "max_lintang": -6.098234,
+            "min_bujur": 106.688176,
+            "max_bujur": 106.708176
+          },
+          {
+            "nama": "Pegadungan",
+            "kode_bps": "3173061005",
+            "min_lintang": -6.142494,
+            "max_lintang": -6.122494,
+            "min_bujur": 106.69003,
+            "max_bujur": 106.71003
+          }
+        ]
+      },
+      {
+        "nama": "Pal Merah",
+        "kode_bps": "317307",
+        "min_lintang": -6.211286,
+        "max_lintang": -6.170504,
+        "min_bujur": 106.780675,
+        "max_bujur": 106.815474,
+        "villages": [
+          {
+            "nama": "Palmerah",
+            "kode_bps": "3173071001",
+            "min_lintang": -6.211286,
+            "max_lintang": -6.191286,
+            "min_bujur": 106.780675,
+            "max_bujur": 106.800675
+          },
+          {
+            "nama": "Slipi",
+            "kode_bps": "3173071002",
+            "min_lintang": -6.204913,
+            "max_lintang": -6.184913,
+            "min_bujur": 106.79247,
+            "max_bujur": 106.81247
+          },
+          {
+            "nama": "Kota Bambu Utara",
+            "kode_bps": "3173071003",
+            "min_lintang": -6.193278,
+            "max_lintang": -6.173278,
+            "min_bujur": 106.795474,
+            "max_bujur": 106.815474
+          },
+          {
+            "nama": "Jatipulo",
+            "kode_bps": "3173071004",
+            "min_lintang": -6.190504,
+            "max_lintang": -6.170504,
+            "min_bujur": 106.794566,
+            "max_bujur": 106.814566
+          },
+          {
+            "nama": "Kemanggisan",
+            "kode_bps": "3173071005",
+            "min_lintang": -6.201036,
+            "max_lintang": -6.181036,
+            "min_bujur": 106.78192,
+            "max_bujur": 106.80192
+          },
+          {
+            "nama": "Kota Bambu Selatan",
+            "kode_bps": "3173071006",
+            "min_lintang": -6.196847,
+            "max_lintang": -6.176847,
+            "min_bujur": 106.795222,
+            "max_bujur": 106.815222
+          }
+        ]
+      },
+      {
+        "nama": "Kembangan",
+        "kode_bps": "317308",
+        "min_lintang": -6.229964,
+        "max_lintang": -6.161595,
+        "min_bujur": 106.722053,
+        "max_bujur": 106.770083,
+        "villages": [
+          {
+            "nama": "Kembangan Utara",
+            "kode_bps": "3173081001",
+            "min_lintang": -6.181595,
+            "max_lintang": -6.161595,
+            "min_bujur": 106.732942,
+            "max_bujur": 106.752942
+          },
+          {
+            "nama": "Meruya Utara",
+            "kode_bps": "3173081002",
+            "min_lintang": -6.207452,
+            "max_lintang": -6.187452,
+            "min_bujur": 106.733601,
+            "max_bujur": 106.753601
+          },
+          {
+            "nama": "Meruya Selatan",
+            "kode_bps": "3173081003",
+            "min_lintang": -6.21813,
+            "max_lintang": -6.19813,
+            "min_bujur": 106.722053,
+            "max_bujur": 106.742053
+          },
+          {
+            "nama": "Srengseng",
+            "kode_bps": "3173081004",
+            "min_lintang": -6.220197,
+            "max_lintang": -6.200197,
+            "min_bujur": 106.750083,
+            "max_bujur": 106.770083
+          },
+          {
+            "nama": "Joglo",
+            "kode_bps": "3173081005",
+            "min_lintang": -6.229964,
+            "max_lintang": -6.209964,
+            "min_bujur": 106.729026,
+            "max_bujur": 106.749026
+          },
+          {
+            "nama": "Kembangan Selatan",
+            "kode_bps": "3173081006",
+            "min_lintang": -6.194015,
+            "max_lintang": -6.174015,
+            "min_bujur": 106.724834,
+            "max_bujur": 106.744834
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "nama": "Kota Administrasi Jakarta Selatan",
+    "kode_bps": "3174",
+    "min_lintang": -6.361283,
+    "max_lintang": -6.198033,
+    "min_bujur": 106.741234,
+    "max_bujur": 106.872952,
+    "districts": [
+      {
+        "nama": "Tebet",
+        "kode_bps": "317401",
+        "min_lintang": -6.244932,
+        "max_lintang": -6.204114,
+        "min_bujur": 106.830598,
+        "max_bujur": 106.872952,
+        "villages": [
+          {
+            "nama": "Tebet Timur",
+            "kode_bps": "3174011001",
+            "min_lintang": -6.243786,
+            "max_lintang": -6.223786,
+            "min_bujur": 106.844732,
+            "max_bujur": 106.864732
+          },
+          {
+            "nama": "Tebet Barat",
+            "kode_bps": "3174011002",
+            "min_lintang": -6.244932,
+            "max_lintang": -6.224932,
+            "min_bujur": 106.838898,
+            "max_bujur": 106.858898
+          },
+          {
+            "nama": "Menteng Dalam",
+            "kode_bps": "3174011003",
+            "min_lintang": -6.242216,
+            "max_lintang": -6.222216,
+            "min_bujur": 106.830598,
+            "max_bujur": 106.850598
+          },
+          {
+            "nama": "Kebon Baru",
+            "kode_bps": "3174011004",
+            "min_lintang": -6.24415,
+            "max_lintang": -6.22415,
+            "min_bujur": 106.852952,
+            "max_bujur": 106.872952
+          },
+          {
+            "nama": "Bukit Duri",
+            "kode_bps": "3174011005",
+            "min_lintang": -6.230151,
+            "max_lintang": -6.210151,
+            "min_bujur": 106.848361,
+            "max_bujur": 106.868361
+          },
+          {
+            "nama": "Manggarai Selatan",
+            "kode_bps": "3174011006",
+            "min_lintang": -6.22906,
+            "max_lintang": -6.20906,
+            "min_bujur": 106.838474,
+            "max_bujur": 106.858474
+          },
+          {
+            "nama": "Manggarai",
+            "kode_bps": "3174011007",
+            "min_lintang": -6.224114,
+            "max_lintang": -6.204114,
+            "min_bujur": 106.840606,
+            "max_bujur": 106.860606
+          }
+        ]
+      },
+      {
+        "nama": "Setiabudi",
+        "kode_bps": "317402",
+        "min_lintang": -6.242508,
+        "max_lintang": -6.198033,
+        "min_bujur": 106.809503,
+        "max_bujur": 106.851572,
+        "villages": [
+          {
+            "nama": "Setia Budi",
+            "kode_bps": "3174021001",
+            "min_lintang": -6.218124,
+            "max_lintang": -6.198124,
+            "min_bujur": 106.816299,
+            "max_bujur": 106.836299
+          },
+          {
+            "nama": "Karet Semanggi",
+            "kode_bps": "3174021002",
+            "min_lintang": -6.233225,
+            "max_lintang": -6.213225,
+            "min_bujur": 106.809503,
+            "max_bujur": 106.829503
+          },
+          {
+            "nama": "Karet Kuningan",
+            "kode_bps": "3174021003",
+            "min_lintang": -6.229915,
+            "max_lintang": -6.209915,
+            "min_bujur": 106.819394,
+            "max_bujur": 106.839394
+          },
+          {
+            "nama": "Karet",
+            "kode_bps": "3174021004",
+            "min_lintang": -6.223717,
+            "max_lintang": -6.203717,
+            "min_bujur": 106.817034,
+            "max_bujur": 106.837034
+          },
+          {
+            "nama": "Menteng Atas",
+            "kode_bps": "3174021005",
+            "min_lintang": -6.227712,
+            "max_lintang": -6.207712,
+            "min_bujur": 106.828859,
+            "max_bujur": 106.848859
+          },
+          {
+            "nama": "Pasar Manggis",
+            "kode_bps": "3174021006",
+            "min_lintang": -6.220769,
+            "max_lintang": -6.200769,
+            "min_bujur": 106.831572,
+            "max_bujur": 106.851572
+          },
+          {
+            "nama": "Guntur",
+            "kode_bps": "3174021007",
+            "min_lintang": -6.218033,
+            "max_lintang": -6.198033,
+            "min_bujur": 106.823307,
+            "max_bujur": 106.843307
+          },
+          {
+            "nama": "Kuningan Timur",
+            "kode_bps": "3174021008",
+            "min_lintang": -6.242508,
+            "max_lintang": -6.222508,
+            "min_bujur": 106.821403,
+            "max_bujur": 106.841403
+          }
+        ]
+      },
+      {
+        "nama": "Mampang Prapatan",
+        "kode_bps": "317403",
+        "min_lintang": -6.272503,
+        "max_lintang": -6.225785,
+        "min_bujur": 106.808073,
+        "max_bujur": 106.839689,
+        "villages": [
+          {
+            "nama": "Mampang Prapatan",
+            "kode_bps": "3174031001",
+            "min_lintang": -6.252697,
+            "max_lintang": -6.232697,
+            "min_bujur": 106.817044,
+            "max_bujur": 106.837044
+          },
+          {
+            "nama": "Bangka",
+            "kode_bps": "3174031002",
+            "min_lintang": -6.272503,
+            "max_lintang": -6.252503,
+            "min_bujur": 106.808917,
+            "max_bujur": 106.828917
+          },
+          {
+            "nama": "Pela Mampang",
+            "kode_bps": "3174031003",
+            "min_lintang": -6.258597,
+            "max_lintang": -6.238597,
+            "min_bujur": 106.808073,
+            "max_bujur": 106.828073
+          },
+          {
+            "nama": "Tegal Parang",
+            "kode_bps": "3174031004",
+            "min_lintang": -6.259414,
+            "max_lintang": -6.239414,
+            "min_bujur": 106.819689,
+            "max_bujur": 106.839689
+          },
+          {
+            "nama": "Kuningan Barat",
+            "kode_bps": "3174031005",
+            "min_lintang": -6.245785,
+            "max_lintang": -6.225785,
+            "min_bujur": 106.810797,
+            "max_bujur": 106.830797
+          }
+        ]
+      },
+      {
+        "nama": "Pasar Minggu",
+        "kode_bps": "317404",
+        "min_lintang": -6.322484,
+        "max_lintang": -6.26205,
+        "min_bujur": 106.80055,
+        "max_bujur": 106.859733,
+        "villages": [
+          {
+            "nama": "Pasar Minggu",
+            "kode_bps": "3174041001",
+            "min_lintang": -6.298107,
+            "max_lintang": -6.278107,
+            "min_bujur": 106.827377,
+            "max_bujur": 106.847377
+          },
+          {
+            "nama": "Jati Padang",
+            "kode_bps": "3174041002",
+            "min_lintang": -6.298511,
+            "max_lintang": -6.278511,
+            "min_bujur": 106.823443,
+            "max_bujur": 106.843443
+          },
+          {
+            "nama": "Cilandak Timur",
+            "kode_bps": "3174041003",
+            "min_lintang": -6.303548,
+            "max_lintang": -6.283548,
+            "min_bujur": 106.80055,
+            "max_bujur": 106.82055
+          },
+          {
+            "nama": "Ragunan",
+            "kode_bps": "3174041004",
+            "min_lintang": -6.308623,
+            "max_lintang": -6.288623,
+            "min_bujur": 106.812311,
+            "max_bujur": 106.832311
+          },
+          {
+            "nama": "Pejaten Timur",
+            "kode_bps": "3174041005",
+            "min_lintang": -6.291548,
+            "max_lintang": -6.271548,
+            "min_bujur": 106.839733,
+            "max_bujur": 106.859733
+          },
+          {
+            "nama": "Pejaten Barat",
+            "kode_bps": "3174041006",
+            "min_lintang": -6.28205,
+            "max_lintang": -6.26205,
+            "min_bujur": 106.821486,
+            "max_bujur": 106.841486
+          },
+          {
+            "nama": "Kebagusan",
+            "kode_bps": "3174041007",
+            "min_lintang": -6.322484,
+            "max_lintang": -6.302484,
+            "min_bujur": 106.821245,
+            "max_bujur": 106.841245
+          }
+        ]
+      },
+      {
+        "nama": "Kebayoran Lama",
+        "kode_bps": "317405",
+        "min_lintang": -6.286035,
+        "max_lintang": -6.204027,
+        "min_bujur": 106.760339,
+        "max_bujur": 106.797265,
+        "villages": [
+          {
+            "nama": "Kebayoran Lama Utara",
+            "kode_bps": "3174051001",
+            "min_lintang": -6.255863,
+            "max_lintang": -6.235863,
+            "min_bujur": 106.767733,
+            "max_bujur": 106.787733
+          },
+          {
+            "nama": "Pondok Pinang",
+            "kode_bps": "3174051002",
+            "min_lintang": -6.286035,
+            "max_lintang": -6.266035,
+            "min_bujur": 106.766928,
+            "max_bujur": 106.786928
+          },
+          {
+            "nama": "Cipulir",
+            "kode_bps": "3174051003",
+            "min_lintang": -6.247557,
+            "max_lintang": -6.227557,
+            "min_bujur": 106.760339,
+            "max_bujur": 106.780339
+          },
+          {
+            "nama": "Grogol Utara",
+            "kode_bps": "3174051004",
+            "min_lintang": -6.224027,
+            "max_lintang": -6.204027,
+            "min_bujur": 106.777265,
+            "max_bujur": 106.797265
+          },
+          {
+            "nama": "Grogol Selatan",
+            "kode_bps": "3174051005",
+            "min_lintang": -6.240072,
+            "max_lintang": -6.220072,
+            "min_bujur": 106.766437,
+            "max_bujur": 106.786437
+          },
+          {
+            "nama": "Kebayoran Lama Selatan",
+            "kode_bps": "3174051006",
+            "min_lintang": -6.262733,
+            "max_lintang": -6.242733,
+            "min_bujur": 106.772428,
+            "max_bujur": 106.792428
+          }
+        ]
+      },
+      {
+        "nama": "Cilandak",
+        "kode_bps": "317406",
+        "min_lintang": -6.32005,
+        "max_lintang": -6.259817,
+        "min_bujur": 106.768528,
+        "max_bujur": 106.818245,
+        "villages": [
+          {
+            "nama": "Cilandak Barat",
+            "kode_bps": "3174061001",
+            "min_lintang": -6.300904,
+            "max_lintang": -6.280904,
+            "min_bujur": 106.790768,
+            "max_bujur": 106.810768
+          },
+          {
+            "nama": "Lebak Bulus",
+            "kode_bps": "3174061002",
+            "min_lintang": -6.313464,
+            "max_lintang": -6.293464,
+            "min_bujur": 106.768528,
+            "max_bujur": 106.788528
+          },
+          {
+            "nama": "Pondok Labu",
+            "kode_bps": "3174061003",
+            "min_lintang": -6.32005,
+            "max_lintang": -6.30005,
+            "min_bujur": 106.788535,
+            "max_bujur": 106.808535
+          },
+          {
+            "nama": "Gandaria Selatan",
+            "kode_bps": "3174061004",
+            "min_lintang": -6.279817,
+            "max_lintang": -6.259817,
+            "min_bujur": 106.781667,
+            "max_bujur": 106.801667
+          },
+          {
+            "nama": "Cipete Selatan",
+            "kode_bps": "3174061005",
+            "min_lintang": -6.283086,
+            "max_lintang": -6.263086,
+            "min_bujur": 106.798245,
+            "max_bujur": 106.818245
+          }
+        ]
+      },
+      {
+        "nama": "Kebayoran Baru",
+        "kode_bps": "317407",
+        "min_lintang": -6.272025,
+        "max_lintang": -6.219931,
+        "min_bujur": 106.779538,
+        "max_bujur": 106.82574,
+        "villages": [
+          {
+            "nama": "Melawai",
+            "kode_bps": "3174071001",
+            "min_lintang": -6.257735,
+            "max_lintang": -6.237735,
+            "min_bujur": 106.790793,
+            "max_bujur": 106.810793
+          },
+          {
+            "nama": "Gunung",
+            "kode_bps": "3174071002",
+            "min_lintang": -6.245371,
+            "max_lintang": -6.225371,
+            "min_bujur": 106.780518,
+            "max_bujur": 106.800518
+          },
+          {
+            "nama": "Kramat Pela",
+            "kode_bps": "3174071003",
+            "min_lintang": -6.255093,
+            "max_lintang": -6.235093,
+            "min_bujur": 106.779668,
+            "max_bujur": 106.799668
+          },
+          {
+            "nama": "Selong",
+            "kode_bps": "3174071004",
+            "min_lintang": -6.242417,
+            "max_lintang": -6.222417,
+            "min_bujur": 106.796306,
+            "max_bujur": 106.816306
+          },
+          {
+            "nama": "Rawa Barat",
+            "kode_bps": "3174071005",
+            "min_lintang": -6.245928,
+            "max_lintang": -6.225928,
+            "min_bujur": 106.80574,
+            "max_bujur": 106.82574
+          },
+          {
+            "nama": "Senayan",
+            "kode_bps": "3174071006",
+            "min_lintang": -6.239931,
+            "max_lintang": -6.219931,
+            "min_bujur": 106.800881,
+            "max_bujur": 106.820881
+          },
+          {
+            "nama": "Pulo",
+            "kode_bps": "3174071007",
+            "min_lintang": -6.262738,
+            "max_lintang": -6.242738,
+            "min_bujur": 106.793444,
+            "max_bujur": 106.813444
+          },
+          {
+            "nama": "Petogogan",
+            "kode_bps": "3174071008",
+            "min_lintang": -6.254935,
+            "max_lintang": -6.234935,
+            "min_bujur": 106.801254,
+            "max_bujur": 106.821254
+          },
+          {
+            "nama": "Gandaria Utara",
+            "kode_bps": "3174071009",
+            "min_lintang": -6.266798,
+            "max_lintang": -6.246798,
+            "min_bujur": 106.779538,
+            "max_bujur": 106.799538
+          },
+          {
+            "nama": "Cipete Utara",
+            "kode_bps": "3174071010",
+            "min_lintang": -6.272025,
+            "max_lintang": -6.252025,
+            "min_bujur": 106.798444,
+            "max_bujur": 106.818444
+          }
+        ]
+      },
+      {
+        "nama": "Pancoran",
+        "kode_bps": "317408",
+        "min_lintang": -6.276415,
+        "max_lintang": -6.235521,
+        "min_bujur": 106.821803,
+        "max_bujur": 106.866036,
+        "villages": [
+          {
+            "nama": "Pancoran",
+            "kode_bps": "3174081001",
+            "min_lintang": -6.258105,
+            "max_lintang": -6.238105,
+            "min_bujur": 106.829203,
+            "max_bujur": 106.849203
+          },
+          {
+            "nama": "Kalibata",
+            "kode_bps": "3174081002",
+            "min_lintang": -6.276415,
+            "max_lintang": -6.256415,
+            "min_bujur": 106.823921,
+            "max_bujur": 106.843921
+          },
+          {
+            "nama": "Rawajati",
+            "kode_bps": "3174081003",
+            "min_lintang": -6.269993,
+            "max_lintang": -6.249993,
+            "min_bujur": 106.846036,
+            "max_bujur": 106.866036
+          },
+          {
+            "nama": "Duren Tiga",
+            "kode_bps": "3174081004",
+            "min_lintang": -6.265692,
+            "max_lintang": -6.245692,
+            "min_bujur": 106.821803,
+            "max_bujur": 106.841803
+          },
+          {
+            "nama": "Pengadegan",
+            "kode_bps": "3174081005",
+            "min_lintang": -6.259575,
+            "max_lintang": -6.239575,
+            "min_bujur": 106.845701,
+            "max_bujur": 106.865701
+          },
+          {
+            "nama": "Cikoko",
+            "kode_bps": "3174081006",
+            "min_lintang": -6.255521,
+            "max_lintang": -6.235521,
+            "min_bujur": 106.844697,
+            "max_bujur": 106.864697
+          }
+        ]
+      },
+      {
+        "nama": "Jagakarsa",
+        "kode_bps": "317409",
+        "min_lintang": -6.361283,
+        "max_lintang": -6.297293,
+        "min_bujur": 106.790735,
+        "max_bujur": 106.859593,
+        "villages": [
+          {
+            "nama": "Jagakarsa",
+            "kode_bps": "3174091001",
+            "min_lintang": -6.334441,
+            "max_lintang": -6.314441,
+            "min_bujur": 106.807248,
+            "max_bujur": 106.827248
+          },
+          {
+            "nama": "Srengseng Sawah",
+            "kode_bps": "3174091002",
+            "min_lintang": -6.35951,
+            "max_lintang": -6.33951,
+            "min_bujur": 106.813768,
+            "max_bujur": 106.833768
+          },
+          {
+            "nama": "Ciganjur",
+            "kode_bps": "3174091003",
+            "min_lintang": -6.344951,
+            "max_lintang": -6.324951,
+            "min_bujur": 106.798728,
+            "max_bujur": 106.818728
+          },
+          {
+            "nama": "Lenteng Agung",
+            "kode_bps": "3174091004",
+            "min_lintang": -6.330228,
+            "max_lintang": -6.310228,
+            "min_bujur": 106.826464,
+            "max_bujur": 106.846464
+          },
+          {
+            "nama": "Tanjung Barat",
+            "kode_bps": "3174091005",
+            "min_lintang": -6.317293,
+            "max_lintang": -6.297293,
+            "min_bujur": 106.839593,
+            "max_bujur": 106.859593
+          },
+          {
+            "nama": "Cipedak",
+            "kode_bps": "3174091006",
+            "min_lintang": -6.361283,
+            "max_lintang": -6.341283,
+            "min_bujur": 106.790735,
+            "max_bujur": 106.810735
+          }
+        ]
+      },
+      {
+        "nama": "Pesanggrahan",
+        "kode_bps": "317410",
+        "min_lintang": -6.281282,
+        "max_lintang": -6.219362,
+        "min_bujur": 106.741234,
+        "max_bujur": 106.776388,
+        "villages": [
+          {
+            "nama": "Pesanggrahan",
+            "kode_bps": "3174101001",
+            "min_lintang": -6.26599,
+            "max_lintang": -6.24599,
+            "min_bujur": 106.749078,
+            "max_bujur": 106.769078
+          },
+          {
+            "nama": "Bintaro",
+            "kode_bps": "3174101002",
+            "min_lintang": -6.281282,
+            "max_lintang": -6.261282,
+            "min_bujur": 106.756388,
+            "max_bujur": 106.776388
+          },
+          {
+            "nama": "Petukangan Utara",
+            "kode_bps": "3174101003",
+            "min_lintang": -6.239362,
+            "max_lintang": -6.219362,
+            "min_bujur": 106.741234,
+            "max_bujur": 106.761234
+          },
+          {
+            "nama": "Petukangan Selatan",
+            "kode_bps": "3174101004",
+            "min_lintang": -6.254489,
+            "max_lintang": -6.234489,
+            "min_bujur": 106.743347,
+            "max_bujur": 106.763347
+          },
+          {
+            "nama": "Ulujami",
+            "kode_bps": "3174101005",
+            "min_lintang": -6.244445,
+            "max_lintang": -6.224445,
+            "min_bujur": 106.75421,
+            "max_bujur": 106.77421
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "nama": "Kota Administrasi Jakarta Timur",
+    "kode_bps": "3175",
+    "min_lintang": -6.368099,
+    "max_lintang": -6.161279,
+    "min_bujur": 106.837065,
+    "max_bujur": 106.972529,
+    "districts": [
+      {
+        "nama": "Matraman",
+        "kode_bps": "317501",
+        "min_lintang": -6.221073,
+        "max_lintang": -6.186787,
+        "min_bujur": 106.845283,
+        "max_bujur": 106.878418,
+        "villages": [
+          {
+            "nama": "Pisangan Baru",
+            "kode_bps": "3175011001",
+            "min_lintang": -6.221073,
+            "max_lintang": -6.201073,
+            "min_bujur": 106.858395,
+            "max_bujur": 106.878395
+          },
+          {
+            "nama": "Utan Kayu Utara",
+            "kode_bps": "3175011002",
+            "min_lintang": -6.206787,
+            "max_lintang": -6.186787,
+            "min_bujur": 106.858418,
+            "max_bujur": 106.878418
+          },
+          {
+            "nama": "Kayu Manis",
+            "kode_bps": "3175011003",
+            "min_lintang": -6.213853,
+            "max_lintang": -6.193853,
+            "min_bujur": 106.85296,
+            "max_bujur": 106.87296
+          },
+          {
+            "nama": "Palmeriam",
+            "kode_bps": "3175011004",
+            "min_lintang": -6.215258,
+            "max_lintang": -6.195258,
+            "min_bujur": 106.849678,
+            "max_bujur": 106.869678
+          },
+          {
+            "nama": "Kebon Manggis",
+            "kode_bps": "3175011005",
+            "min_lintang": -6.21631,
+            "max_lintang": -6.19631,
+            "min_bujur": 106.845283,
+            "max_bujur": 106.865283
+          },
+          {
+            "nama": "Utan Kayu Selatan",
+            "kode_bps": "3175011006",
+            "min_lintang": -6.213103,
+            "max_lintang": -6.193103,
+            "min_bujur": 106.85835,
+            "max_bujur": 106.87835
+          }
+        ]
+      },
+      {
+        "nama": "Pulogadung",
+        "kode_bps": "317502",
+        "min_lintang": -6.219293,
+        "max_lintang": -6.170632,
+        "min_bujur": 106.870631,
+        "max_bujur": 106.911593,
+        "villages": [
+          {
+            "nama": "Pulo Gadung",
+            "kode_bps": "3175021001",
+            "min_lintang": -6.193069,
+            "max_lintang": -6.173069,
+            "min_bujur": 106.890124,
+            "max_bujur": 106.910124
+          },
+          {
+            "nama": "Pisangan Timur",
+            "kode_bps": "3175021002",
+            "min_lintang": -6.216462,
+            "max_lintang": -6.196462,
+            "min_bujur": 106.870631,
+            "max_bujur": 106.890631
+          },
+          {
+            "nama": "Cipinang",
+            "kode_bps": "3175021003",
+            "min_lintang": -6.219293,
+            "max_lintang": -6.199293,
+            "min_bujur": 106.882483,
+            "max_bujur": 106.902483
+          },
+          {
+            "nama": "Jatinegara Kaum",
+            "kode_bps": "3175021004",
+            "min_lintang": -6.209889,
+            "max_lintang": -6.189889,
+            "min_bujur": 106.891593,
+            "max_bujur": 106.911593
+          },
+          {
+            "nama": "Rawamangun",
+            "kode_bps": "3175021005",
+            "min_lintang": -6.207193,
+            "max_lintang": -6.187193,
+            "min_bujur": 106.871111,
+            "max_bujur": 106.891111
+          },
+          {
+            "nama": "Kayu Putih",
+            "kode_bps": "3175021006",
+            "min_lintang": -6.190632,
+            "max_lintang": -6.170632,
+            "min_bujur": 106.873301,
+            "max_bujur": 106.893301
+          },
+          {
+            "nama": "Jati",
+            "kode_bps": "3175021007",
+            "min_lintang": -6.205202,
+            "max_lintang": -6.185202,
+            "min_bujur": 106.889401,
+            "max_bujur": 106.909401
+          }
+        ]
+      },
+      {
+        "nama": "Jatinegara",
+        "kode_bps": "317503",
+        "min_lintang": -6.246197,
+        "max_lintang": -6.207894,
+        "min_bujur": 106.851445,
+        "max_bujur": 106.900986,
+        "villages": [
+          {
+            "nama": "Kampung Melayu",
+            "kode_bps": "3175031001",
+            "min_lintang": -6.228411,
+            "max_lintang": -6.208411,
+            "min_bujur": 106.851445,
+            "max_bujur": 106.871445
+          },
+          {
+            "nama": "Bidara Cina",
+            "kode_bps": "3175031002",
+            "min_lintang": -6.243763,
+            "max_lintang": -6.223763,
+            "min_bujur": 106.856641,
+            "max_bujur": 106.876641
+          },
+          {
+            "nama": "Bali Mester",
+            "kode_bps": "3175031003",
+            "min_lintang": -6.228337,
+            "max_lintang": -6.208337,
+            "min_bujur": 106.856274,
+            "max_bujur": 106.876274
+          },
+          {
+            "nama": "Rawa Bunga",
+            "kode_bps": "3175031004",
+            "min_lintang": -6.227894,
+            "max_lintang": -6.207894,
+            "min_bujur": 106.858662,
+            "max_bujur": 106.878662
+          },
+          {
+            "nama": "Cipinang Cempedak",
+            "kode_bps": "3175031005",
+            "min_lintang": -6.246197,
+            "max_lintang": -6.226197,
+            "min_bujur": 106.86336,
+            "max_bujur": 106.88336
+          },
+          {
+            "nama": "Cipinang Muara",
+            "kode_bps": "3175031006",
+            "min_lintang": -6.236679,
+            "max_lintang": -6.216679,
+            "min_bujur": 106.880986,
+            "max_bujur": 106.900986
+          },
+          {
+            "nama": "Cipinang Besar Selatan",
+            "kode_bps": "3175031007",
+            "min_lintang": -6.23782,
+            "max_lintang": -6.21782,
+            "min_bujur": 106.872521,
+            "max_bujur": 106.892521
+          },
+          {
+            "nama": "Cipinang Besar Utara",
+            "kode_bps": "3175031008",
+            "min_lintang": -6.230398,
+            "max_lintang": -6.210398,
+            "min_bujur": 106.870438,
+            "max_bujur": 106.890438
+          }
+        ]
+      },
+      {
+        "nama": "Kramatjati",
+        "kode_bps": "317504",
+        "min_lintang": -6.304155,
+        "max_lintang": -6.242739,
+        "min_bujur": 106.842941,
+        "max_bujur": 106.885805,
+        "villages": [
+          {
+            "nama": "Kramatjati",
+            "kode_bps": "3175041001",
+            "min_lintang": -6.28256,
+            "max_lintang": -6.26256,
+            "min_bujur": 106.860675,
+            "max_bujur": 106.880675
+          },
+          {
+            "nama": "Tengah",
+            "kode_bps": "3175041002",
+            "min_lintang": -6.298241,
+            "max_lintang": -6.278241,
+            "min_bujur": 106.854797,
+            "max_bujur": 106.874797
+          },
+          {
+            "nama": "Dukuh",
+            "kode_bps": "3175041003",
+            "min_lintang": -6.304155,
+            "max_lintang": -6.284155,
+            "min_bujur": 106.865805,
+            "max_bujur": 106.885805
+          },
+          {
+            "nama": "Batu Ampar",
+            "kode_bps": "3175041004",
+            "min_lintang": -6.29146,
+            "max_lintang": -6.27146,
+            "min_bujur": 106.851789,
+            "max_bujur": 106.871789
+          },
+          {
+            "nama": "Balekambang",
+            "kode_bps": "3175041005",
+            "min_lintang": -6.291511,
+            "max_lintang": -6.271511,
+            "min_bujur": 106.842941,
+            "max_bujur": 106.862941
+          },
+          {
+            "nama": "Cililitan",
+            "kode_bps": "3175041006",
+            "min_lintang": -6.272926,
+            "max_lintang": -6.252926,
+            "min_bujur": 106.851902,
+            "max_bujur": 106.871902
+          },
+          {
+            "nama": "Cawang",
+            "kode_bps": "3175041007",
+            "min_lintang": -6.262739,
+            "max_lintang": -6.242739,
+            "min_bujur": 106.85438,
+            "max_bujur": 106.87438
+          }
+        ]
+      },
+      {
+        "nama": "Pasar Rebo",
+        "kode_bps": "317505",
+        "min_lintang": -6.355644,
+        "max_lintang": -6.29067,
+        "min_bujur": 106.837065,
+        "max_bujur": 106.873869,
+        "villages": [
+          {
+            "nama": "Gedong",
+            "kode_bps": "3175051001",
+            "min_lintang": -6.31067,
+            "max_lintang": -6.29067,
+            "min_bujur": 106.84856,
+            "max_bujur": 106.86856
+          },
+          {
+            "nama": "Baru",
+            "kode_bps": "3175051002",
+            "min_lintang": -6.333116,
+            "max_lintang": -6.313116,
+            "min_bujur": 106.837065,
+            "max_bujur": 106.857065
+          },
+          {
+            "nama": "Cijantung",
+            "kode_bps": "3175051003",
+            "min_lintang": -6.331991,
+            "max_lintang": -6.311991,
+            "min_bujur": 106.848571,
+            "max_bujur": 106.868571
+          },
+          {
+            "nama": "Kalisari",
+            "kode_bps": "3175051004",
+            "min_lintang": -6.347016,
+            "max_lintang": -6.327016,
+            "min_bujur": 106.842201,
+            "max_bujur": 106.862201
+          },
+          {
+            "nama": "Pekayon",
+            "kode_bps": "3175051005",
+            "min_lintang": -6.355644,
+            "max_lintang": -6.335644,
+            "min_bujur": 106.853869,
+            "max_bujur": 106.873869
+          }
+        ]
+      },
+      {
+        "nama": "Cakung",
+        "kode_bps": "317506",
+        "min_lintang": -6.212903,
+        "max_lintang": -6.161279,
+        "min_bujur": 106.911583,
+        "max_bujur": 106.972529,
+        "villages": [
+          {
+            "nama": "Jatinegara",
+            "kode_bps": "3175061001",
+            "min_lintang": -6.212903,
+            "max_lintang": -6.192903,
+            "min_bujur": 106.911583,
+            "max_bujur": 106.931583
+          },
+          {
+            "nama": "Rawa Terate",
+            "kode_bps": "3175061002",
+            "min_lintang": -6.190409,
+            "max_lintang": -6.170409,
+            "min_bujur": 106.913813,
+            "max_bujur": 106.933813
+          },
+          {
+            "nama": "Penggilingan",
+            "kode_bps": "3175061003",
+            "min_lintang": -6.209835,
+            "max_lintang": -6.189835,
+            "min_bujur": 106.924825,
+            "max_bujur": 106.944825
+          },
+          {
+            "nama": "Cakung Timur",
+            "kode_bps": "3175061004",
+            "min_lintang": -6.181279,
+            "max_lintang": -6.161279,
+            "min_bujur": 106.945567,
+            "max_bujur": 106.965567
+          },
+          {
+            "nama": "Pulo Gebang",
+            "kode_bps": "3175061005",
+            "min_lintang": -6.212426,
+            "max_lintang": -6.192426,
+            "min_bujur": 106.943375,
+            "max_bujur": 106.963375
+          },
+          {
+            "nama": "Ujung Menteng",
+            "kode_bps": "3175061006",
+            "min_lintang": -6.198987,
+            "max_lintang": -6.178987,
+            "min_bujur": 106.952529,
+            "max_bujur": 106.972529
+          },
+          {
+            "nama": "Cakung Barat",
+            "kode_bps": "3175061007",
+            "min_lintang": -6.187421,
+            "max_lintang": -6.167421,
+            "min_bujur": 106.921517,
+            "max_bujur": 106.941517
+          }
+        ]
+      },
+      {
+        "nama": "Duren Sawit",
+        "kode_bps": "317507",
+        "min_lintang": -6.2517,
+        "max_lintang": -6.209772,
+        "min_bujur": 106.889566,
+        "max_bujur": 106.950451,
+        "villages": [
+          {
+            "nama": "Duren Sawit",
+            "kode_bps": "3175071001",
+            "min_lintang": -6.243333,
+            "max_lintang": -6.223333,
+            "min_bujur": 106.905871,
+            "max_bujur": 106.925871
+          },
+          {
+            "nama": "Pondok Bambu",
+            "kode_bps": "3175071002",
+            "min_lintang": -6.243877,
+            "max_lintang": -6.223877,
+            "min_bujur": 106.889566,
+            "max_bujur": 106.909566
+          },
+          {
+            "nama": "Klender",
+            "kode_bps": "3175071003",
+            "min_lintang": -6.229772,
+            "max_lintang": -6.209772,
+            "min_bujur": 106.896754,
+            "max_bujur": 106.916754
+          },
+          {
+            "nama": "Pondok Kelapa",
+            "kode_bps": "3175071004",
+            "min_lintang": -6.2517,
+            "max_lintang": -6.2317,
+            "min_bujur": 106.92079,
+            "max_bujur": 106.94079
+          },
+          {
+            "nama": "Malaka Sari",
+            "kode_bps": "3175071005",
+            "min_lintang": -6.235554,
+            "max_lintang": -6.215554,
+            "min_bujur": 106.918152,
+            "max_bujur": 106.938152
+          },
+          {
+            "nama": "Malaka Jaya",
+            "kode_bps": "3175071006",
+            "min_lintang": -6.234681,
+            "max_lintang": -6.214681,
+            "min_bujur": 106.925134,
+            "max_bujur": 106.945134
+          },
+          {
+            "nama": "Pondok Kopi",
+            "kode_bps": "3175071007",
+            "min_lintang": -6.237776,
+            "max_lintang": -6.217776,
+            "min_bujur": 106.930451,
+            "max_bujur": 106.950451
+          }
+        ]
+      },
+      {
+        "nama": "Makasar",
+        "kode_bps": "317508",
+        "min_lintang": -6.296218,
+        "max_lintang": -6.240555,
+        "min_bujur": 106.869289,
+        "max_bujur": 106.915441,
+        "villages": [
+          {
+            "nama": "Makasar",
+            "kode_bps": "3175081001",
+            "min_lintang": -6.287415,
+            "max_lintang": -6.267415,
+            "min_bujur": 106.869289,
+            "max_bujur": 106.889289
+          },
+          {
+            "nama": "Pinangranti",
+            "kode_bps": "3175081002",
+            "min_lintang": -6.296218,
+            "max_lintang": -6.276218,
+            "min_bujur": 106.874189,
+            "max_bujur": 106.894189
+          },
+          {
+            "nama": "Kebon Pala",
+            "kode_bps": "3175081003",
+            "min_lintang": -6.263584,
+            "max_lintang": -6.243584,
+            "min_bujur": 106.869772,
+            "max_bujur": 106.889772
+          },
+          {
+            "nama": "Halim Perdana Kusuma",
+            "kode_bps": "3175081004",
+            "min_lintang": -6.271712,
+            "max_lintang": -6.251712,
+            "min_bujur": 106.882963,
+            "max_bujur": 106.902963
+          },
+          {
+            "nama": "Cipinang Melayu",
+            "kode_bps": "3175081005",
+            "min_lintang": -6.260555,
+            "max_lintang": -6.240555,
+            "min_bujur": 106.895441,
+            "max_bujur": 106.915441
+          }
+        ]
+      },
+      {
+        "nama": "Ciracas",
+        "kode_bps": "317509",
+        "min_lintang": -6.368099,
+        "max_lintang": -6.292368,
+        "min_bujur": 106.859828,
+        "max_bujur": 106.892522,
+        "villages": [
+          {
+            "nama": "Ciracas",
+            "kode_bps": "3175091001",
+            "min_lintang": -6.337921,
+            "max_lintang": -6.317921,
+            "min_bujur": 106.868529,
+            "max_bujur": 106.888529
+          },
+          {
+            "nama": "Cibubur",
+            "kode_bps": "3175091002",
+            "min_lintang": -6.368099,
+            "max_lintang": -6.348099,
+            "min_bujur": 106.870392,
+            "max_bujur": 106.890392
+          },
+          {
+            "nama": "Kelapa Dua Wetan",
+            "kode_bps": "3175091003",
+            "min_lintang": -6.348914,
+            "max_lintang": -6.328914,
+            "min_bujur": 106.872522,
+            "max_bujur": 106.892522
+          },
+          {
+            "nama": "Susukan",
+            "kode_bps": "3175091004",
+            "min_lintang": -6.32212,
+            "max_lintang": -6.30212,
+            "min_bujur": 106.859828,
+            "max_bujur": 106.879828
+          },
+          {
+            "nama": "Rambutan",
+            "kode_bps": "3175091005",
+            "min_lintang": -6.312368,
+            "max_lintang": -6.292368,
+            "min_bujur": 106.865606,
+            "max_bujur": 106.885606
+          }
+        ]
+      },
+      {
+        "nama": "Cipayung",
+        "kode_bps": "317510",
+        "min_lintang": -6.365388,
+        "max_lintang": -6.284887,
+        "min_bujur": 106.883463,
+        "max_bujur": 106.926527,
+        "villages": [
+          {
+            "nama": "Cipayung",
+            "kode_bps": "3175101001",
+            "min_lintang": -6.338981,
+            "max_lintang": -6.318981,
+            "min_bujur": 106.88441,
+            "max_bujur": 106.90441
+          },
+          {
+            "nama": "Cilangkap",
+            "kode_bps": "3175101002",
+            "min_lintang": -6.346531,
+            "max_lintang": -6.326531,
+            "min_bujur": 106.900065,
+            "max_bujur": 106.920065
+          },
+          {
+            "nama": "Pondok Ranggon",
+            "kode_bps": "3175101003",
+            "min_lintang": -6.365388,
+            "max_lintang": -6.345388,
+            "min_bujur": 106.900217,
+            "max_bujur": 106.920217
+          },
+          {
+            "nama": "Munjul",
+            "kode_bps": "3175101004",
+            "min_lintang": -6.360822,
+            "max_lintang": -6.340822,
+            "min_bujur": 106.885267,
+            "max_bujur": 106.905267
+          },
+          {
+            "nama": "Setu",
+            "kode_bps": "3175101005",
+            "min_lintang": -6.323348,
+            "max_lintang": -6.303348,
+            "min_bujur": 106.906527,
+            "max_bujur": 106.926527
+          },
+          {
+            "nama": "Bambu Apus",
+            "kode_bps": "3175101006",
+            "min_lintang": -6.323583,
+            "max_lintang": -6.303583,
+            "min_bujur": 106.894871,
+            "max_bujur": 106.914871
+          },
+          {
+            "nama": "Lubang Buaya",
+            "kode_bps": "3175101007",
+            "min_lintang": -6.304887,
+            "max_lintang": -6.284887,
+            "min_bujur": 106.899253,
+            "max_bujur": 106.919253
+          },
+          {
+            "nama": "Ceger",
+            "kode_bps": "3175101008",
+            "min_lintang": -6.319296,
+            "max_lintang": -6.299296,
+            "min_bujur": 106.883463,
+            "max_bujur": 106.903463
+          }
+        ]
+      }
+    ]
+  }
+]

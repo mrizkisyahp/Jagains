@@ -141,13 +141,13 @@ class BuatLaporanWargaTest extends TestCase
         $warga = User::factory()->warga()->create();
         $kategori = Kategori::first();
 
-        // Titik Monas Jakarta (-6.175392, 106.827153)
+        // Titik di luar cakupan wilayah (misal: Kota Bandung -6.917464, 107.619122)
         $payload = [
             'kategori_id' => $kategori->id,
             'keparahan' => 'sedang',
-            'keterangan' => 'Jalan rusak di luar daerah depok.',
-            'lintang' => -6.175392,
-            'bujur' => 106.827153,
+            'keterangan' => 'Jalan rusak di luar daerah jangkauan.',
+            'lintang' => -6.917464,
+            'bujur' => 107.619122,
             'lokasi_sumber' => 'manual',
             'foto' => $this->generateBase64Image(),
         ];

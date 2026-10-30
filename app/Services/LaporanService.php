@@ -51,7 +51,7 @@ class LaporanService
         $kelurahan = $this->wilayahService->kelurahanDariTitik($data['lintang'], $data['bujur']);
         if (! $kelurahan) {
             throw ValidationException::withMessages([
-                'lintang' => ['Titik koordinat berada di luar wilayah percontohan Kota Depok.'],
+                'lintang' => ['Titik koordinat berada di luar wilayah jangkauan layanan (Kota Depok & DKI Jakarta).'],
             ]);
         }
 

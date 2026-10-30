@@ -58,7 +58,7 @@ export default function LocationPickerMap({
                 onChangeLocation(lat, lng, akurasi, sumber, data.kelurahan.nama);
             } else {
                 onChangeLocation(lat, lng, akurasi, sumber, null);
-                setGeoError('Titik koordinat berada di luar wilayah percontohan Kota Depok.');
+                setGeoError('Titik koordinat berada di luar wilayah jangkauan layanan (Kota Depok & DKI Jakarta).');
             }
         } catch {
             onChangeLocation(lat, lng, akurasi, sumber, null);

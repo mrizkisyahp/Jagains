@@ -11,20 +11,21 @@ uses(DatabaseTransactions::class);
 test('wilayah seeder mengisi 75 wilayah dengan struktur hierarki kota kecamatan kelurahan yang valid', function () {
     $this->seed(WilayahSeeder::class);
 
-    expect(Wilayah::count())->toBe(75);
+    $depokWilayah = Wilayah::where('kode_bps', 'like', '3276%');
+    expect($depokWilayah->count())->toBe(75);
 
-    $kota = Wilayah::where('tingkat', 'kota')->get();
+    $kota = Wilayah::where('tingkat', 'kota')->where('nama', 'Kota Depok')->get();
     expect($kota)->toHaveCount(1)
         ->and($kota->first()->nama)->toBe('Kota Depok')
         ->and($kota->first()->induk_id)->toBeNull();
 
-    $kecamatan = Wilayah::where('tingkat', 'kecamatan')->get();
+    $kecamatan = Wilayah::where('tingkat', 'kecamatan')->where('induk_id', $kota->first()->id)->get();
     expect($kecamatan)->toHaveCount(11);
     foreach ($kecamatan as $kec) {
         expect($kec->induk_id)->toBe($kota->first()->id);
     }
 
-    $kelurahan = Wilayah::where('tingkat', 'kelurahan')->get();
+    $kelurahan = Wilayah::where('tingkat', 'kelurahan')->whereIn('induk_id', $kecamatan->pluck('id'))->get();
     expect($kelurahan)->toHaveCount(63);
     $kecamatanIds = $kecamatan->pluck('id')->all();
     foreach ($kelurahan as $kel) {
@@ -53,7 +54,9 @@ test('instansi seeder mengisi 99 instansi dengan relasi wilayah yang valid', fun
     $this->seed(WilayahSeeder::class);
     $this->seed(InstansiSeeder::class);
 
-    expect(Instansi::count())->toBe(99);
+    $depokWilayahIds = Wilayah::where('kode_bps', 'like', '3276%')->pluck('id');
+    $depokInstansi = Instansi::whereIn('wilayah_id', $depokWilayahIds);
+    expect($depokInstansi->count())->toBe(99);
 
     $instansiDinasKota = Instansi::where('wilayah_id', 1)->get();
     expect($instansiDinasKota)->toHaveCount(25);
