@@ -1,15 +1,16 @@
-import { router, usePage } from '@inertiajs/react';
-import { MapPin } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { MapPin, LogIn } from 'lucide-react';
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
 } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import NavMain from './NavMain';
 import { NAVIGATION_CONFIG } from '@/config/navigation';
 import { User } from '@/types/auth';
+import { cn } from 'cn';
 
 function getRoleSubtitle(user: User): string {
     switch (user.peran) {
@@ -69,14 +70,27 @@ export default function AppSidebar() {
                         </p>
                     </div>
 
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleLogout}
-                        className="mt-4 w-full h-11 border-sidebar-border bg-sidebar hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-body-medium font-semibold"
-                    >
-                        Keluar
-                    </Button>
+                    {user ? (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleLogout}
+                            className="mt-4 w-full h-11 border-sidebar-border bg-sidebar hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-body-medium font-semibold"
+                        >
+                            Keluar
+                        </Button>
+                    ) : (
+                        <Link
+                            href="/login"
+                            className={cn(
+                                buttonVariants({ variant: 'default' }),
+                                'mt-4 w-full h-11 font-semibold gap-2 shadow-xs'
+                            )}
+                        >
+                            <LogIn className="size-4" />
+                            <span>Masuk / Daftar</span>
+                        </Link>
+                    )}
                 </div>
             </SidebarFooter>
         </Sidebar>

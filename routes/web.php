@@ -4,15 +4,15 @@ use App\Http\Controllers\Auth\GantiSandiPertamaController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PemulihanSandiController;
 use App\Http\Controllers\Auth\PendaftaranWargaController;
+use App\Http\Controllers\Peta\PetaLaporanController;
 use App\Http\Controllers\Warga\LaporanWargaController;
 use App\Http\Controllers\Warga\ProfilKelurahanController;
 use App\Http\Controllers\Wilayah\WilayahApiController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return redirect()->route('login');
-})->name('home');
+// Landing Page Publik (Default Route)
+Route::get('/', [PetaLaporanController::class, 'landingPage'])->name('home');
 
 // Autentikasi Pengguna (FR-AKN-02)
 Route::middleware('guest')->group(function () {
@@ -28,11 +28,13 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [LoginController::class, 'keluar'])->name('logout')->middleware('auth');
 
+// Peta Laporan Publik & Penanda Berstatus SLA (FR-PET-01 s.d. FR-PET-03)
+Route::get('/peta', [PetaLaporanController::class, 'tampilkanPeta'])->name('warga.peta');
+
 // Modul Profil, Kelurahan, & Pelaporan Warga (FR-AKN-04 & FR-LAP-01 s.d. FR-LAP-05)
 Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/warga/profil', [ProfilKelurahanController::class, 'tampilkanProfil'])->name('warga.profil');
     Route::post('/warga/kelurahan', [ProfilKelurahanController::class, 'gantiKelurahan'])->name('warga.kelurahan.update');
-    Route::get('/peta', fn () => Inertia::render('warga/peta'))->name('warga.peta');
     Route::get('/warga/lapor', [LaporanWargaController::class, 'tampilkanFormLapor'])->name('warga.lapor');
     Route::post('/warga/lapor', [LaporanWargaController::class, 'buatLaporan'])->name('warga.lapor.store');
     Route::post('/warga/lapor/dukung', [LaporanWargaController::class, 'dukungLaporan'])->name('warga.lapor.dukung');
@@ -88,4 +90,9 @@ Route::prefix('api/wilayah')->name('api.wilayah.')->group(function () {
 // API Laporan Warga
 Route::middleware('auth')->prefix('api/laporan')->name('api.laporan.')->group(function () {
     Route::post('/cek-serupa', [LaporanWargaController::class, 'cekSerupa'])->name('cek-serupa');
+});
+
+// API Peta Publik (FR-PET-01 s.d. FR-PET-03)
+Route::prefix('api/peta')->name('api.peta.')->group(function () {
+    Route::get('/titik', [PetaLaporanController::class, 'ambilDataTitik'])->name('titik');
 });
