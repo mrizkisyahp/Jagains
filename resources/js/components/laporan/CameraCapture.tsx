@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { router } from '@inertiajs/react';
 import { Camera, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -12,12 +13,46 @@ interface CameraCaptureProps {
 export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: CameraCaptureProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+    const isMountedRef = useRef<boolean>(true);
 
-    const [stream, setStream] = useState<MediaStream | null>(null);
+    const [hasActiveStream, setHasActiveStream] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [isLoadingCamera, setIsLoadingCamera] = useState(false);
 
-    const startCamera = async () => {
+    /**
+     * Menghentikan semua tracks kamera dan melepaskan akses hardware browser.
+     */
+    const stopCamera = useCallback(() => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => {
+                try {
+                    track.stop();
+                } catch {
+                    // Abaikan jika track sudah dihentikan sebelumnya
+                }
+            });
+            streamRef.current = null;
+        }
+
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+
+        setHasActiveStream(false);
+    }, []);
+
+    /**
+     * Memulai akses kamera jika tab sedang dilihat dan belum ada foto yang diambil.
+     */
+    const startCamera = useCallback(async () => {
+        if (streamRef.current && streamRef.current.active) {
+            return;
+        }
+        if (document.hidden || !isMountedRef.current || foto) {
+            return;
+        }
+
         setIsLoadingCamera(true);
         setCameraError(null);
 
@@ -28,37 +63,43 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
 
             const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: { ideal: 'environment' }, // Utamakan kamera belakang
+                    facingMode: { ideal: 'environment' }, // Utamakan kamera belakang pada ponsel
                     width: { ideal: 1280 },
                     height: { ideal: 720 },
                 },
                 audio: false,
             });
 
-            setStream(mediaStream);
+            // Jika selama proses inisialisasi tab diminimalkan, komponen unmounted, atau foto sudah terisi
+            if (!isMountedRef.current || document.hidden || foto) {
+                mediaStream.getTracks().forEach((track) => track.stop());
+                return;
+            }
+
+            streamRef.current = mediaStream;
+            setHasActiveStream(true);
+
             if (videoRef.current) {
                 videoRef.current.srcObject = mediaStream;
             }
         } catch (err: unknown) {
+            if (!isMountedRef.current) return;
             const error = err as Error;
             let pesan = 'Izin kamera ditolak atau kamera tidak terdeteksi.';
             if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-                pesan = 'Izin kamera ditolak. Sesuai ketentuan anti-manipulasi aduan (FR-LAP-02), foto bukti wajib diambil langsung dari kamera gawai. Mohon aktifkan izin kamera pada browser.';
+                pesan =
+                    'Izin kamera ditolak. Sesuai ketentuan anti-manipulasi aduan (FR-LAP-02), foto bukti wajib diambil langsung dari kamera gawai. Mohon aktifkan izin kamera pada browser.';
             } else if (error.name === 'NotFoundError') {
-                pesan = 'Kamera tidak ditemukan pada perangkat Anda. Silakan buka platform Jagains dari perangkat seluler atau perangkat ber-kamera.';
+                pesan =
+                    'Kamera tidak ditemukan pada perangkat Anda. Silakan buka platform Jagains dari perangkat seluler atau perangkat ber-kamera.';
             }
             setCameraError(pesan);
         } finally {
-            setIsLoadingCamera(false);
+            if (isMountedRef.current) {
+                setIsLoadingCamera(false);
+            }
         }
-    };
-
-    const stopCamera = () => {
-        if (stream) {
-            stream.getTracks().forEach((track) => track.stop());
-            setStream(null);
-        }
-    };
+    }, [foto]);
 
     const captureSnapshot = () => {
         if (!videoRef.current || !canvasRef.current) return;
@@ -81,17 +122,49 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
 
     const handleRetake = () => {
         onFotoReset();
-        startCamera();
     };
 
     useEffect(() => {
-        if (!foto) {
+        isMountedRef.current = true;
+
+        // Inisialisasi awal saat komponen dimuat dan tab sedang aktif
+        if (!foto && !document.hidden) {
             startCamera();
         }
-        return () => {
+
+        // Hentikan kamera jika tab berpindah atau browser diminimalkan (Page Visibility API)
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                stopCamera();
+            } else {
+                if (!foto) {
+                    startCamera();
+                }
+            }
+        };
+
+        const handlePageHide = () => {
             stopCamera();
         };
-    }, [foto]);
+
+        // Hentikan kamera secara proaktif ketika Inertia SPA mulai berpindah halaman
+        const unregisterInertiaStart = router.on('start', () => {
+            stopCamera();
+        });
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('beforeunload', handlePageHide);
+        window.addEventListener('pagehide', handlePageHide);
+
+        return () => {
+            isMountedRef.current = false;
+            unregisterInertiaStart();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('beforeunload', handlePageHide);
+            window.removeEventListener('pagehide', handlePageHide);
+            stopCamera();
+        };
+    }, [foto, startCamera, stopCamera]);
 
     return (
         <div className="space-y-4">
@@ -118,7 +191,9 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
                         playsInline
                         muted
                         className="w-full h-full object-cover"
-                        onLoadedMetadata={() => videoRef.current?.play()}
+                        onLoadedMetadata={() => {
+                            videoRef.current?.play().catch(() => {});
+                        }}
                     />
 
                     {/* Overlay Grid Kamera */}
@@ -140,7 +215,7 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
                             type="button"
                             size="lg"
                             onClick={captureSnapshot}
-                            disabled={isLoadingCamera || !stream}
+                            disabled={isLoadingCamera || !hasActiveStream}
                             className="rounded-full shadow-lg h-14 px-6 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
                         >
                             <Camera className="size-5" />
@@ -200,4 +275,3 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
         </div>
     );
 }
-
