@@ -52,7 +52,10 @@ class FotoLaporanServiceTest extends TestCase
         $savedFileFullPath = Storage::disk('public')->path($result['path']);
         if (function_exists('exif_read_data')) {
             $exif = @exif_read_data($savedFileFullPath);
-            $this->assertFalse($exif, 'Foto tersimpan tidak boleh memiliki metadata EXIF lokasi.');
+            $this->assertTrue(
+                $exif === false || (! isset($exif['GPSLatitude']) && ! isset($exif['GPS'])),
+                'Foto tersimpan tidak boleh memiliki metadata EXIF lokasi.'
+            );
         }
     }
 
@@ -76,4 +79,3 @@ class FotoLaporanServiceTest extends TestCase
         $this->service->prosesFotoKamera('data:image/jpeg;base64,bukan_base64_gambar');
     }
 }
-

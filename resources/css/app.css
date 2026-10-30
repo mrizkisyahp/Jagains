@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap');
 @import 'tailwindcss';
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -17,7 +18,9 @@
 
 @theme inline {
     --font-heading:
-        var(--font-sans);
+        'Plus Jakarta Sans', var(--font-sans);
+    --font-display:
+        'Plus Jakarta Sans', var(--font-sans);
     --font-sans:
         'Inter Variable', sans-serif;
     --color-sidebar-ring:
@@ -288,4 +291,92 @@
   .marker-cluster div {
     @apply font-[inherit];
     }
+}
+
+/* ==========================================================================
+   JAGAINS CUSTOM TYPOGRAPHY UTILITY CLASSES (GOLDEN RATIO SCALE phi = 1.618)
+   ========================================================================== */
+
+@utility font-display {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+}
+
+@utility font-body {
+    font-family: 'Inter Variable', var(--font-sans);
+}
+
+@utility text-display-hero {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    font-size: clamp(3rem, 7vw, 6.875rem);
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+}
+
+@utility text-display-xl {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    font-size: clamp(2.25rem, 5vw, 4.25rem);
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+}
+
+@utility text-display-lg {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    font-size: clamp(1.75rem, 3.5vw, 2.625rem);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+}
+
+@utility text-display-md {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    font-size: 1.625rem;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    font-weight: 600;
+}
+
+@utility text-display-sm {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    font-size: 1.3125rem;
+    line-height: 1.30;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+}
+
+@utility text-body-lg {
+    font-family: 'Inter Variable', var(--font-sans);
+    font-size: 1.125rem;
+    line-height: 1.60;
+    font-weight: 400;
+}
+
+@utility text-body-base {
+    font-family: 'Inter Variable', var(--font-sans);
+    font-size: 1.0rem;
+    line-height: 1.625;
+    font-weight: 400;
+}
+
+@utility text-body-medium {
+    font-family: 'Inter Variable', var(--font-sans);
+    font-size: 1.0rem;
+    line-height: 1.625;
+    font-weight: 500;
+}
+
+@utility text-body-sm {
+    font-family: 'Inter Variable', var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.50;
+    font-weight: 400;
+}
+
+@utility text-caption-xs {
+    font-family: 'Inter Variable', var(--font-sans);
+    font-size: 0.75rem;
+    line-height: 1.40;
+    font-weight: 500;
+    letter-spacing: 0.01em;
 }

@@ -1,3 +1,4 @@
+import path from 'path';
 import inertia from '@inertiajs/vite';
 import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 import babel from '@rolldown/plugin-babel';
@@ -28,6 +29,11 @@ export default defineConfig({
             formVariants: true,
         }),
     ]),
+    resolve: {
+        alias: {
+            cn: path.resolve(__dirname, 'resources/js/lib/utils.ts'),
+        },
+    },
     server: {
         watch: {
             ignored: [

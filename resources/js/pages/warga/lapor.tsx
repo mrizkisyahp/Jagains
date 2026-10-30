@@ -7,6 +7,13 @@ import SimilarReportsModal, { LaporanKandidat } from '@/components/laporan/Simil
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -244,96 +251,107 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6 pb-12">
+        <div className="w-full space-y-6 pb-12">
             {/* Header & Kuota Pelaporan */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
                 <div>
-                    <h1 className="text-xl font-bold text-foreground">Laporkan Kerusakan Fasilitas</h1>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <h1 className="font-display text-display-md font-bold tracking-tight text-foreground">
+                        Laporkan Kerusakan Fasilitas
+                    </h1>
+                    <p className="text-body-sm text-muted-foreground mt-1">
                         Transparan, terlacak SLA, dan diverifikasi langsung oleh kuorum warga setempat.
                     </p>
                 </div>
                 <div className="flex items-center gap-2 self-start sm:self-auto">
-                    <span className="text-xs text-muted-foreground">Sisa Kuota Jam Ini:</span>
-                    <Badge variant={kuota.sisa_kuota > 0 ? 'secondary' : 'destructive'} className="font-mono text-xs gap-1">
-                        <Clock className="size-3" />
-                        {kuota.sisa_kuota} / 5 Laporan
-                    </Badge>
+                    <span className="text-body-sm text-muted-foreground">Sisa Kuota:</span>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger className="cursor-help inline-flex items-center">
+                                <Badge variant={kuota.sisa_kuota > 0 ? 'secondary' : 'destructive'} className="font-mono gap-1.5 px-3 py-1">
+                                    <Clock className="size-3.5" />
+                                    {kuota.sisa_kuota} / 5 per Jam
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                                Sesuai Parameter P-17 (SRS FR-LAP-04), batas maksimal adalah 5 laporan per jam per akun untuk mencegah spam dan bot. Kuota ter-reset bertahap setiap 60 menit dari laporan tertua.
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                 </div>
             </div>
 
             {/* Peringatan Jika Kuota Habis (FR-LAP-04 & P-17) */}
             {!kuota.diizinkan && (
-                <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-destructive space-y-1">
-                    <div className="flex items-center gap-2 font-semibold text-sm">
-                        <AlertCircle className="size-4" />
-                        Batas Pelaporan Tercapai
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                        {kuota.pesan || 'Anda telah mencapai batas 5 laporan per jam (P-17). Silakan tunggu hingga kuota tereset.'}
-                    </p>
-                </div>
+                <Alert variant="destructive" className="rounded-xl">
+                    <AlertCircle className="size-4" />
+                    <AlertDescription className="space-y-1 text-body-sm">
+                        <p className="font-semibold">Batas Pelaporan Tercapai</p>
+                        <p className="text-caption-xs">
+                            {kuota.pesan || 'Anda telah mencapai batas 5 laporan per jam (Parameter P-17). Silakan tunggu hingga kuota tereset.'}
+                        </p>
+                    </AlertDescription>
+                </Alert>
             )}
 
             {/* Wizard Stepper Progress Bar */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2.5">
                 <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className={`flex items-center gap-2 p-2.5 rounded-lg border text-left transition-colors ${
+                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-colors cursor-pointer ${
                         step === 1
-                            ? 'border-primary bg-primary/5 text-primary font-semibold'
+                            ? 'border-primary bg-primary/10 text-primary font-semibold shadow-2xs'
                             : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
                     }`}
                 >
-                    <div className={`size-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    <div className={`size-7 rounded-full flex items-center justify-center text-caption-xs font-bold ${
                         foto ? 'bg-emerald-600 text-white' : step === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}>
-                        {foto ? <CheckCircle2 className="size-3.5" /> : '1'}
+                        {foto ? <CheckCircle2 className="size-4" /> : '1'}
                     </div>
-                    <span className="text-xs truncate">1. Foto Kamera</span>
+                    <span className="text-body-sm font-semibold truncate">1. Foto Kamera</span>
                 </button>
 
                 <button
                     type="button"
                     disabled={!canProceedFromStep1}
                     onClick={() => canProceedFromStep1 && setStep(2)}
-                    className={`flex items-center gap-2 p-2.5 rounded-lg border text-left transition-colors ${
+                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-colors ${
                         step === 2
-                            ? 'border-primary bg-primary/5 text-primary font-semibold'
-                            : 'border-border bg-card text-muted-foreground disabled:opacity-50'
+                            ? 'border-primary bg-primary/10 text-primary font-semibold shadow-2xs'
+                            : 'border-border bg-card text-muted-foreground disabled:opacity-50 cursor-pointer'
                     }`}
                 >
-                    <div className={`size-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    <div className={`size-7 rounded-full flex items-center justify-center text-caption-xs font-bold ${
                         kelurahanNama ? 'bg-emerald-600 text-white' : step === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}>
-                        {kelurahanNama ? <CheckCircle2 className="size-3.5" /> : '2'}
+                        {kelurahanNama ? <CheckCircle2 className="size-4" /> : '2'}
                     </div>
-                    <span className="text-xs truncate">2. Titik Peta</span>
+                    <span className="text-body-sm font-semibold truncate">2. Titik Peta</span>
                 </button>
 
                 <button
                     type="button"
                     disabled={!canProceedFromStep2}
                     onClick={() => canProceedFromStep2 && setStep(3)}
-                    className={`flex items-center gap-2 p-2.5 rounded-lg border text-left transition-colors ${
+                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-colors ${
                         step === 3
-                            ? 'border-primary bg-primary/5 text-primary font-semibold'
-                            : 'border-border bg-card text-muted-foreground disabled:opacity-50'
+                            ? 'border-primary bg-primary/10 text-primary font-semibold shadow-2xs'
+                            : 'border-border bg-card text-muted-foreground disabled:opacity-50 cursor-pointer'
                     }`}
                 >
-                    <div className={`size-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    <div className={`size-7 rounded-full flex items-center justify-center text-caption-xs font-bold ${
                         step === 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}>
                         3
                     </div>
-                    <span className="text-xs truncate">3. Detail Aduan</span>
+                    <span className="text-body-sm font-semibold truncate">3. Detail Aduan</span>
                 </button>
             </div>
 
             {/* Konten Wizard */}
-            <Card className="border border-border shadow-xs">
-                <CardContent className="p-4 sm:p-6 space-y-6">
+            <Card className="border border-border shadow-xs rounded-2xl">
+                <CardContent className="p-4 sm:p-6 lg:p-8 space-y-6">
                     {/* TAHAP 1: KAMERA LANGSUNG */}
                     {step === 1 && (
                         <div className="space-y-6">
@@ -394,15 +412,15 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
 
                     {/* TAHAP 3: DETAIL ADUAN */}
                     {step === 3 && (
-                        <div className="space-y-5">
+                        <div className="space-y-6">
                             {/* Kategori Kerusakan */}
-                            <div className="space-y-1.5">
-                                <Label htmlFor="kategori" className="text-xs font-semibold">
+                            <div className="space-y-2">
+                                <Label htmlFor="kategori" className="text-body-medium font-semibold text-foreground">
                                     Kategori Fasilitas Publik <span className="text-destructive">*</span>
                                 </Label>
                                 <Select value={kategoriId} onValueChange={(val) => setKategoriId(val ?? '')}>
-                                    <SelectTrigger id="kategori" className="w-full">
-                                        <span className="flex-1 text-left text-xs">
+                                    <SelectTrigger id="kategori" className="w-full h-11 text-body-base">
+                                        <span className="flex-1 text-left text-body-sm">
                                             {kategoriList.find((k) => String(k.id) === kategoriId)?.nama || (
                                                 <span className="text-muted-foreground">-- Pilih Kategori Fasilitas Publik --</span>
                                             )}
@@ -410,7 +428,7 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                                     </SelectTrigger>
                                     <SelectContent>
                                         {kategoriList.map((kat) => (
-                                            <SelectItem key={kat.id} value={String(kat.id)}>
+                                            <SelectItem key={kat.id} value={String(kat.id)} className="text-body-sm">
                                                 {kat.nama}
                                             </SelectItem>
                                         ))}
@@ -419,17 +437,17 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                             </div>
 
                             {/* Tingkat Keparahan (SRS AS-06, default: sedang) */}
-                            <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold">Tingkat Keparahan</Label>
-                                <div className="grid grid-cols-3 gap-2">
+                            <div className="space-y-2">
+                                <Label className="text-body-medium font-semibold text-foreground">Tingkat Keparahan</Label>
+                                <div className="grid grid-cols-3 gap-2.5">
                                     {(['ringan', 'sedang', 'berat'] as const).map((level) => (
                                         <button
                                             key={level}
                                             type="button"
                                             onClick={() => setKeparahan(level)}
-                                            className={`py-2 px-3 rounded-lg border text-xs font-medium capitalize transition-all ${
+                                            className={`h-11 rounded-xl border text-body-sm font-semibold capitalize transition-all cursor-pointer ${
                                                 keparahan === level
-                                                    ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs'
+                                                    ? 'border-primary bg-primary text-primary-foreground shadow-xs'
                                                     : 'border-border bg-card text-foreground hover:bg-muted/60'
                                             }`}
                                         >
@@ -440,12 +458,12 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                             </div>
 
                             {/* Uraian Keterangan Kerusakan */}
-                            <div className="space-y-1.5">
+                            <div className="space-y-2">
                                 <div className="flex justify-between items-center">
-                                    <Label htmlFor="keterangan" className="text-xs font-semibold">
+                                    <Label htmlFor="keterangan" className="text-body-medium font-semibold text-foreground">
                                         Keterangan Detail Kerusakan <span className="text-destructive">*</span>
                                     </Label>
-                                    <span className={`text-[11px] ${keterangan.trim().length >= 10 ? 'text-emerald-600 font-medium' : 'text-destructive font-medium'}`}>
+                                    <span className={`text-caption-xs ${keterangan.trim().length >= 10 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-destructive font-medium'}`}>
                                         {keterangan.trim().length >= 10
                                             ? `✓ ${keterangan.trim().length} karakter (memenuhi syarat min. 10)`
                                             : `Minimal 10 karakter (kurang ${10 - keterangan.trim().length} lagi)`}
@@ -457,12 +475,12 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                                     placeholder="Jelaskan kondisi kerusakan fisik di lokasi secara rinci, patokan jalan, atau dampak terhadap warga sekitar..."
                                     value={keterangan}
                                     onChange={(e) => setKeterangan(e.target.value)}
-                                    className="resize-none text-xs"
+                                    className="resize-none text-body-base rounded-xl"
                                 />
                             </div>
 
                             {/* Ringkasan Metadata Aduan */}
-                            <div className="p-3.5 rounded-lg border border-border/70 bg-muted/30 text-xs space-y-1.5">
+                            <div className="p-4 rounded-xl border border-border bg-muted/40 text-body-sm space-y-2">
                                 <div className="flex items-center justify-between text-muted-foreground">
                                     <span>Wilayah Target:</span>
                                     <span className="font-semibold text-foreground text-right">{kelurahanNama}</span>
@@ -473,7 +491,7 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                                 </div>
                                 <div className="flex items-center justify-between text-muted-foreground">
                                     <span>Bukti Foto:</span>
-                                    <span className="text-emerald-600 font-medium">Tersimpan dari Kamera</span>
+                                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Tersimpan dari Kamera</span>
                                 </div>
                             </div>
 
@@ -493,7 +511,7 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                                     type="button"
                                     onClick={handleReviewAndSubmit}
                                     disabled={!canProceedFromStep3 || isSubmitting || isCheckingSimilar || !kuota.diizinkan}
-                                    className="gap-2 bg-primary text-primary-foreground font-semibold px-6"
+                                    className="gap-2 font-semibold px-6"
                                 >
                                     {isCheckingSimilar || isSubmitting ? (
                                         <>
