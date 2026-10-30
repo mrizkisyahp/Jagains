@@ -55,3 +55,4 @@ class HalamanLaporWargaTest extends TestCase
         $this->actingAs($admin)->get('/warga/lapor')->assertStatus(403);
     }
 }
+

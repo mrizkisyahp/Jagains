@@ -76,3 +76,4 @@ class FotoLaporanServiceTest extends TestCase
         $this->service->prosesFotoKamera('data:image/jpeg;base64,bukan_base64_gambar');
     }
 }
+

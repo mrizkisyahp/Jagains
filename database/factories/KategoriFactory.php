@@ -21,3 +21,4 @@ class KategoriFactory extends Factory
         ];
     }
 }
+

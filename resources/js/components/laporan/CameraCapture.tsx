@@ -200,3 +200,4 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
         </div>
     );
 }
+
