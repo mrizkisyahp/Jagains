@@ -234,8 +234,8 @@ export default function LocationPickerMap({
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                    <h3 className="text-base font-semibold text-foreground">Titik Lokasi Kerusakan</h3>
-                    <p className="text-xs text-muted-foreground">
+                    <h3 className="font-display text-body-medium font-bold text-foreground">Titik Lokasi Kerusakan</h3>
+                    <p className="text-body-sm text-muted-foreground mt-0.5">
                         Geser pin pada peta untuk menentukan posisi kerusakan secara akurat (FR-LAP-03).
                     </p>
                 </div>
@@ -245,7 +245,7 @@ export default function LocationPickerMap({
                     size="sm"
                     onClick={() => handleGetGpsLocation(false)}
                     disabled={isLocating}
-                    className="gap-2 shrink-0 border-primary/30 text-primary hover:bg-primary/5"
+                    className="gap-2 shrink-0 border-primary/30 text-primary hover:bg-primary/5 text-body-sm h-9"
                 >
                     <Navigation className={`size-3.5 ${isLocating ? 'animate-spin' : ''}`} />
                     {isLocating ? 'Mendeteksi GPS...' : 'Gunakan GPS Saya'}
@@ -253,21 +253,21 @@ export default function LocationPickerMap({
             </div>
 
             {/* Container Peta Leaflet */}
-            <div className="relative overflow-hidden rounded-xl border border-border shadow-sm h-72 sm:h-80 z-0">
+            <div className="relative overflow-hidden rounded-2xl border border-border shadow-xs h-80 sm:h-96 z-0">
                 <div ref={mapContainerRef} className="w-full h-full" />
 
                 {/* Floating Info Lokasi */}
                 <div className="absolute top-3 left-3 right-3 sm:right-auto z-[400] flex flex-wrap gap-2 pointer-events-none">
-                    <div className="bg-background/95 backdrop-blur-sm border border-border/80 px-3 py-1.5 rounded-lg shadow-md text-xs space-y-0.5">
+                    <div className="bg-card/95 backdrop-blur-xs border border-border/80 px-3.5 py-2 rounded-xl shadow-md text-caption-xs space-y-0.5">
                         <div className="flex items-center gap-1.5 font-medium text-foreground">
-                            <MapPin className="size-3.5 text-rose-500" />
+                            <MapPin className="size-3.5 text-destructive" />
                             {lintang.toFixed(6)}, {bujur.toFixed(6)}
                             <Badge variant={lokasiSumber === 'gps' ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0 h-4">
                                 {lokasiSumber.toUpperCase()}
                             </Badge>
                         </div>
                         {akurasiGpsM && lokasiSumber === 'gps' && (
-                            <p className="text-[11px] text-muted-foreground pl-5">
+                            <p className="text-caption-xs text-muted-foreground pl-5">
                                 Akurasi: ±{akurasiGpsM} meter
                             </p>
                         )}
@@ -276,7 +276,7 @@ export default function LocationPickerMap({
             </div>
 
             {/* Status Deteksi Kelurahan */}
-            <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/40 text-xs">
+            <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-muted/40 text-body-sm">
                 <div className="flex items-center gap-2">
                     {isLocating ? (
                         <>
@@ -285,7 +285,7 @@ export default function LocationPickerMap({
                         </>
                     ) : kelurahanNama ? (
                         <>
-                            <CheckCircle className="size-4 text-emerald-600 shrink-0" />
+                            <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                             <div>
                                 <span className="font-semibold text-foreground">Wilayah Terdeteksi: </span>
                                 <span className="text-foreground">{kelurahanNama}</span>
@@ -295,7 +295,7 @@ export default function LocationPickerMap({
                         <span className="text-muted-foreground animate-pulse">Memeriksa batas wilayah kelurahan...</span>
                     ) : (
                         <>
-                            <AlertTriangle className="size-4 text-amber-600 shrink-0" />
+                            <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400 shrink-0" />
                             <span className="text-amber-700 dark:text-amber-400">
                                 {geoError || 'Geser pin ke dalam wilayah jangkauan layanan (Kota Depok & DKI Jakarta)'}
                             </span>

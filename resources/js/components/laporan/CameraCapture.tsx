@@ -168,23 +168,23 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                    <h3 className="text-base font-semibold text-foreground">Foto Bukti Kamera Langsung</h3>
-                    <p className="text-xs text-muted-foreground">
+                    <h3 className="font-display text-body-medium font-bold text-foreground">Foto Bukti Kamera Langsung</h3>
+                    <p className="text-body-sm text-muted-foreground mt-0.5">
                         Wajib diambil langsung dari kamera aplikasi di lokasi kerusakan. Galeri/file upload dilarang (ST-16).
                     </p>
                 </div>
                 {foto && (
-                    <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                        <CheckCircle2 className="size-3.5" /> Foto Tersimpan
+                    <span className="self-start sm:self-auto inline-flex items-center gap-1.5 text-caption-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
+                        <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-400" /> Foto Tersimpan
                     </span>
                 )}
             </div>
 
             {/* Viewfinder Kamera Aktif */}
             {!foto && !cameraError && (
-                <div className="relative overflow-hidden rounded-xl border border-border bg-slate-950 aspect-[4/3] flex items-center justify-center shadow-inner">
+                <div className="relative overflow-hidden rounded-2xl border border-border bg-slate-950 aspect-[4/3] max-w-3xl mx-auto flex items-center justify-center shadow-inner">
                     <video
                         ref={videoRef}
                         autoPlay
@@ -210,13 +210,13 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
                     </div>
 
                     {/* Tombol Jepret */}
-                    <div className="absolute bottom-4 inset-x-0 flex justify-center">
+                    <div className="absolute bottom-5 inset-x-0 flex justify-center">
                         <Button
                             type="button"
                             size="lg"
                             onClick={captureSnapshot}
                             disabled={isLoadingCamera || !hasActiveStream}
-                            className="rounded-full shadow-lg h-14 px-6 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                            className="rounded-full shadow-xl h-14 px-8 gap-2.5 font-display font-semibold"
                         >
                             <Camera className="size-5" />
                             Ambil Foto
@@ -228,7 +228,7 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
             {/* Tampilan Hasil Foto */}
             {foto && (
                 <div className="space-y-3">
-                    <div className="relative overflow-hidden rounded-xl border border-border bg-slate-900 aspect-[4/3] flex items-center justify-center">
+                    <div className="relative overflow-hidden rounded-xl border border-border bg-slate-900 aspect-[4/3] max-w-3xl mx-auto flex items-center justify-center">
                         <img
                             src={foto}
                             alt="Pratinjau Foto Kerusakan"

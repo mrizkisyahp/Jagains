@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { NavItem } from '@/types/navigation';
+import { Badge } from '@/components/ui/badge';
 import { cn } from 'cn';
 
 interface NavMainProps {
@@ -20,24 +21,25 @@ export default function NavMain({ items, currentUrl }: NavMainProps) {
                         key={item.href}
                         href={item.href}
                         className={cn(
-                            'group flex items-center justify-between px-4 py-2.5 text-sm rounded-xl transition-colors',
+                            'group flex items-center justify-between px-4 py-2.5 text-body-sm rounded-xl transition-colors',
                             isActive
-                                ? 'bg-zinc-900 text-white font-semibold shadow-xs'
-                                : 'text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 font-medium'
+                                ? 'bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-xs'
+                                : 'text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-medium'
                         )}
                     >
                         <span>{item.title}</span>
                         {item.badge !== undefined && (
-                            <span
+                            <Badge
+                                variant={isActive ? 'default' : 'secondary'}
                                 className={cn(
-                                    'px-2 py-0.5 text-xs rounded-full font-normal transition-colors',
+                                    'px-2 py-0.5 text-caption-xs font-medium',
                                     isActive
-                                        ? 'bg-zinc-800 text-zinc-100 border border-zinc-700'
-                                        : 'bg-white text-zinc-600 border border-zinc-200'
+                                        ? 'bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground border-none'
+                                        : 'bg-muted text-muted-foreground border-border'
                                 )}
                             >
                                 {item.badge}
-                            </span>
+                            </Badge>
                         )}
                     </Link>
                 );

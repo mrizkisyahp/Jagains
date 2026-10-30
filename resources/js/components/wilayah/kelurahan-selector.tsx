@@ -203,10 +203,10 @@ export default function KelurahanSelector({
         <div className="space-y-3.5">
             <div className="flex items-center justify-between">
                 <div>
-                    <FieldLabel htmlFor="kota_id" className="text-sm font-semibold text-zinc-900">
+                    <FieldLabel htmlFor="kota_id" className="text-body-medium font-semibold text-foreground">
                         Wilayah Domisili
                     </FieldLabel>
-                    <p className="text-[11px] text-zinc-500">
+                    <p className="text-caption-xs text-muted-foreground">
                         Pilih Kota, Kecamatan, dan Kelurahan tempat Anda berdomisili.
                     </p>
                 </div>
@@ -215,16 +215,16 @@ export default function KelurahanSelector({
                     type="button"
                     onClick={handleGpsDetect}
                     disabled={detecting || disabled}
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:bg-blue-50 transition-colors cursor-pointer disabled:opacity-50"
+                    className="text-body-sm font-semibold text-primary hover:underline flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:bg-primary/5 transition-colors cursor-pointer disabled:opacity-50"
                 >
                     {detecting ? (
                         <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <Loader2 className="size-3.5 animate-spin" />
                             Mendeteksi GPS...
                         </>
                     ) : (
                         <>
-                            <Navigation className="w-3.5 h-3.5" />
+                            <Navigation className="size-3.5" />
                             Deteksi Otomatis (GPS)
                         </>
                     )}
@@ -235,7 +235,7 @@ export default function KelurahanSelector({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {/* 1. Kota / Kabupaten */}
                 <div className="space-y-1">
-                    <label htmlFor="kota_id" className="text-[11px] font-medium text-zinc-600">
+                    <label htmlFor="kota_id" className="text-caption-xs font-medium text-muted-foreground">
                         Kota / Kabupaten
                     </label>
                     <select
@@ -243,7 +243,7 @@ export default function KelurahanSelector({
                         value={selectedKotaId}
                         onChange={(e) => handleKotaChange(e.target.value ? Number(e.target.value) : '')}
                         disabled={disabled || loadingList}
-                        className="w-full h-10 px-2.5 py-1.5 bg-white border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+                        className="w-full h-10 px-2.5 py-1.5 bg-background border border-input rounded-lg text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted disabled:cursor-not-allowed"
                     >
                         <option value="">
                             {loadingList ? 'Memuat data...' : '-- Pilih Kota / Kab --'}
@@ -258,7 +258,7 @@ export default function KelurahanSelector({
 
                 {/* 2. Kecamatan */}
                 <div className="space-y-1">
-                    <label htmlFor="kecamatan_id" className="text-[11px] font-medium text-zinc-600">
+                    <label htmlFor="kecamatan_id" className="text-caption-xs font-medium text-muted-foreground">
                         Kecamatan
                     </label>
                     <select
@@ -266,7 +266,7 @@ export default function KelurahanSelector({
                         value={selectedKecamatanId}
                         onChange={(e) => handleKecamatanChange(e.target.value ? Number(e.target.value) : '')}
                         disabled={disabled || !selectedKotaId}
-                        className="w-full h-10 px-2.5 py-1.5 bg-white border border-zinc-200 rounded-lg text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+                        className="w-full h-10 px-2.5 py-1.5 bg-background border border-input rounded-lg text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted disabled:cursor-not-allowed"
                     >
                         <option value="">
                             {!selectedKotaId ? '-- Pilih Kota Terlebih Dahulu --' : '-- Pilih Kecamatan --'}
@@ -281,16 +281,16 @@ export default function KelurahanSelector({
 
                 {/* 3. Kelurahan */}
                 <div className="space-y-1">
-                    <label htmlFor="kelurahan_id" className="text-[11px] font-medium text-zinc-600">
-                        Kelurahan Domisili <span className="text-red-500">*</span>
+                    <label htmlFor="kelurahan_id" className="text-caption-xs font-medium text-muted-foreground">
+                        Kelurahan Domisili <span className="text-destructive">*</span>
                     </label>
                     <select
                         id="kelurahan_id"
                         value={value || ''}
                         onChange={(e) => onChange(Number(e.target.value))}
                         disabled={disabled || !selectedKecamatanId}
-                        className={`w-full h-10 px-2.5 py-1.5 bg-white border rounded-lg text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-zinc-100 disabled:cursor-not-allowed ${
-                            error ? 'border-red-400 focus:ring-red-400' : 'border-zinc-200'
+                        className={`w-full h-10 px-2.5 py-1.5 bg-background border rounded-lg text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted disabled:cursor-not-allowed ${
+                            error ? 'border-destructive focus:ring-destructive' : 'border-input'
                         }`}
                     >
                         <option value="">
@@ -305,20 +305,20 @@ export default function KelurahanSelector({
                 </div>
             </div>
 
-            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+            {error && <p className="text-caption-xs text-destructive mt-1">{error}</p>}
 
             {detectMessage && (
                 <div
-                    className={`p-3 rounded-lg text-xs flex items-start gap-2 ${
+                    className={`p-3 rounded-xl text-body-sm flex items-start gap-2 ${
                         detectMessage.type === 'success'
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                            : 'bg-amber-50 text-amber-800 border border-amber-200'
+                            ? 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
+                            : 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/30'
                     }`}
                 >
                     {detectMessage.type === 'success' ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     ) : (
-                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                        <AlertCircle className="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                     )}
                     <span>{detectMessage.text}</span>
                 </div>

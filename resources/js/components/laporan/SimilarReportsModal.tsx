@@ -56,48 +56,50 @@ export default function SimilarReportsModal({
                 <DialogHeader>
                     <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500">
                         <AlertCircle className="size-5" />
-                        <DialogTitle>Ditemukan Laporan Serupa di Dekat Anda</DialogTitle>
+                        <DialogTitle className="font-display text-display-md font-bold">
+                            Ditemukan Laporan Serupa di Dekat Anda
+                        </DialogTitle>
                     </div>
-                    <DialogDescription className="text-xs text-muted-foreground pt-1">
+                    <DialogDescription className="text-body-sm text-muted-foreground pt-1">
                         Sistem mendeteksi ada aduan terbuka berkategori sama dalam radius lokasi Anda (FR-LAP-05). 
                         Anda dapat <strong>mendukung aduan yang sudah ada</strong> untuk mempercepat penanganan dinas, 
                         atau tetap membuat aduan baru jika kerusakannya berbeda.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-3 my-2">
+                <div className="space-y-3.5 my-2">
                     {kandidat.map((item) => (
                         <div
                             key={item.id}
-                            className="p-3.5 rounded-xl border border-border bg-card hover:border-primary/40 transition-colors space-y-2.5 shadow-xs"
+                            className="p-4 rounded-xl border border-border bg-card hover:border-primary/50 transition-colors space-y-2.5 shadow-xs"
                         >
                             <div className="flex items-start justify-between gap-2">
                                 <div className="space-y-0.5">
                                     <div className="flex items-center gap-2">
-                                        <span className="font-mono text-xs font-semibold text-primary">
+                                        <span className="font-mono text-caption-xs font-bold text-primary">
                                             {item.nomor_tiket}
                                         </span>
                                         <Badge variant="outline" className="text-[10px] py-0 h-4">
                                             {item.status}
                                         </Badge>
                                     </div>
-                                    <h4 className="text-sm font-semibold text-foreground line-clamp-1">
+                                    <h4 className="font-display text-body-medium font-semibold text-foreground line-clamp-1">
                                         {item.judul}
                                     </h4>
                                 </div>
-                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-md shrink-0">
-                                    <MapPin className="size-3 text-rose-500" />
+                                <span className="inline-flex items-center gap-1 text-caption-xs font-medium text-muted-foreground bg-muted px-2.5 py-0.5 rounded-md shrink-0">
+                                    <MapPin className="size-3 text-destructive" />
                                     ~{Math.round(item.jarak_m)} m
                                 </span>
                             </div>
 
-                            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                            <p className="text-body-sm text-muted-foreground line-clamp-2 leading-relaxed">
                                 {item.keterangan}
                             </p>
 
-                            <div className="flex items-center justify-between pt-1 border-t border-border/60">
-                                <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                    <ShieldCheck className="size-3.5 text-emerald-600" />
+                            <div className="flex items-center justify-between pt-2 border-t border-border/80">
+                                <span className="text-body-sm text-muted-foreground flex items-center gap-1.5">
+                                    <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
                                     {item.jumlah_dukungan} warga mendukung
                                 </span>
 
@@ -106,7 +108,7 @@ export default function SimilarReportsModal({
                                     size="sm"
                                     onClick={() => handleSupport(item.id)}
                                     disabled={isSubmitting || supportingId !== null}
-                                    className="gap-1.5 text-xs h-8 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    className="gap-1.5 font-medium h-9"
                                 >
                                     <ThumbsUp className="size-3.5" />
                                     {supportingId === item.id ? 'Mendukung...' : 'Dukung Aduan Ini'}
@@ -116,17 +118,17 @@ export default function SimilarReportsModal({
                     ))}
                 </div>
 
-                <DialogFooter className="flex flex-col sm:flex-row gap-2 border-t border-border pt-3">
+                <DialogFooter className="flex flex-col sm:flex-row gap-2 border-t border-border pt-4">
                     <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={onProceedNewReport}
                         disabled={isSubmitting || supportingId !== null}
-                        className="text-xs gap-1.5 order-2 sm:order-1 text-muted-foreground hover:text-foreground"
+                        className="text-body-sm gap-1.5 order-2 sm:order-1 text-muted-foreground hover:text-foreground"
                     >
                         Kerusakan Berbeda, Tetap Buat Laporan Baru
-                        <ArrowRight className="size-3.5" />
+                        <ArrowRight className="size-4" />
                     </Button>
                 </DialogFooter>
             </DialogContent>

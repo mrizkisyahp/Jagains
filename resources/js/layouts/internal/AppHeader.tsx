@@ -7,17 +7,17 @@ interface AppHeaderProps {
 
 export default function AppHeader({ title, breadcrumb }: AppHeaderProps) {
     return (
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-zinc-200/80 bg-white/95 px-4 backdrop-blur-xs sm:px-6">
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border bg-background/95 px-4 text-foreground backdrop-blur-xs sm:px-6">
             <div className="flex items-center gap-3">
-                <SidebarTrigger className="-ml-1 size-8 rounded-lg text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" />
+                <SidebarTrigger className="-ml-1 size-8 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground" />
                 <div className="flex flex-col">
                     {breadcrumb && (
-                        <span className="text-[11px] font-medium text-zinc-400">
+                        <span className="text-caption-xs font-medium text-muted-foreground">
                             {breadcrumb}
                         </span>
                     )}
                     {title && (
-                        <h1 className="text-sm font-semibold text-zinc-900">
+                        <h1 className="font-display text-body-medium font-semibold text-foreground">
                             {title}
                         </h1>
                     )}

@@ -3,9 +3,17 @@ import { useForm } from '@inertiajs/react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import KelurahanSelector from '@/components/wilayah/kelurahan-selector';
 import InternalLayout from '@/layouts/InternalLayout';
-import { User, MapPin, Calendar, Clock, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { User, MapPin, Calendar, Clock, AlertTriangle, ShieldCheck, Info } from 'lucide-react';
 
 interface ProfileProps {
     profil: {
@@ -43,83 +51,109 @@ export default function Profile({ profil }: ProfileProps) {
     };
 
     return (
-        <div className="max-w-3xl space-y-6">
+        <div className="w-full space-y-6">
             {/* Header Profil */}
             <div>
-                <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+                <h1 className="font-display text-display-md font-bold tracking-tight text-foreground">
                     Profil & Wilayah Warga
                 </h1>
-                <p className="text-xs text-zinc-500">
-                    Kelola data akun dan wilayah domisili Anda.
+                <p className="text-body-sm text-muted-foreground mt-1">
+                    Kelola data akun dan wilayah domisili Anda untuk verifikasi fasilitas publik.
                 </p>
             </div>
 
             {/* Ringkasan Akun Card */}
-            <Card className="p-6 bg-white border-zinc-200 shadow-xs rounded-2xl space-y-5">
-                <div className="flex items-start justify-between border-b border-zinc-100 pb-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-zinc-100 text-zinc-800 rounded-2xl flex items-center justify-center font-bold text-lg border border-zinc-200">
-                            {profil.username.slice(0, 2).toUpperCase()}
-                        </div>
+            <Card className="p-6 bg-card text-card-foreground border-border shadow-xs rounded-2xl space-y-5">
+                <div className="flex items-start justify-between border-b border-border pb-4">
+                    <div className="flex items-center gap-3.5">
+                        <Avatar className="size-14 rounded-2xl border border-border">
+                            <AvatarFallback className="bg-primary/10 text-primary font-display font-bold text-lg rounded-2xl">
+                                {profil.username.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                        </Avatar>
                         <div>
-                            <h2 className="text-base font-bold text-zinc-900">{profil.username}</h2>
-                            <p className="text-xs text-zinc-500 flex items-center gap-1.5 mt-0.5">
-                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                            <h2 className="font-display text-body-medium font-bold text-foreground">{profil.username}</h2>
+                            <p className="text-body-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                 Warga Terverifikasi
                             </p>
                         </div>
                     </div>
                     <Badge
                         variant={profil.status_akun === 'aktif' ? 'default' : 'destructive'}
-                        className="capitalize text-xs font-semibold px-3 py-1"
+                        className="capitalize font-semibold px-3 py-1"
                     >
                         {profil.status_akun}
                     </Badge>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                    <div className="p-4 bg-zinc-50 rounded-xl border border-zinc-100 space-y-1">
-                        <span className="text-zinc-500 block font-medium">Poin Peringatan Moderasi</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-body-sm">
+                    <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
+                        <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground font-medium">Poin Peringatan</span>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger className="cursor-help inline-flex items-center text-muted-foreground hover:text-foreground">
+                                        <Info className="size-3.5" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                        Akun dibekukan sementara jika akumulasi poin pelanggaran mencapai 5 poin (Parameter Moderasi).
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                         <div className="flex items-center gap-2">
-                            <span className={`text-xl font-bold ${profil.poin_peringatan > 0 ? 'text-amber-600' : 'text-zinc-800'}`}>
+                            <span className={`text-xl font-bold ${profil.poin_peringatan > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'}`}>
                                 {profil.poin_peringatan}
                             </span>
-                            <span className="text-zinc-400">/ 5 batas beku</span>
+                            <span className="text-muted-foreground text-caption-xs">/ 5 batas beku</span>
                         </div>
-                        <p className="text-[11px] text-zinc-400">Akun dibekukan jika mencapai 5 poin.</p>
+                        <p className="text-caption-xs text-muted-foreground">Akun dibekukan jika mencapai 5 poin.</p>
                     </div>
 
-                    <div className="p-4 bg-zinc-50 rounded-xl border border-zinc-100 space-y-1">
-                        <span className="text-zinc-500 block font-medium">Privasi Identitas</span>
-                        <span className="text-xs font-semibold text-zinc-800 block">Zero-Knowledge Email</span>
-                        <p className="text-[11px] text-zinc-400">Alamat email Anda tidak disimpan di basis data Jagains.</p>
+                    <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
+                        <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground font-medium">Privasi Identitas</span>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger className="cursor-help inline-flex items-center text-muted-foreground hover:text-foreground">
+                                        <Info className="size-3.5" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                        Alamat email asli diacak permanen dengan HMAC SHA-256 dan tidak disimpan di basis data.
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
+                        <span className="text-body-sm font-semibold text-foreground block">Zero-Knowledge Email</span>
+                        <p className="text-caption-xs text-muted-foreground">Email asli tidak disimpan di basis data Jagains.</p>
                     </div>
                 </div>
             </Card>
 
             {/* Domisili Kelurahan Card */}
-            <Card className="p-6 bg-white border-zinc-200 shadow-xs rounded-2xl space-y-5">
-                <div className="border-b border-zinc-100 pb-4">
-                    <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-zinc-700" />
+            <Card className="p-6 bg-card text-card-foreground border-border shadow-xs rounded-2xl space-y-5">
+                <div className="border-b border-border pb-4">
+                    <h3 className="font-display text-body-medium font-bold text-foreground flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-primary" />
                         Wilayah Domisili Warga
                     </h3>
-                    <p className="text-xs text-zinc-500 mt-1">
+                    <p className="text-body-sm text-muted-foreground mt-1">
                         Kelurahan ini menjadi hak voting verifikasi Anda pada penanganan kerusakan fisik di sekitar Anda.
                     </p>
                 </div>
 
                 {/* Info Kelurahan Saat Ini */}
-                <div className="p-4 bg-zinc-50/70 border border-zinc-200/80 rounded-xl flex items-center justify-between">
+                <div className="p-4 bg-muted/40 border border-border rounded-xl flex items-center justify-between">
                     <div>
-                        <span className="text-[11px] text-zinc-500 font-medium block">Kelurahan Saat Ini:</span>
-                        <p className="text-base font-bold text-zinc-900 mt-0.5">
+                        <span className="text-caption-xs text-muted-foreground font-medium block">Kelurahan Saat Ini:</span>
+                        <p className="font-display text-body-medium font-bold text-foreground mt-0.5">
                             {profil.kelurahan_saat_ini.nama
                                 ? `Kel. ${profil.kelurahan_saat_ini.nama}`
                                 : 'Belum Ditentukan'}
                         </p>
                         {profil.kelurahan_saat_ini.kecamatan && (
-                            <span className="text-xs text-zinc-500">
+                            <span className="text-caption-xs text-muted-foreground">
                                 Kec. {profil.kelurahan_saat_ini.kecamatan}, Kota Depok
                             </span>
                         )}
@@ -129,7 +163,7 @@ export default function Profile({ profil }: ProfileProps) {
                         <Button
                             variant="outline"
                             onClick={() => setIsEditingKelurahan(true)}
-                            className="text-xs h-9 bg-white cursor-pointer"
+                            className="text-body-sm h-9"
                         >
                             Pindah Kelurahan
                         </Button>
@@ -138,14 +172,14 @@ export default function Profile({ profil }: ProfileProps) {
 
                 {/* Status Kunci 90 Hari */}
                 {!profil.bisa_ganti_kelurahan && (
-                    <div className="p-4 bg-amber-50/60 border border-amber-200/70 rounded-xl flex items-start gap-3 text-xs text-amber-900">
-                        <Clock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-                        <div className="space-y-1">
-                            <p className="font-semibold">Domisili Dikunci Sementara</p>
-                            <p className="text-amber-800 text-[11px]">
-                                Anda baru dapat mengganti kelurahan domisili setelah jeda 90 hari kalender demi mencegah manipulasi kuorum voting.
+                    <Alert variant="default" className="border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300 rounded-xl">
+                        <Clock className="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <AlertDescription className="space-y-1 text-body-sm">
+                            <p className="font-semibold text-amber-900 dark:text-amber-200">Domisili Dikunci Sementara</p>
+                            <p className="text-caption-xs text-amber-800/90 dark:text-amber-300/90">
+                                Anda baru dapat mengganti kelurahan domisili setelah jeda 90 hari kalender (Parameter P-14) demi menjaga integritas kuorum voting.
                             </p>
-                            <div className="pt-1 flex items-center gap-4 text-[11px] font-medium text-amber-900">
+                            <div className="pt-1 flex items-center gap-4 text-caption-xs font-medium">
                                 <span className="flex items-center gap-1">
                                     <Calendar className="w-3.5 h-3.5" />
                                     Tersedia:{' '}
@@ -159,25 +193,27 @@ export default function Profile({ profil }: ProfileProps) {
                                 </span>
                                 <span>({profil.sisa_hari_kunci} hari tersisa)</span>
                             </div>
-                        </div>
-                    </div>
+                        </AlertDescription>
+                    </Alert>
                 )}
 
                 {/* Form Pindah Kelurahan */}
                 {isEditingKelurahan && (
-                    <div className="pt-2 border-t border-zinc-100">
-                        <div className="mb-4">
-                            <span className="text-xs font-bold text-zinc-900 block">Pilih Kelurahan Baru</span>
-                            <span className="text-[11px] text-zinc-500">
+                    <div className="pt-2 border-t border-border space-y-4">
+                        <div>
+                            <span className="text-body-sm font-bold text-foreground block">Pilih Kelurahan Baru</span>
+                            <span className="text-caption-xs text-muted-foreground">
                                 Perubahan kelurahan akan mengunci domisili Anda selama 90 hari ke depan.
                             </span>
                         </div>
 
                         {errors.kelurahan_id && (
-                            <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-center gap-2">
-                                <AlertTriangle className="w-4 h-4 shrink-0" />
-                                {errors.kelurahan_id}
-                            </div>
+                            <Alert variant="destructive" className="rounded-xl">
+                                <AlertTriangle className="size-4" />
+                                <AlertDescription className="text-body-sm">
+                                    {errors.kelurahan_id}
+                                </AlertDescription>
+                            </Alert>
                         )}
 
                         <form onSubmit={handleSaveKelurahan} className="space-y-4">
@@ -191,7 +227,7 @@ export default function Profile({ profil }: ProfileProps) {
                                 <Button
                                     type="submit"
                                     disabled={processing || !data.kelurahan_id || data.kelurahan_id === profil.kelurahan_saat_ini.id}
-                                    className="h-10 text-xs bg-zinc-900 hover:bg-black text-white cursor-pointer"
+                                    className="h-10 font-semibold"
                                 >
                                     {processing ? 'Menyimpan...' : 'Konfirmasi Pemindahan'}
                                 </Button>
@@ -199,7 +235,7 @@ export default function Profile({ profil }: ProfileProps) {
                                     type="button"
                                     variant="ghost"
                                     onClick={() => setIsEditingKelurahan(false)}
-                                    className="h-10 text-xs text-zinc-500 hover:text-zinc-900 cursor-pointer"
+                                    className="h-10 text-body-sm text-muted-foreground hover:text-foreground"
                                 >
                                     Batal
                                 </Button>
