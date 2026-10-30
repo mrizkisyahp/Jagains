@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GantiSandiPertamaController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PemulihanSandiController;
 use App\Http\Controllers\Auth\PendaftaranWargaController;
+use App\Http\Controllers\Warga\LaporanWargaController;
 use App\Http\Controllers\Warga\ProfilKelurahanController;
 use App\Http\Controllers\Wilayah\WilayahApiController;
 use Illuminate\Support\Facades\Route;
@@ -80,4 +81,9 @@ Route::prefix('daftar')->name('daftar.')->group(function () {
 Route::prefix('api/wilayah')->name('api.wilayah.')->group(function () {
     Route::post('/deteksi-kelurahan', [WilayahApiController::class, 'deteksiKelurahan'])->name('deteksi');
     Route::get('/kelurahan', [WilayahApiController::class, 'daftarKelurahan'])->name('index');
+});
+
+// API Laporan Warga
+Route::middleware('auth')->prefix('api/laporan')->name('api.laporan.')->group(function () {
+    Route::post('/cek-serupa', [LaporanWargaController::class, 'cekSerupa'])->name('cek-serupa');
 });
