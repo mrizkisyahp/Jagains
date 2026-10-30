@@ -28,12 +28,14 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [LoginController::class, 'keluar'])->name('logout')->middleware('auth');
 
-// Modul Profil & Kelurahan Warga (FR-AKN-04 & Panel Warga)
+// Modul Profil, Kelurahan, & Pelaporan Warga (FR-AKN-04 & FR-LAP-01 s.d. FR-LAP-05)
 Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/warga/profil', [ProfilKelurahanController::class, 'tampilkanProfil'])->name('warga.profil');
     Route::post('/warga/kelurahan', [ProfilKelurahanController::class, 'gantiKelurahan'])->name('warga.kelurahan.update');
     Route::get('/peta', fn () => Inertia::render('warga/peta'))->name('warga.peta');
-    Route::get('/warga/lapor', fn () => Inertia::render('warga/lapor'))->name('warga.lapor');
+    Route::get('/warga/lapor', [LaporanWargaController::class, 'tampilkanFormLapor'])->name('warga.lapor');
+    Route::post('/warga/lapor', [LaporanWargaController::class, 'buatLaporan'])->name('warga.lapor.store');
+    Route::post('/warga/lapor/dukung', [LaporanWargaController::class, 'dukungLaporan'])->name('warga.lapor.dukung');
     Route::get('/warga/riwayat', fn () => Inertia::render('warga/riwayat'))->name('warga.riwayat');
     Route::get('/warga/verifikasi', fn () => Inertia::render('warga/verifikasi'))->name('warga.verifikasi');
 });
