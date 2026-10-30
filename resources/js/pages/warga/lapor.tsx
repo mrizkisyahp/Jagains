@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
 import CameraCapture from '@/components/laporan/CameraCapture';
@@ -79,6 +79,30 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
     const [kandidatSerupa, setKandidatSerupa] = useState<LaporanKandidat[]>([]);
     const [successModalOpen, setSuccessModalOpen] = useState(false);
     const [createdTicketNumber, setCreatedTicketNumber] = useState<string | null>(null);
+    const [redirectCountdown, setRedirectCountdown] = useState<number>(4);
+
+    const handleCloseSuccessModal = () => {
+        setSuccessModalOpen(false);
+        router.visit('/warga/riwayat');
+    };
+
+    useEffect(() => {
+        if (!successModalOpen) return;
+
+        setRedirectCountdown(4);
+        const timer = setInterval(() => {
+            setRedirectCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    router.visit('/warga/riwayat');
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [successModalOpen]);
 
     // Handler Update Lokasi dari Peta
     const handleLocationChange = (
@@ -168,6 +192,14 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
             if (res.ok && data.sukses) {
                 setCreatedTicketNumber(data.nomor_tiket);
                 setSuccessModalOpen(true);
+                // Bersihkan formulir segera agar tidak dapat dikirim ulang dengan data/foto yang sama
+                setFoto(null);
+                setKeterangan('');
+                setKategoriId('');
+                setAkurasiGpsM(null);
+                setLokasiSumber('manual');
+                setKelurahanNama(null);
+                setStep(1);
                 toast.success('Laporan Berhasil Terkirim', `Tiket ${data.nomor_tiket} telah masuk dalam penanganan.`);
             } else {
                 const errorMsg =
@@ -492,7 +524,7 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
             />
 
             {/* Modal Sukses Pembuatan Tiket */}
-            <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
+            <Dialog open={successModalOpen} onOpenChange={(open) => { if (!open) handleCloseSuccessModal(); }}>
                 <DialogContent className="sm:max-w-md text-center py-6">
                     <DialogHeader className="flex flex-col items-center">
                         <div className="size-12 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 mb-2">
@@ -500,7 +532,7 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                         </div>
                         <DialogTitle className="text-lg">Laporan Berhasil Terkirim!</DialogTitle>
                         <DialogDescription className="text-xs text-muted-foreground">
-                            Aduan Anda telah tercatat secara resmi dan masuk dalam antrean routing dinas berwenang Kota Depok.
+                            Aduan Anda telah tercatat secara resmi dan masuk dalam antrean dinas penanggung jawab.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -511,10 +543,18 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                         </p>
                     </div>
 
-                    <DialogFooter className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <p className="text-xs text-muted-foreground">
+                        Mengalihkan ke riwayat laporan dalam{' '}
+                        <span className="font-semibold text-foreground">
+                            {redirectCountdown}
+                        </span>{' '}
+                        detik...
+                    </p>
+
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2 justify-center mt-3">
                         <Button
                             type="button"
-                            onClick={() => router.visit('/warga/riwayat')}
+                            onClick={handleCloseSuccessModal}
                             className="w-full sm:w-auto text-xs"
                         >
                             Lihat Riwayat Aduan Saya

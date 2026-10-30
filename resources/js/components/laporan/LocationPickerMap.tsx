@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { MapPin, Navigation, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,86 +32,110 @@ export default function LocationPickerMap({
     const mapInstanceRef = useRef<L.Map | null>(null);
     const markerRef = useRef<L.Marker | null>(null);
     const circleRef = useRef<L.Circle | null>(null);
+    const isAutoGpsAttempted = useRef(false);
 
     const [isLocating, setIsLocating] = useState(false);
     const [geoError, setGeoError] = useState<string | null>(null);
     const [isCheckingKelurahan, setIsCheckingKelurahan] = useState(false);
 
     // Verifikasi kelurahan titik via API
-    const verifikasiTitikKelurahan = async (lat: number, lng: number, akurasi: number | null, sumber: 'gps' | 'manual') => {
-        setIsCheckingKelurahan(true);
-        setGeoError(null);
+    const verifikasiTitikKelurahan = useCallback(
+        async (lat: number, lng: number, akurasi: number | null, sumber: 'gps' | 'manual') => {
+            setIsCheckingKelurahan(true);
+            setGeoError(null);
 
-        try {
-            const res = await fetch('/api/wilayah/deteksi-kelurahan', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
-                },
-                body: JSON.stringify({ lintang: lat, bujur: lng }),
-            });
+            try {
+                const res = await fetch('/api/wilayah/deteksi-kelurahan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN':
+                            (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                    },
+                    body: JSON.stringify({ lintang: lat, bujur: lng }),
+                });
 
-            const data = await res.json();
-            if (res.ok && data.terdeteksi && data.kelurahan) {
-                const wilayahLabel = `Kel. ${data.nama}${data.kecamatan ? `, Kec. ${data.kecamatan}` : ''}${data.kota ? `, ${data.kota}` : ''}`;
-                onChangeLocation(lat, lng, akurasi, sumber, wilayahLabel);
-            } else {
+                const data = await res.json();
+                if (res.ok && data.terdeteksi && data.kelurahan) {
+                    const wilayahLabel = `Kel. ${data.nama}${data.kecamatan ? `, Kec. ${data.kecamatan}` : ''}${data.kota ? `, ${data.kota}` : ''}`;
+                    onChangeLocation(lat, lng, akurasi, sumber, wilayahLabel);
+                } else {
+                    onChangeLocation(lat, lng, akurasi, sumber, null);
+                    setGeoError('Titik koordinat berada di luar wilayah jangkauan layanan (Kota Depok & DKI Jakarta).');
+                }
+            } catch {
                 onChangeLocation(lat, lng, akurasi, sumber, null);
-                setGeoError('Titik koordinat berada di luar wilayah jangkauan layanan (Kota Depok & DKI Jakarta).');
+            } finally {
+                setIsCheckingKelurahan(false);
             }
-        } catch {
-            onChangeLocation(lat, lng, akurasi, sumber, null);
-        } finally {
-            setIsCheckingKelurahan(false);
-        }
-    };
+        },
+        [onChangeLocation]
+    );
 
     // Deteksi GPS Peramban
-    const handleGetGpsLocation = () => {
-        if (!navigator.geolocation) {
-            setGeoError('Peramban Anda tidak mendukung penentuan posisi GPS.');
-            return;
-        }
+    const handleGetGpsLocation = useCallback(
+        (isAutoTrigger = false) => {
+            if (!navigator.geolocation) {
+                if (!isAutoTrigger) {
+                    setGeoError('Peramban Anda tidak mendukung penentuan posisi GPS.');
+                }
+                return;
+            }
 
-        setIsLocating(true);
-        setGeoError(null);
+            setIsLocating(true);
+            setGeoError(null);
 
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                const lat = Number(pos.coords.latitude.toFixed(6));
-                const lng = Number(pos.coords.longitude.toFixed(6));
-                const akurasi = Number(pos.coords.accuracy.toFixed(1));
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = Number(pos.coords.latitude.toFixed(6));
+                    const lng = Number(pos.coords.longitude.toFixed(6));
+                    const akurasi = Number(pos.coords.accuracy.toFixed(1));
 
-                setIsLocating(false);
+                    setIsLocating(false);
 
-                // Geser peta & marker ke titik GPS baru
-                if (mapInstanceRef.current && markerRef.current) {
-                    mapInstanceRef.current.setView([lat, lng], 17);
-                    markerRef.current.setLatLng([lat, lng]);
+                    // Geser peta & marker ke titik GPS baru
+                    if (mapInstanceRef.current && markerRef.current) {
+                        mapInstanceRef.current.setView([lat, lng], 17);
+                        markerRef.current.setLatLng([lat, lng]);
 
-                    if (circleRef.current) {
-                        circleRef.current.setLatLng([lat, lng]);
-                        circleRef.current.setRadius(akurasi);
+                        if (circleRef.current) {
+                            circleRef.current.setLatLng([lat, lng]);
+                            circleRef.current.setRadius(akurasi);
+                        } else {
+                            circleRef.current = L.circle([lat, lng], {
+                                radius: akurasi,
+                                color: '#3b82f6',
+                                fillColor: '#60a5fa',
+                                fillOpacity: 0.15,
+                                weight: 1.5,
+                            }).addTo(mapInstanceRef.current);
+                        }
                     }
-                }
 
-                verifikasiTitikKelurahan(lat, lng, akurasi, 'gps');
-            },
-            (err) => {
-                setIsLocating(false);
-                let pesan = 'Gagal membaca posisi GPS.';
-                if (err.code === err.PERMISSION_DENIED) {
-                    pesan = 'Izin GPS ditolak. Anda tetap dapat menggeser pin secara manual pada peta.';
-                } else if (err.code === err.POSITION_UNAVAILABLE) {
-                    pesan = 'Sinyal GPS tidak tersedia. Silakan tandai titik secara manual.';
-                }
-                setGeoError(pesan);
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-    };
+                    verifikasiTitikKelurahan(lat, lng, akurasi, 'gps');
+                },
+                (err) => {
+                    setIsLocating(false);
+                    if (!isAutoTrigger) {
+                        let pesan = 'Gagal membaca posisi GPS.';
+                        if (err.code === err.PERMISSION_DENIED) {
+                            pesan = 'Izin GPS ditolak. Anda dapat menggeser pin secara manual pada peta.';
+                        } else if (err.code === err.POSITION_UNAVAILABLE) {
+                            pesan = 'Sinyal GPS tidak tersedia. Silakan tandai titik secara manual.';
+                        }
+                        setGeoError(pesan);
+                    }
+                    // Jika auto-trigger gagal atau ditolak, gunakan posisi peta awal
+                    if (!kelurahanNama) {
+                        verifikasiTitikKelurahan(lintang || -6.402484, bujur || 106.794240, null, 'manual');
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        },
+        [lintang, bujur, kelurahanNama, verifikasiTitikKelurahan]
+    );
 
     // Inisialisasi Peta Leaflet
     useEffect(() => {
@@ -130,7 +154,7 @@ export default function LocationPickerMap({
         const initialLat = lintang || -6.402484;
         const initialLng = bujur || 106.794240;
 
-        const map = L.map(mapContainerRef.current).setView([initialLat, initialLng], 15);
+        const map = L.map(mapContainerRef.current).setView([initialLat, initialLng], 16);
         mapInstanceRef.current = map;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -184,8 +208,11 @@ export default function LocationPickerMap({
             verifikasiTitikKelurahan(newLat, newLng, null, 'manual');
         });
 
-        // Trigger deteksi awal kelurahan jika belum ada
-        if (!kelurahanNama) {
+        // OTOMATIS AMBIL POSISI GPS JIKA BELUM PERNAH DIAMBIL
+        if (lokasiSumber !== 'gps' && !isAutoGpsAttempted.current) {
+            isAutoGpsAttempted.current = true;
+            handleGetGpsLocation(true);
+        } else if (!kelurahanNama) {
             verifikasiTitikKelurahan(initialLat, initialLng, akurasiGpsM, lokasiSumber);
         }
 
@@ -193,7 +220,15 @@ export default function LocationPickerMap({
             map.remove();
             mapInstanceRef.current = null;
         };
-    }, []);
+    }, [
+        lintang,
+        bujur,
+        akurasiGpsM,
+        lokasiSumber,
+        kelurahanNama,
+        handleGetGpsLocation,
+        verifikasiTitikKelurahan,
+    ]);
 
     return (
         <div className="space-y-4">
@@ -208,12 +243,12 @@ export default function LocationPickerMap({
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={handleGetGpsLocation}
+                    onClick={() => handleGetGpsLocation(false)}
                     disabled={isLocating}
                     className="gap-2 shrink-0 border-primary/30 text-primary hover:bg-primary/5"
                 >
                     <Navigation className={`size-3.5 ${isLocating ? 'animate-spin' : ''}`} />
-                    {isLocating ? 'Mencari GPS...' : 'Gunakan GPS Saya'}
+                    {isLocating ? 'Mendeteksi GPS...' : 'Gunakan GPS Saya'}
                 </Button>
             </div>
 
@@ -243,7 +278,12 @@ export default function LocationPickerMap({
             {/* Status Deteksi Kelurahan */}
             <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/40 text-xs">
                 <div className="flex items-center gap-2">
-                    {kelurahanNama ? (
+                    {isLocating ? (
+                        <>
+                            <Navigation className="size-4 text-primary animate-spin shrink-0" />
+                            <span className="text-primary font-medium">Sedang mendeteksi posisi GPS Anda secara otomatis...</span>
+                        </>
+                    ) : kelurahanNama ? (
                         <>
                             <CheckCircle className="size-4 text-emerald-600 shrink-0" />
                             <div>
@@ -266,4 +306,3 @@ export default function LocationPickerMap({
         </div>
     );
 }
-
