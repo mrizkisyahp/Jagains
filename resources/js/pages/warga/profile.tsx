@@ -50,7 +50,7 @@ export default function Profile({ profil }: ProfileProps) {
                     Profil & Wilayah Warga
                 </h1>
                 <p className="text-xs text-zinc-500">
-                    Kelola data akun dan wilayah domisili Anda di Kota Depok.
+                    Kelola data akun dan wilayah domisili Anda.
                 </p>
             </div>
 

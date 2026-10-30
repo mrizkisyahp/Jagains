@@ -38,12 +38,17 @@ class WilayahApiController extends Controller
             'terdeteksi' => true,
             'kelurahan_id' => $kelurahan->id,
             'nama' => $kelurahan->nama,
+            'kecamatan_id' => $kelurahan->induk?->id,
             'kecamatan' => $kelurahan->induk?->nama,
+            'kota_id' => $kelurahan->induk?->induk?->id,
             'kota' => $kelurahan->induk?->induk?->nama,
             'kelurahan' => [
                 'id' => $kelurahan->id,
                 'nama' => $kelurahan->nama,
+                'kecamatan_id' => $kelurahan->induk?->id,
                 'kecamatan' => $kelurahan->induk?->nama,
+                'kota_id' => $kelurahan->induk?->induk?->id,
+                'kota' => $kelurahan->induk?->induk?->nama,
             ],
         ]);
     }
