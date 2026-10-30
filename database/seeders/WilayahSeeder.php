@@ -582,7 +582,7 @@ class WilayahSeeder extends Seeder
                 'id' => 48,
                 'induk_id' => 43,
                 'tingkat' => 'kelurahan',
-                'nama' => 'Pasir Putih',
+                'nama' => 'Bojong Pondok Terong',
                 'kode_bps' => '3276070005',
                 'geometri' => json_decode('{"type": "Polygon", "coordinates": [[[106.78, -6.415], [106.8, -6.415], [106.8, -6.435], [106.78, -6.435], [106.78, -6.415]]]}', true),
                 'min_lintang' => -6.435,

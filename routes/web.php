@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GantiSandiPertamaController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PemulihanSandiController;
 use App\Http\Controllers\Auth\PendaftaranWargaController;
+use App\Http\Controllers\Warga\LaporanWargaController;
 use App\Http\Controllers\Warga\ProfilKelurahanController;
 use App\Http\Controllers\Wilayah\WilayahApiController;
 use Illuminate\Support\Facades\Route;
@@ -27,13 +28,15 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [LoginController::class, 'keluar'])->name('logout')->middleware('auth');
 
-// Modul Profil & Kelurahan Warga (FR-AKN-04 & Panel Warga)
+// Modul Profil, Kelurahan, & Pelaporan Warga (FR-AKN-04 & FR-LAP-01 s.d. FR-LAP-05)
 Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/warga/profil', [ProfilKelurahanController::class, 'tampilkanProfil'])->name('warga.profil');
     Route::post('/warga/kelurahan', [ProfilKelurahanController::class, 'gantiKelurahan'])->name('warga.kelurahan.update');
     Route::get('/peta', fn () => Inertia::render('warga/peta'))->name('warga.peta');
-    Route::get('/warga/lapor', fn () => Inertia::render('warga/lapor'))->name('warga.lapor');
-    Route::get('/warga/riwayat', fn () => Inertia::render('warga/riwayat'))->name('warga.riwayat');
+    Route::get('/warga/lapor', [LaporanWargaController::class, 'tampilkanFormLapor'])->name('warga.lapor');
+    Route::post('/warga/lapor', [LaporanWargaController::class, 'buatLaporan'])->name('warga.lapor.store');
+    Route::post('/warga/lapor/dukung', [LaporanWargaController::class, 'dukungLaporan'])->name('warga.lapor.dukung');
+    Route::get('/warga/riwayat', [LaporanWargaController::class, 'tampilkanRiwayat'])->name('warga.riwayat');
     Route::get('/warga/verifikasi', fn () => Inertia::render('warga/verifikasi'))->name('warga.verifikasi');
 });
 
@@ -80,4 +83,9 @@ Route::prefix('daftar')->name('daftar.')->group(function () {
 Route::prefix('api/wilayah')->name('api.wilayah.')->group(function () {
     Route::post('/deteksi-kelurahan', [WilayahApiController::class, 'deteksiKelurahan'])->name('deteksi');
     Route::get('/kelurahan', [WilayahApiController::class, 'daftarKelurahan'])->name('index');
+});
+
+// API Laporan Warga
+Route::middleware('auth')->prefix('api/laporan')->name('api.laporan.')->group(function () {
+    Route::post('/cek-serupa', [LaporanWargaController::class, 'cekSerupa'])->name('cek-serupa');
 });

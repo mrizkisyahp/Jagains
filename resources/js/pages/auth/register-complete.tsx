@@ -43,7 +43,7 @@ export default function RegisterComplete({
                     </div>
                     <h1 className="text-2xl font-bold text-zinc-900">Lengkapi Profil Akun Warga</h1>
                     <p className="text-xs text-zinc-500 mt-1">
-                        Tentukan kredensial masuk dan kelurahan domisili Anda di Kota Depok untuk keperluan verifikasi hasil perbaikan fasilitas.
+                        Tentukan kredensial masuk dan kelurahan domisili Anda untuk keperluan verifikasi hasil perbaikan fasilitas.
                     </p>
                 </div>
 

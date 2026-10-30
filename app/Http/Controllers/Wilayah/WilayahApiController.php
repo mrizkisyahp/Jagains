@@ -26,17 +26,30 @@ class WilayahApiController extends Controller
 
         if (! $kelurahan) {
             return response()->json([
+                'terdeteksi' => false,
                 'kelurahan_id' => null,
                 'nama' => null,
                 'kecamatan' => null,
-                'pesan' => 'Lokasi berada di luar cakupan wilayah Kota Depok atau poligon belum terpetakan.',
+                'pesan' => 'Lokasi berada di luar cakupan wilayah layanan (Kota Depok & DKI Jakarta).',
             ]);
         }
 
         return response()->json([
+            'terdeteksi' => true,
             'kelurahan_id' => $kelurahan->id,
             'nama' => $kelurahan->nama,
+            'kecamatan_id' => $kelurahan->induk?->id,
             'kecamatan' => $kelurahan->induk?->nama,
+            'kota_id' => $kelurahan->induk?->induk?->id,
+            'kota' => $kelurahan->induk?->induk?->nama,
+            'kelurahan' => [
+                'id' => $kelurahan->id,
+                'nama' => $kelurahan->nama,
+                'kecamatan_id' => $kelurahan->induk?->id,
+                'kecamatan' => $kelurahan->induk?->nama,
+                'kota_id' => $kelurahan->induk?->induk?->id,
+                'kota' => $kelurahan->induk?->induk?->nama,
+            ],
         ]);
     }
 

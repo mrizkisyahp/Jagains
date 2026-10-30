@@ -30,7 +30,7 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password123'),
             'email_hash' => hash('sha256', fake()->unique()->safeEmail()),
             'peran' => 'warga',
-            'kelurahan_id' => Wilayah::factory()->kelurahan(),
+            'kelurahan_id' => fn () => Wilayah::where('tingkat', 'kelurahan')->first()?->id ?? Wilayah::factory()->kelurahan(),
             'kelurahan_diubah_pada' => now(),
             'instansi_id' => null,
             'status_akun' => 'aktif',
@@ -44,7 +44,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'peran' => 'warga',
-            'kelurahan_id' => $kelurahanId ?? Wilayah::factory()->kelurahan(),
+            'kelurahan_id' => $kelurahanId ?? Wilayah::where('tingkat', 'kelurahan')->first()?->id ?? Wilayah::factory()->kelurahan(),
             'email_hash' => $attributes['email_hash'] ?? hash('sha256', fake()->unique()->safeEmail()),
             'instansi_id' => null,
         ]);

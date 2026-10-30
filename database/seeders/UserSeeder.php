@@ -73,11 +73,21 @@ class UserSeeder extends Seeder
         foreach ($daftarInstansi as $instansi) {
             $username = $this->buatUsernameInstansi($instansi);
 
+            // Jika username sudah terpakai oleh instansi lain, tambahkan ID instansi
+            $bentrok = User::where('username', $username)
+                ->where('instansi_id', '!=', $instansi->id)
+                ->exists();
+
+            if ($bentrok) {
+                $suffix = '_'.$instansi->id;
+                $username = substr($username, 0, 30 - strlen($suffix)).$suffix;
+            }
+
             User::updateOrCreate(
-                ['username' => $username],
+                ['instansi_id' => $instansi->id],
                 [
+                    'username' => $username,
                     'peran' => 'instansi',
-                    'instansi_id' => $instansi->id,
                     'status_akun' => 'aktif',
                     'wajib_ganti_sandi' => false,
                     'email_hash' => null,
