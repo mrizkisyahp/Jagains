@@ -42,9 +42,8 @@ class InternalLayoutTest extends TestCase
 
     public function test_instansi_dapat_mengakses_antrean_dengan_layout_internal()
     {
-        $instansiUser = User::factory()->create([
+        $instansiUser = User::factory()->instansi()->create([
             'username' => 'petugas_pupr',
-            'peran' => 'instansi',
         ]);
 
         $response = $this->actingAs($instansiUser)->get('/instansi/antrean');
@@ -61,9 +60,8 @@ class InternalLayoutTest extends TestCase
 
     public function test_auditor_dapat_mengakses_antrean_eskalasi_dengan_layout_internal()
     {
-        $auditorUser = User::factory()->create([
+        $auditorUser = User::factory()->auditor()->create([
             'username' => 'auditor_utama',
-            'peran' => 'auditor',
         ]);
 
         $response = $this->actingAs($auditorUser)->get('/auditor/antrean');
@@ -80,9 +78,8 @@ class InternalLayoutTest extends TestCase
 
     public function test_admin_dapat_mengakses_antrean_routing_dengan_layout_internal()
     {
-        $adminUser = User::factory()->create([
+        $adminUser = User::factory()->admin()->create([
             'username' => 'admin_sistem',
-            'peran' => 'admin',
         ]);
 
         $response = $this->actingAs($adminUser)->get('/admin/antrean-routing');

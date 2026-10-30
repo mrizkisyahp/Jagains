@@ -370,8 +370,8 @@ class InstansiSeeder extends Seeder
                 'wilayah_id' => 47,
             ],
             [
-                'nama' => 'Kantor Kelurahan Pasir Putih',
-                'singkatan' => 'KEL. PASIR PUTIH',
+                'nama' => 'Kantor Kelurahan Bojong Pondok Terong',
+                'singkatan' => 'KEL. BOJONG PONDOK TERONG',
                 'wilayah_id' => 48,
             ],
             [

@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             WilayahSeeder::class,
             InstansiSeeder::class,
             UserSeeder::class,
+            KategoriSeeder::class,
+            AturanRoutingDanSlaSeeder::class,
         ]);
     }
 }
