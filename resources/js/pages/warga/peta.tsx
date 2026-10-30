@@ -75,6 +75,22 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
         fetchTitik();
     }, [fetchTitik]);
 
+    // Tangani parameter fokus tiket dari URL (?fokus={nomor_tiket})
+    useEffect(() => {
+        if (allTitik.length > 0) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fokusTiket = urlParams.get('fokus');
+            if (fokusTiket) {
+                const target = allTitik.find(
+                    (t) => t.nomor_tiket.toUpperCase() === fokusTiket.toUpperCase()
+                );
+                if (target) {
+                    setSelectedTiket(target);
+                }
+            }
+        }
+    }, [allTitik]);
+
     // Filter reaktif client-side untuk performa respons < 100ms
     const filteredTitik = useMemo(() => {
         return allTitik.filter((item) => {

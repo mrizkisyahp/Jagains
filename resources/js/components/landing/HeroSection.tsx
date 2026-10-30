@@ -14,15 +14,23 @@ import { cn } from 'cn';
 
 export default function HeroSection() {
     const [lacakKode, setLacakKode] = useState('');
+    const [lacakError, setLacakError] = useState<string | null>(null);
     const [isLacakOpen, setIsLacakOpen] = useState(false);
     const [isVideoOpen, setIsVideoOpen] = useState(false);
 
     const handleLacakSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const code = lacakKode.trim().toUpperCase();
-        if (code) {
-            router.visit(`/tiket/${code}`);
+        if (!code) return;
+
+        if (!/^JAG-/.test(code)) {
+            setLacakError('Format kode tiket harus sesuai (contoh: JAG-2026-0001)');
+            return;
         }
+
+        setLacakError(null);
+        setIsLacakOpen(false);
+        router.visit(`/tiket/${code}`);
     };
 
     const scrollToPeta = () => {
@@ -140,13 +148,21 @@ export default function HeroSection() {
                     </DialogHeader>
 
                     <form onSubmit={handleLacakSubmit} className="space-y-4 pt-2">
+                        {lacakError && (
+                            <p className="text-xs text-destructive font-medium bg-destructive/10 p-2.5 rounded-lg">
+                                {lacakError}
+                            </p>
+                        )}
                         <div className="relative">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                             <Input
                                 type="text"
                                 placeholder="JAG-2026-XXXX"
                                 value={lacakKode}
-                                onChange={(e) => setLacakKode(e.target.value)}
+                                onChange={(e) => {
+                                    setLacakKode(e.target.value);
+                                    if (lacakError) setLacakError(null);
+                                }}
                                 className="pl-10 h-11 text-body-base font-mono uppercase tracking-wider rounded-xl border-border"
                                 required
                             />

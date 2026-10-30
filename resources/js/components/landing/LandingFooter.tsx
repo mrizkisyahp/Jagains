@@ -23,7 +23,7 @@ export default function LandingFooter() {
 
                     {/* Quick Links */}
                     <div className="flex flex-wrap items-center gap-6 text-caption-xs font-semibold">
-                        <Link href="/peta" className="hover:text-foreground transition-colors">
+                        <Link href="/#sebaran-peta" className="hover:text-foreground transition-colors">
                             Peta Laporan
                         </Link>
                         <Link href="/warga/lapor" className="hover:text-foreground transition-colors">

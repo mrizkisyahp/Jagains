@@ -137,4 +137,9 @@ class Laporan extends Model
     {
         return $this->hasMany(AuditLog::class, 'laporan_id');
     }
+
+    public function pelanggaran(): HasMany
+    {
+        return $this->hasMany(LaporanPelanggaran::class, 'laporan_id');
+    }
 }

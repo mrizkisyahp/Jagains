@@ -5,6 +5,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PemulihanSandiController;
 use App\Http\Controllers\Auth\PendaftaranWargaController;
 use App\Http\Controllers\Peta\PetaLaporanController;
+use App\Http\Controllers\Tiket\TiketInteraksiController;
+use App\Http\Controllers\Tiket\TiketPublikController;
 use App\Http\Controllers\Warga\LaporanWargaController;
 use App\Http\Controllers\Warga\ProfilKelurahanController;
 use App\Http\Controllers\Wilayah\WilayahApiController;
@@ -28,11 +30,16 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [LoginController::class, 'keluar'])->name('logout')->middleware('auth');
 
-// Peta Laporan Publik & Penanda Berstatus SLA (FR-PET-01 s.d. FR-PET-03)
-Route::get('/peta', [PetaLaporanController::class, 'tampilkanPeta'])->name('warga.peta');
-
-// Modul Profil, Kelurahan, & Pelaporan Warga (FR-AKN-04 & FR-LAP-01 s.d. FR-LAP-05)
+// Detail Tiket Publik & Interaksi Warga (FR-TKT-01, FR-INT-01 s.d. FR-INT-03)
+Route::get('/tiket/{nomor_tiket}', [TiketPublikController::class, 'tampilkanDetail'])->name('tiket.detail');
 Route::middleware(['auth', 'role:warga'])->group(function () {
+    Route::post('/tiket/{nomor_tiket}/dukung', [TiketInteraksiController::class, 'toggleDukungan'])->name('tiket.dukung');
+    Route::post('/tiket/{nomor_tiket}/lapor-konten', [TiketInteraksiController::class, 'laporkanKonten'])->name('tiket.lapor-konten');
+});
+
+// Modul Profil, Kelurahan, Pelaporan & Peta Internal Warga (FR-AKN-04, FR-LAP-01 s.d. FR-LAP-05, FR-PET-01)
+Route::middleware(['auth', 'role:warga'])->group(function () {
+    Route::get('/peta', [PetaLaporanController::class, 'tampilkanPeta'])->name('warga.peta');
     Route::get('/warga/profil', [ProfilKelurahanController::class, 'tampilkanProfil'])->name('warga.profil');
     Route::post('/warga/kelurahan', [ProfilKelurahanController::class, 'gantiKelurahan'])->name('warga.kelurahan.update');
     Route::get('/warga/lapor', [LaporanWargaController::class, 'tampilkanFormLapor'])->name('warga.lapor');

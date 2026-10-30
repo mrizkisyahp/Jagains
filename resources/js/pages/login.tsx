@@ -65,10 +65,10 @@ export default function Login({ status, success }: LoginProps) {
                     {/* Bottom Link */}
                     <div className="pt-8">
                         <Link 
-                            href="/peta" 
+                            href="/#sebaran-peta" 
                             className="text-caption-xs font-medium text-zinc-300 underline underline-offset-4 hover:text-white transition-colors"
                         >
-                            Hanya ingin melihat peta? Buka tanpa akun
+                            Hanya ingin melihat peta? Buka di beranda publik
                         </Link>
                     </div>
                 </div>

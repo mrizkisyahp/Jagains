@@ -125,8 +125,8 @@ export default function RegisterEmail({ status, tokenError }: RegisterEmailProps
                     </p>
                     <p className="text-caption-xs text-muted-foreground">
                         Hanya ingin memantau laporan publik?{' '}
-                        <Link href="/peta" className="underline hover:text-foreground">
-                            Buka Peta Publik
+                        <Link href="/#sebaran-peta" className="underline hover:text-foreground">
+                            Buka Peta Beranda
                         </Link>
                     </p>
                 </div>

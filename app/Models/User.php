@@ -83,4 +83,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(TokenSekaliPakai::class, 'pengguna_id');
     }
+
+    public function laporanPelanggaran(): HasMany
+    {
+        return $this->hasMany(LaporanPelanggaran::class, 'pelapor_id');
+    }
 }

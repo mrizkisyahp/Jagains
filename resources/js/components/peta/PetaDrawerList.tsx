@@ -1,8 +1,9 @@
 import { TitikLaporanPeta } from '@/types/peta';
+import { Link } from '@inertiajs/react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, ThumbsUp, X, ChevronRight, Inbox } from 'lucide-react';
+import { MapPin, ThumbsUp, X, ChevronRight, Inbox, ExternalLink } from 'lucide-react';
 
 interface PetaDrawerListProps {
     titikList: TitikLaporanPeta[];
@@ -118,17 +119,29 @@ export default function PetaDrawerList({
                                             {item.kategori_nama}
                                         </Badge>
 
-                                        <span className="flex items-center gap-1 truncate max-w-[160px]">
+                                        <span className="flex items-center gap-1 truncate max-w-[140px]">
                                             <MapPin className="size-3 text-muted-foreground shrink-0" />
                                             Kel. {item.kelurahan_nama}
                                         </span>
 
-                                        {item.jumlah_dukungan > 0 && (
-                                            <span className="flex items-center gap-1 ml-auto text-muted-foreground font-mono">
-                                                <ThumbsUp className="size-3 text-primary" />
-                                                {item.jumlah_dukungan}
-                                            </span>
-                                        )}
+                                        <div className="ml-auto flex items-center gap-2">
+                                            {item.jumlah_dukungan > 0 && (
+                                                <span className="flex items-center gap-1 text-muted-foreground font-mono">
+                                                    <ThumbsUp className="size-3 text-primary" />
+                                                    {item.jumlah_dukungan}
+                                                </span>
+                                            )}
+
+                                            <Link
+                                                href={`/tiket/${item.nomor_tiket}`}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                                                title="Buka Halaman Detail Tiket"
+                                            >
+                                                <span>Detail</span>
+                                                <ExternalLink className="size-2.5" />
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             </Card>
