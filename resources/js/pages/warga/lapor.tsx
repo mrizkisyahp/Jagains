@@ -426,8 +426,8 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                             {/* Ringkasan Metadata Aduan */}
                             <div className="p-3.5 rounded-lg border border-border/70 bg-muted/30 text-xs space-y-1.5">
                                 <div className="flex items-center justify-between text-muted-foreground">
-                                    <span>Kelurahan Target:</span>
-                                    <span className="font-semibold text-foreground">{kelurahanNama}, Kota Depok</span>
+                                    <span>Wilayah Target:</span>
+                                    <span className="font-semibold text-foreground text-right">{kelurahanNama}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-muted-foreground">
                                     <span>Koordinat Titik:</span>

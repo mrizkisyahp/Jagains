@@ -55,7 +55,8 @@ export default function LocationPickerMap({
 
             const data = await res.json();
             if (res.ok && data.terdeteksi && data.kelurahan) {
-                onChangeLocation(lat, lng, akurasi, sumber, data.kelurahan.nama);
+                const wilayahLabel = `Kel. ${data.nama}${data.kecamatan ? `, Kec. ${data.kecamatan}` : ''}${data.kota ? `, ${data.kota}` : ''}`;
+                onChangeLocation(lat, lng, akurasi, sumber, wilayahLabel);
             } else {
                 onChangeLocation(lat, lng, akurasi, sumber, null);
                 setGeoError('Titik koordinat berada di luar wilayah jangkauan layanan (Kota Depok & DKI Jakarta).');
@@ -246,17 +247,17 @@ export default function LocationPickerMap({
                         <>
                             <CheckCircle className="size-4 text-emerald-600 shrink-0" />
                             <div>
-                                <span className="font-semibold text-foreground">Kelurahan Terdeteksi: </span>
-                                <span className="text-foreground">{kelurahanNama}, Kota Depok</span>
+                                <span className="font-semibold text-foreground">Wilayah Terdeteksi: </span>
+                                <span className="text-foreground">{kelurahanNama}</span>
                             </div>
                         </>
                     ) : isCheckingKelurahan ? (
-                        <span className="text-muted-foreground animate-pulse">Memeriksa batas kelurahan Kota Depok...</span>
+                        <span className="text-muted-foreground animate-pulse">Memeriksa batas wilayah kelurahan...</span>
                     ) : (
                         <>
                             <AlertTriangle className="size-4 text-amber-600 shrink-0" />
                             <span className="text-amber-700 dark:text-amber-400">
-                                {geoError || 'Geser pin ke dalam batas wilayah Kota Depok'}
+                                {geoError || 'Geser pin ke dalam wilayah jangkauan layanan (Kota Depok & DKI Jakarta)'}
                             </span>
                         </>
                     )}
