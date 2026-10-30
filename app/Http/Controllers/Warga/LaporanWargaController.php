@@ -102,4 +102,86 @@ class LaporanWargaController extends Controller
             'kandidat' => $kandidat->values()->all(),
         ]);
     }
+
+    /**
+     * Menampilkan daftar riwayat laporan dan dukungan yang diajukan oleh warga.
+     */
+    public function tampilkanRiwayat(Request $request): Response
+    {
+        $userId = $request->user()->id;
+
+        $laporanList = Laporan::where('pelapor_id', $userId)
+            ->with([
+                'kategori',
+                'instansi',
+                'kelurahan.induk.induk',
+                'lampiran' => fn ($q) => $q->where('tahap', 'awal')->latest('id'),
+            ])
+            ->withCount('dukungan')
+            ->latest('id')
+            ->get()
+            ->map(function ($lap) {
+                $foto = $lap->lampiran->first();
+
+                return [
+                    'id' => $lap->id,
+                    'nomor_tiket' => $lap->nomor_tiket,
+                    'judul' => $lap->judul,
+                    'keterangan' => $lap->keterangan,
+                    'keparahan' => $lap->keparahan,
+                    'status' => $lap->status,
+                    'kategori_nama' => $lap->kategori?->nama,
+                    'instansi_nama' => $lap->instansi?->nama,
+                    'wilayah_nama' => $lap->kelurahan ? "Kel. {$lap->kelurahan->nama}, Kec. {$lap->kelurahan->induk?->nama}" : null,
+                    'kota_nama' => $lap->kelurahan?->induk?->induk?->nama,
+                    'foto_url' => $foto ? asset('storage/'.$foto->path) : null,
+                    'jumlah_dukungan' => $lap->dukungan_count,
+                    'sla_tahap' => $lap->sla_tahap,
+                    'sla_jatuh_tempo' => $lap->sla_jatuh_tempo ? $lap->sla_jatuh_tempo->translatedFormat('d M Y, H:i') : null,
+                    'dibuat_pada' => $lap->created_at->diffForHumans(),
+                    'tanggal_format' => $lap->created_at->translatedFormat('d F Y, H:i'),
+                ];
+            });
+
+        $dukunganList = Dukungan::where('pengguna_id', $userId)
+            ->with(['laporan' => function ($q) {
+                $q->with([
+                    'kategori',
+                    'instansi',
+                    'kelurahan.induk.induk',
+                    'lampiran' => fn ($l) => $l->where('tahap', 'awal')->latest('id'),
+                ])->withCount('dukungan');
+            }])
+            ->latest('id')
+            ->get()
+            ->map(function ($duk) {
+                $lap = $duk->laporan;
+                if (! $lap) {
+                    return null;
+                }
+                $foto = $lap->lampiran->first();
+
+                return [
+                    'id' => $lap->id,
+                    'nomor_tiket' => $lap->nomor_tiket,
+                    'judul' => $lap->judul,
+                    'keterangan' => $lap->keterangan,
+                    'status' => $lap->status,
+                    'kategori_nama' => $lap->kategori?->nama,
+                    'instansi_nama' => $lap->instansi?->nama,
+                    'wilayah_nama' => $lap->kelurahan ? "Kel. {$lap->kelurahan->nama}, Kec. {$lap->kelurahan->induk?->nama}" : null,
+                    'kota_nama' => $lap->kelurahan?->induk?->induk?->nama,
+                    'foto_url' => $foto ? asset('storage/'.$foto->path) : null,
+                    'jumlah_dukungan' => $lap->dukungan_count,
+                    'didukung_pada' => $duk->created_at->diffForHumans(),
+                ];
+            })
+            ->filter()
+            ->values();
+
+        return Inertia::render('warga/riwayat', [
+            'laporanList' => $laporanList,
+            'dukunganList' => $dukunganList,
+        ]);
+    }
 }

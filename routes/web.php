@@ -36,7 +36,7 @@ Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/warga/lapor', [LaporanWargaController::class, 'tampilkanFormLapor'])->name('warga.lapor');
     Route::post('/warga/lapor', [LaporanWargaController::class, 'buatLaporan'])->name('warga.lapor.store');
     Route::post('/warga/lapor/dukung', [LaporanWargaController::class, 'dukungLaporan'])->name('warga.lapor.dukung');
-    Route::get('/warga/riwayat', fn () => Inertia::render('warga/riwayat'))->name('warga.riwayat');
+    Route::get('/warga/riwayat', [LaporanWargaController::class, 'tampilkanRiwayat'])->name('warga.riwayat');
     Route::get('/warga/verifikasi', fn () => Inertia::render('warga/verifikasi'))->name('warga.verifikasi');
 });
 

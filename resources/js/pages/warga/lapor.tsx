@@ -370,7 +370,11 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                                 </Label>
                                 <Select value={kategoriId} onValueChange={(val) => setKategoriId(val ?? '')}>
                                     <SelectTrigger id="kategori" className="w-full">
-                                        <SelectValue placeholder="-- Pilih Kategori Kerusakan --" />
+                                        <span className="flex-1 text-left text-xs">
+                                            {kategoriList.find((k) => String(k.id) === kategoriId)?.nama || (
+                                                <span className="text-muted-foreground">-- Pilih Kategori Fasilitas Publik --</span>
+                                            )}
+                                        </span>
                                     </SelectTrigger>
                                     <SelectContent>
                                         {kategoriList.map((kat) => (
@@ -409,8 +413,10 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                                     <Label htmlFor="keterangan" className="text-xs font-semibold">
                                         Keterangan Detail Kerusakan <span className="text-destructive">*</span>
                                     </Label>
-                                    <span className={`text-[11px] ${keterangan.trim().length >= 10 ? 'text-muted-foreground' : 'text-destructive font-medium'}`}>
-                                        {keterangan.trim().length} / 10 karakter minimum
+                                    <span className={`text-[11px] ${keterangan.trim().length >= 10 ? 'text-emerald-600 font-medium' : 'text-destructive font-medium'}`}>
+                                        {keterangan.trim().length >= 10
+                                            ? `✓ ${keterangan.trim().length} karakter (memenuhi syarat min. 10)`
+                                            : `Minimal 10 karakter (kurang ${10 - keterangan.trim().length} lagi)`}
                                     </span>
                                 </div>
                                 <Textarea
