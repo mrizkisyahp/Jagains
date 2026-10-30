@@ -52,4 +52,11 @@ class LandingPageTest extends TestCase
             ->component('warga/peta')
         );
     }
+
+    public function test_tamu_dialihkan_ke_login_saat_mengakses_peta_internal(): void
+    {
+        $response = $this->get('/peta');
+
+        $response->assertRedirect('/login');
+    }
 }

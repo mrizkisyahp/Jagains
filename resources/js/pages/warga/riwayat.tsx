@@ -420,7 +420,16 @@ export default function RiwayatLaporanPage({
 
                                         {/* Footer Bar */}
                                         <div className="flex items-center justify-between border-t border-border pt-3 text-caption-xs text-muted-foreground">
-                                            <span>Diajukan {laporan.dibuat_pada}</span>
+                                            <div className="flex items-center gap-3">
+                                                <span>Diajukan {laporan.dibuat_pada}</span>
+                                                <Link
+                                                    href={`/tiket/${laporan.nomor_tiket}`}
+                                                    className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+                                                >
+                                                    <span>Lihat Detail</span>
+                                                    <ArrowRight className="size-3" />
+                                                </Link>
+                                            </div>
                                             <div className="flex items-center gap-1.5 font-medium text-foreground">
                                                 <ThumbsUp className="size-3.5 text-primary" />
                                                 <span>{laporan.jumlah_dukungan} dukungan</span>
@@ -547,7 +556,16 @@ export default function RiwayatLaporanPage({
                                         </div>
 
                                         <div className="flex items-center justify-between border-t border-border pt-3 text-caption-xs text-muted-foreground">
-                                            <span>Didukung {item.didukung_pada}</span>
+                                            <div className="flex items-center gap-3">
+                                                <span>Didukung {item.didukung_pada}</span>
+                                                <Link
+                                                    href={`/tiket/${item.nomor_tiket}`}
+                                                    className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+                                                >
+                                                    <span>Lihat Detail</span>
+                                                    <ArrowRight className="size-3" />
+                                                </Link>
+                                            </div>
                                             <div className="flex items-center gap-1.5 font-medium text-primary">
                                                 <ThumbsUp className="size-3.5 text-primary" />
                                                 <span>{item.jumlah_dukungan} dukungan warga</span>

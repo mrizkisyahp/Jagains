@@ -32,20 +32,20 @@ class PetaLaporanFeatureTest extends TestCase
 
     public function test_akses_halaman_peta_oleh_berbagai_aktor(): void
     {
-        // 1. Publik / Guest
+        // 1. Publik / Guest diarahkan ke login saat mengakses rute internal /peta
         $resGuest = $this->get('/peta');
-        $resGuest->assertOk();
-        $resGuest->assertInertia(fn (AssertableInertia $page) => $page->component('warga/peta'));
+        $resGuest->assertRedirect('/login');
 
-        // 2. Warga
+        // 2. Warga login mendapatkan akses 200 OK
         $warga = User::factory()->warga()->create();
         $resWarga = $this->actingAs($warga)->get('/peta');
         $resWarga->assertOk();
+        $resWarga->assertInertia(fn (AssertableInertia $page) => $page->component('warga/peta'));
 
-        // 3. Petugas Instansi
+        // 3. Petugas Instansi ditolak 403 (karena rute khusus role:warga)
         $petugas = User::factory()->instansi()->create();
         $resPetugas = $this->actingAs($petugas)->get('/peta');
-        $resPetugas->assertOk();
+        $resPetugas->assertForbidden();
     }
 
     public function test_filter_titik_berdasarkan_kecamatan(): void

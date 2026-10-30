@@ -30,13 +30,17 @@ class PetaLaporanApiTest extends TestCase
         }
     }
 
-    public function test_publik_dapat_mengakses_halaman_peta_tanpa_login(): void
+    public function test_publik_tanpa_login_dialihkan_ke_login_saat_mengakses_halaman_peta_internal(): void
     {
         $response = $this->get('/peta');
 
-        $response->assertOk();
-        $response->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('warga/peta')
+        $response->assertRedirect('/login');
+
+        // Publik tanpa login mengakses peta melalui landing page
+        $resLanding = $this->get('/');
+        $resLanding->assertOk();
+        $resLanding->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('landing')
             ->has('masterFilter.kategori')
             ->has('masterFilter.kecamatan')
             ->has('masterFilter.instansi')

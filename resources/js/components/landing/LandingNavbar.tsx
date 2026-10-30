@@ -74,7 +74,15 @@ export default function LandingNavbar() {
                 <div className="hidden md:flex items-center gap-3">
                     {user ? (
                         <Link
-                            href="/peta"
+                            href={
+                                user.peran === 'instansi'
+                                    ? '/instansi/antrean'
+                                    : user.peran === 'auditor'
+                                    ? '/auditor/antrean'
+                                    : user.peran === 'admin'
+                                    ? '/admin/antrean-routing'
+                                    : '/peta'
+                            }
                             className={cn(
                                 buttonVariants({ variant: 'outline' }),
                                 'h-10 text-body-sm font-semibold rounded-xl border-border'
@@ -166,7 +174,15 @@ export default function LandingNavbar() {
                     <div className="pt-3 border-t border-border flex flex-col gap-2">
                         {user ? (
                             <Link
-                                href="/peta"
+                                href={
+                                    user.peran === 'instansi'
+                                        ? '/instansi/antrean'
+                                        : user.peran === 'auditor'
+                                        ? '/auditor/antrean'
+                                        : user.peran === 'admin'
+                                        ? '/admin/antrean-routing'
+                                        : '/peta'
+                                }
                                 className={cn(buttonVariants({ variant: 'default' }), 'w-full h-11 font-semibold rounded-xl')}
                             >
                                 Buka Portal ({user.username})
