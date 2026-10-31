@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\GantiSandiPertamaController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PemulihanSandiController;
 use App\Http\Controllers\Auth\PendaftaranWargaController;
+use App\Http\Controllers\Instansi\AntreanInstansiController;
 use App\Http\Controllers\Instansi\DashboardInstansiController;
 use App\Http\Controllers\Peta\PetaLaporanController;
 use App\Http\Controllers\Publik\BantuanPrivasiController;
@@ -75,12 +76,24 @@ Route::middleware('auth')->group(function () {
     Route::post('/ganti-sandi-pertama', [GantiSandiPertamaController::class, 'simpanSandiBaru'])->name('auth.first-time-password.post');
 });
 
-// Panel Petugas Instansi (FR-TIK-02 s.d. FR-TIK-08)
-Route::middleware(['auth', 'role:instansi'])->group(function () {
-    Route::get('/instansi/antrean', fn () => Inertia::render('instansi/antrean'))->name('instansi.antrean');
-    Route::get('/instansi/sengketa', fn () => Inertia::render('instansi/sengketa'))->name('instansi.sengketa');
-    Route::get('/instansi/dashboard', [DashboardInstansiController::class, 'index'])->name('instansi.dashboard');
-    Route::get('/instansi/profil', fn () => Inertia::render('instansi/profil'))->name('instansi.profil');
+// Panel Petugas Instansi (FR-TIK-02 s.d. FR-TIK-14)
+Route::middleware(['auth', 'role:instansi'])->prefix('instansi')->name('instansi.')->group(function () {
+    Route::get('/antrean', [AntreanInstansiController::class, 'index'])->name('antrean');
+    Route::post('/tiket/{laporan}/terima', [AntreanInstansiController::class, 'terima'])->name('tiket.terima');
+    Route::post('/tiket/{laporan}/alihkan', [AntreanInstansiController::class, 'alihkan'])->name('tiket.alihkan');
+    Route::post('/tiket/{laporan}/kembalikan', [AntreanInstansiController::class, 'kembalikan'])->name('tiket.kembalikan');
+    Route::post('/tiket/{laporan}/survei', [AntreanInstansiController::class, 'selesaikanSurvei'])->name('tiket.survei');
+    Route::post('/tiket/{laporan}/anggaran', [AntreanInstansiController::class, 'jadwalkanAnggaran'])->name('tiket.anggaran');
+    Route::post('/tiket/{laporan}/mulai', [AntreanInstansiController::class, 'mulaiPengerjaan'])->name('tiket.mulai');
+    Route::post('/tiket/{laporan}/berita-acara', [AntreanInstansiController::class, 'simpanBeritaAcara'])->name('tiket.berita-acara');
+    Route::post('/tiket/{laporan}/selesai', [AntreanInstansiController::class, 'ajukanSelesai'])->name('tiket.selesai');
+    Route::post('/tiket/{laporan}/tanggapan', [AntreanInstansiController::class, 'tanggapanResmi'])->name('tiket.tanggapan');
+    Route::post('/tiket/{laporan}/usul-tolak', [AntreanInstansiController::class, 'usulkanTolak'])->name('tiket.usul-tolak');
+    Route::post('/tiket/{laporan}/revisi-target', [AntreanInstansiController::class, 'revisiTarget'])->name('tiket.revisi-target');
+
+    Route::get('/sengketa', fn () => Inertia::render('instansi/sengketa'))->name('sengketa');
+    Route::get('/dashboard', [DashboardInstansiController::class, 'index'])->name('dashboard');
+    Route::get('/profil', fn () => Inertia::render('instansi/profil'))->name('profil');
 });
 
 // Panel Auditor Independen (FR-AUD-01 s.d. FR-AUD-03)
