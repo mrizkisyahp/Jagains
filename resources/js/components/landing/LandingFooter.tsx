@@ -32,13 +32,13 @@ export default function LandingFooter() {
                         <Link href="/login" className="hover:text-foreground transition-colors">
                             Masuk Petugas & Warga
                         </Link>
-                        <a
-                            href="#privasi"
+                        <Link
+                            href="/bantuan"
                             className="hover:text-foreground transition-colors inline-flex items-center gap-1 text-primary"
                         >
                             <ShieldCheck className="size-3.5" />
-                            <span>Zero-Knowledge Privacy</span>
-                        </a>
+                            <span>Zero-Knowledge Privacy (FR-LAN-01)</span>
+                        </Link>
                     </div>
                 </div>
 

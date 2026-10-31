@@ -27,6 +27,7 @@ import TiketKuorumVerifikasiCard from '@/components/tiket/TiketKuorumVerifikasiC
 import TiketAuditorNotesCard from '@/components/tiket/TiketAuditorNotesCard';
 import ModalLaporKonten from '@/components/tiket/ModalLaporKonten';
 import ModalKonfirmasiLogin from '@/components/tiket/ModalKonfirmasiLogin';
+import ModalBukaIdentitasPelapor from '@/components/admin/ModalBukaIdentitasPelapor';
 import { Toaster, toast } from '@/components/ui/toast';
 import { buttonVariants } from '@/components/ui/button';
 
@@ -43,6 +44,7 @@ export default function DetailTiketPage({ tiket: initialTiket }: DetailTiketProp
     const [loginModalOpen, setLoginModalOpen] = useState(false);
     const [loginActionDesc, setLoginActionDesc] = useState('memberikan dukungan');
     const [laporModalOpen, setLaporModalOpen] = useState(false);
+    const [modalIdentitasOpen, setModalIdentitasOpen] = useState(false);
 
     // Handler Toggle Dukungan (FR-INT-01)
     const handleToggleDukungan = async () => {
@@ -170,12 +172,22 @@ export default function DetailTiketPage({ tiket: initialTiket }: DetailTiketProp
                                 </span>
                             </div>
                         </div>
-                        <Link
-                            href="/auditor/antrean"
-                            className={buttonVariants({ variant: 'outline', size: 'sm', className: 'text-xs h-8 shrink-0' })}
-                        >
-                            Buka Antrean Arbitrase
-                        </Link>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setModalIdentitasOpen(true)}
+                                className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 px-3 py-1 text-xs font-semibold transition"
+                            >
+                                <Lock className="size-3" />
+                                <span>Buka Identitas</span>
+                            </button>
+                            <Link
+                                href="/auditor/antrean"
+                                className={buttonVariants({ variant: 'outline', size: 'sm', className: 'text-xs h-8 shrink-0' })}
+                            >
+                                Buka Antrean Arbitrase
+                            </Link>
+                        </div>
                     </div>
                 );
             case 'admin':
@@ -191,6 +203,14 @@ export default function DetailTiketPage({ tiket: initialTiket }: DetailTiketProp
                             </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setModalIdentitasOpen(true)}
+                                className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 px-3 py-1 text-xs font-semibold transition"
+                            >
+                                <Lock className="size-3" />
+                                <span>Buka Identitas</span>
+                            </button>
                             <Link
                                 href="/admin/moderasi"
                                 className={buttonVariants({ variant: 'outline', size: 'sm', className: 'text-xs h-8' })}
@@ -395,6 +415,12 @@ export default function DetailTiketPage({ tiket: initialTiket }: DetailTiketProp
                 open={laporModalOpen}
                 onOpenChange={setLaporModalOpen}
                 nomorTiket={tiket.nomor_tiket}
+            />
+
+            <ModalBukaIdentitasPelapor
+                nomorTiket={tiket.nomor_tiket}
+                isOpen={modalIdentitasOpen}
+                onClose={() => setModalIdentitasOpen(false)}
             />
         </div>
     );

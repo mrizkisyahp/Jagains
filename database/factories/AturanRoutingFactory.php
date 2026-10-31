@@ -25,4 +25,3 @@ class AturanRoutingFactory extends Factory
         ];
     }
 }
-

@@ -32,9 +32,9 @@ export default function InternalLayout({
         <SidebarProvider defaultOpen={true}>
             {title && <Head title={title} />}
             <AppSidebar />
-            <SidebarInset className="flex min-h-screen flex-col bg-background text-foreground">
+            <SidebarInset className="flex min-h-screen flex-col bg-background text-foreground min-w-0 max-w-full overflow-x-hidden">
                 <AppHeader title={title} breadcrumb={breadcrumb} />
-                <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6 lg:p-8">
+                <main className="mx-auto w-full max-w-7xl flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
                     {children}
                 </main>
             </SidebarInset>
