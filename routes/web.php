@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\IdentitasPelaporController;
 use App\Http\Controllers\Admin\KonfigurasiSistemController;
 use App\Http\Controllers\Admin\ModerasiKontenController;
 use App\Http\Controllers\Admin\PetugasManagementController;
+use App\Http\Controllers\Auditor\AntreanAuditorController;
+use App\Http\Controllers\Auditor\PolaPengawasanController;
 use App\Http\Controllers\Auth\GantiSandiPertamaController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PemulihanSandiController;
@@ -110,11 +112,13 @@ Route::middleware(['auth', 'role:instansi'])->prefix('instansi')->name('instansi
 });
 
 // Panel Auditor Independen (FR-AUD-01 s.d. FR-AUD-03)
-Route::middleware(['auth', 'role:auditor'])->group(function () {
-    Route::get('/auditor/antrean', fn () => Inertia::render('auditor/antrean'))->name('auditor.antrean');
-    Route::get('/auditor/pola-pengawasan', fn () => Inertia::render('auditor/pola-pengawasan'))->name('auditor.pola-pengawasan');
-    Route::get('/auditor/audit-log', [AuditLogController::class, 'index'])->name('auditor.audit-log');
-    Route::get('/auditor/profil', fn () => Inertia::render('auditor/profil'))->name('auditor.profil');
+Route::middleware(['auth', 'role:auditor'])->prefix('auditor')->name('auditor.')->group(function () {
+    Route::get('/antrean', [AntreanAuditorController::class, 'index'])->name('antrean');
+    Route::get('/antrean/{eskalasi}', [AntreanAuditorController::class, 'show'])->name('antrean.show');
+    Route::post('/antrean/{eskalasi}/putuskan', [AntreanAuditorController::class, 'putuskan'])->name('antrean.putuskan');
+    Route::get('/pola-pengawasan', [PolaPengawasanController::class, 'index'])->name('pola-pengawasan');
+    Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log');
+    Route::get('/profil', fn () => Inertia::render('auditor/profil'))->name('profil');
 });
 
 // Panel Administrator Sistem (FR-ADM-04, FR-ADM-05, FR-ADM-07)
