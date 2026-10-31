@@ -19,7 +19,7 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::statement("SET LOCAL jagains.izin_status = 'on'");
+        DB::statement("SET jagains.izin_status = 'on'");
 
         $kelurahan = Wilayah::where('tingkat', 'kelurahan')->first();
         if (! $kelurahan) {
