@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\PemulihanSandiController;
 use App\Http\Controllers\Auth\PendaftaranWargaController;
 use App\Http\Controllers\Instansi\AntreanInstansiController;
 use App\Http\Controllers\Instansi\DashboardInstansiController;
+use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\Peta\PetaLaporanController;
 use App\Http\Controllers\Publik\BantuanPrivasiController;
 use App\Http\Controllers\Publik\DashboardKinerjaController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Tiket\TiketInteraksiController;
 use App\Http\Controllers\Tiket\TiketPublikController;
 use App\Http\Controllers\Warga\LaporanWargaController;
 use App\Http\Controllers\Warga\ProfilKelurahanController;
+use App\Http\Controllers\Warga\VerifikasiWargaController;
 use App\Http\Controllers\Wilayah\WilayahApiController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -67,7 +69,17 @@ Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::post('/warga/lapor', [LaporanWargaController::class, 'buatLaporan'])->name('warga.lapor.store');
     Route::post('/warga/lapor/dukung', [LaporanWargaController::class, 'dukungLaporan'])->name('warga.lapor.dukung');
     Route::get('/warga/riwayat', [LaporanWargaController::class, 'tampilkanRiwayat'])->name('warga.riwayat');
-    Route::get('/warga/verifikasi', fn () => Inertia::render('warga/verifikasi'))->name('warga.verifikasi');
+    Route::get('/warga/verifikasi', [VerifikasiWargaController::class, 'index'])->name('warga.verifikasi');
+    Route::get('/warga/verifikasi/{nomor_tiket}', [VerifikasiWargaController::class, 'show'])->name('warga.verifikasi.show');
+    Route::post('/warga/verifikasi/{nomor_tiket}', [VerifikasiWargaController::class, 'store'])->name('warga.verifikasi.store');
+});
+
+// Modul Notifikasi Dalam Aplikasi (FR-NTF-01)
+Route::middleware('auth')->group(function () {
+    Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
+    Route::get('/api/notifikasi/ringkasan', [NotifikasiController::class, 'ringkasan'])->name('notifikasi.ringkasan');
+    Route::patch('/api/notifikasi/{id}/baca', [NotifikasiController::class, 'baca'])->name('notifikasi.baca');
+    Route::post('/api/notifikasi/baca-semua', [NotifikasiController::class, 'bacaSemua'])->name('notifikasi.baca-semua');
 });
 
 // Ganti Sandi Pertama Petugas (FR-AKN-05)
@@ -90,6 +102,7 @@ Route::middleware(['auth', 'role:instansi'])->prefix('instansi')->name('instansi
     Route::post('/tiket/{laporan}/tanggapan', [AntreanInstansiController::class, 'tanggapanResmi'])->name('tiket.tanggapan');
     Route::post('/tiket/{laporan}/usul-tolak', [AntreanInstansiController::class, 'usulkanTolak'])->name('tiket.usul-tolak');
     Route::post('/tiket/{laporan}/revisi-target', [AntreanInstansiController::class, 'revisiTarget'])->name('tiket.revisi-target');
+    Route::post('/tiket/{laporan}/respons-sengketa', [AntreanInstansiController::class, 'responsSengketa'])->name('tiket.respons-sengketa');
 
     Route::get('/sengketa', fn () => Inertia::render('instansi/sengketa'))->name('sengketa');
     Route::get('/dashboard', [DashboardInstansiController::class, 'index'])->name('dashboard');

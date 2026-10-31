@@ -14,6 +14,7 @@ import ModalAjukanSelesai from '@/components/instansi/ModalAjukanSelesai';
 import ModalTanggapanResmi from '@/components/instansi/ModalTanggapanResmi';
 import ModalUsulanTolak from '@/components/instansi/ModalUsulanTolak';
 import ModalRevisiTarget from '@/components/instansi/ModalRevisiTarget';
+import ModalResponsSengketa from '@/components/instansi/ModalResponsSengketa';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -86,6 +87,7 @@ export default function AntreanInstansiPage({
     const [modalTanggapanOpen, setModalTanggapanOpen] = useState(false);
     const [modalUsulTolakOpen, setModalUsulTolakOpen] = useState(false);
     const [modalRevisiTargetOpen, setModalRevisiTargetOpen] = useState(false);
+    const [modalResponsSengketaOpen, setModalResponsSengketaOpen] = useState(false);
 
     // Navigasi Filter Tab
     const handleTabChange = (val: string) => {
@@ -165,6 +167,9 @@ export default function AntreanInstansiPage({
                 break;
             case 'revisi_target':
                 setModalRevisiTargetOpen(true);
+                break;
+            case 'respons_sengketa':
+                setModalResponsSengketaOpen(true);
                 break;
         }
     };
@@ -403,6 +408,12 @@ export default function AntreanInstansiPage({
                 open={modalRevisiTargetOpen}
                 onClose={() => setModalRevisiTargetOpen(false)}
                 laporan={selectedTiket}
+            />
+
+            <ModalResponsSengketa
+                open={modalResponsSengketaOpen}
+                onClose={() => setModalResponsSengketaOpen(false)}
+                laporan={selectedTiket as any}
             />
         </div>
     );

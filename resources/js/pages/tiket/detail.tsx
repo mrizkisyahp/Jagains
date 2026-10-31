@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import {
     MapPin,
     Shield,
@@ -12,6 +12,7 @@ import {
     Building2,
     Scale,
     ShieldAlert,
+    ShieldCheck,
 } from 'lucide-react';
 import { TiketDetail } from '@/types/tiket';
 import { User } from '@/types/auth';
@@ -28,8 +29,9 @@ import TiketAuditorNotesCard from '@/components/tiket/TiketAuditorNotesCard';
 import ModalLaporKonten from '@/components/tiket/ModalLaporKonten';
 import ModalKonfirmasiLogin from '@/components/tiket/ModalKonfirmasiLogin';
 import ModalBukaIdentitasPelapor from '@/components/admin/ModalBukaIdentitasPelapor';
+import ModalBeriSuaraVerifikasi from '@/components/verifikasi/ModalBeriSuaraVerifikasi';
 import { Toaster, toast } from '@/components/ui/toast';
-import { buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 
 interface DetailTiketProps {
     tiket: TiketDetail;
@@ -45,6 +47,7 @@ export default function DetailTiketPage({ tiket: initialTiket }: DetailTiketProp
     const [loginActionDesc, setLoginActionDesc] = useState('memberikan dukungan');
     const [laporModalOpen, setLaporModalOpen] = useState(false);
     const [modalIdentitasOpen, setModalIdentitasOpen] = useState(false);
+    const [modalVerifikasiOpen, setModalVerifikasiOpen] = useState(false);
 
     // Handler Toggle Dukungan (FR-INT-01)
     const handleToggleDukungan = async () => {
@@ -327,7 +330,26 @@ export default function DetailTiketPage({ tiket: initialTiket }: DetailTiketProp
                         <div className="lg:col-span-4 space-y-6">
                             {/* Kartu Kuorum Verifikasi Warga jika ada ronde verifikasi */}
                             {tiket.kuorum_verifikasi && (
-                                <TiketKuorumVerifikasiCard kuorum={tiket.kuorum_verifikasi} />
+                                <div className="space-y-3">
+                                    <TiketKuorumVerifikasiCard kuorum={tiket.kuorum_verifikasi} />
+                                    {tiket.status === 'MENUNGGU_VERIFIKASI' && (
+                                        <Button
+                                            size="sm"
+                                            onClick={() => {
+                                                if (!currentUser) {
+                                                    setLoginActionDesc('memberikan suara verifikasi');
+                                                    setLoginModalOpen(true);
+                                                    return;
+                                                }
+                                                setModalVerifikasiOpen(true);
+                                            }}
+                                            className="w-full text-xs font-bold gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white"
+                                        >
+                                            <ShieldCheck className="size-4" />
+                                            Beri Suara Verifikasi Kuorum
+                                        </Button>
+                                    )}
+                                </div>
                             )}
 
                             {/* Catatan Keputusan Auditor Independen jika ada */}
@@ -421,6 +443,13 @@ export default function DetailTiketPage({ tiket: initialTiket }: DetailTiketProp
                 nomorTiket={tiket.nomor_tiket}
                 isOpen={modalIdentitasOpen}
                 onClose={() => setModalIdentitasOpen(false)}
+            />
+
+            <ModalBeriSuaraVerifikasi
+                open={modalVerifikasiOpen}
+                onClose={() => setModalVerifikasiOpen(false)}
+                tiket={tiket as any}
+                onSuccess={() => router.reload()}
             />
         </div>
     );

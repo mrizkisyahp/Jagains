@@ -22,6 +22,7 @@ class InstansiTiketService
 {
     public function __construct(
         protected FotoLaporanService $fotoService,
+        protected NotifikasiService $notifikasiService,
     ) {}
 
     /**
@@ -473,7 +474,7 @@ class InstansiTiketService
             ]);
         }
 
-        return DB::transaction(function () use ($laporan, $fotoInfo, $jarakM, $akurasi, $catatan, $petugas) {
+        $hasilLaporan = DB::transaction(function () use ($laporan, $fotoInfo, $jarakM, $akurasi, $catatan, $petugas) {
             DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
             // 1. Simpan lampiran foto sesudah
@@ -537,6 +538,16 @@ class InstansiTiketService
 
             return $laporan->fresh(['kategori', 'kelurahan', 'instansi', 'rondeVerifikasi']);
         });
+
+        // Kirim siaran notifikasi ke seluruh warga kelurahan tiket (BR-NTF-01b)
+        $this->notifikasiService->kirimBroadcastKelurahan(
+            (int) $laporan->kelurahan_id,
+            $hasilLaporan,
+            "Pekerjaan fisik pada tiket {$laporan->nomor_tiket} telah diajukan selesai oleh instansi. Berikan suara verifikasi kedaulatan Anda dalam 14 hari.",
+            (int) $hasilLaporan->rondeVerifikasi()->max('nomor')
+        );
+
+        return $hasilLaporan;
     }
 
     /**
