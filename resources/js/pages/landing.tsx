@@ -6,7 +6,6 @@ import AlurSection from '@/components/landing/AlurSection';
 import PilarSection from '@/components/landing/PilarSection';
 import PrivasiSection from '@/components/landing/PrivasiSection';
 import KinerjaSection from '@/components/landing/KinerjaSection';
-import PetaSection from '@/components/landing/PetaSection';
 import CtaBannerSection from '@/components/landing/CtaBannerSection';
 import LandingFooter from '@/components/landing/LandingFooter';
 
@@ -29,8 +28,8 @@ export default function LandingPage({ masterFilter }: LandingPageProps) {
             <LandingNavbar />
 
             <main className="flex-1">
-                {/* 2. Hero Section: "Lapor. Pantau. Pastikan." + Video Frame + CTA ke Peta */}
-                <HeroSection />
+                {/* 2. Hero Section: "Lapor. Pantau. Pastikan." + Peta Interaktif Leaflet + Filter Minimalis */}
+                <HeroSection masterFilter={masterFilter} />
 
                 {/* 3. Seksi 4 Langkah: "4 Langkah Mudah, Suara Anda yang Menentukan" */}
                 <AlurSection />
@@ -44,10 +43,7 @@ export default function LandingPage({ masterFilter }: LandingPageProps) {
                 {/* 6. Seksi Metrik Kinerja: "Ukur Kinerja Layanan Publik Berbasis Data Nyata" */}
                 <KinerjaSection />
 
-                {/* 7. Seksi Peta Sebaran Laporan Publik: "Lihat apa yang dilaporkan di sekitar Anda." */}
-                <PetaSection masterFilter={masterFilter} />
-
-                {/* 8. Banner Call to Action Bawah: "Lihat kerusakan di sekitar Anda? Laporkan sekarang." */}
+                {/* 7. Banner Call to Action Bawah: "Lihat kerusakan di sekitar Anda? Laporkan sekarang." */}
                 <CtaBannerSection />
             </main>
 

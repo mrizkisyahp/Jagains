@@ -8,12 +8,14 @@ import { TitikLaporanPeta } from '@/types/peta';
 import { createClusterIcon, createStatusMarkerIcon } from './marker-icons';
 import { Compass, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from 'cn';
 
 interface PetaCanvasProps {
     titikList: TitikLaporanPeta[];
     selectedTiket: TitikLaporanPeta | null;
     onSelectTiket: (tiket: TitikLaporanPeta | null) => void;
     isLoading?: boolean;
+    className?: string;
 }
 
 const DEPOK_CENTER: [number, number] = [-6.402484, 106.79424];
@@ -24,6 +26,7 @@ export default function PetaCanvas({
     selectedTiket,
     onSelectTiket,
     isLoading = false,
+    className,
 }: PetaCanvasProps) {
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
@@ -140,7 +143,12 @@ export default function PetaCanvas({
     };
 
     return (
-        <div className="relative w-full h-full min-h-[500px] overflow-hidden rounded-2xl border border-border shadow-xs">
+        <div
+            className={cn(
+                'relative w-full h-full overflow-hidden',
+                className ?? 'min-h-[500px] rounded-2xl border border-border shadow-xs'
+            )}
+        >
             {/* Kanvas Leaflet */}
             <div ref={mapContainerRef} className="w-full h-full z-0" />
 
