@@ -1,6 +1,6 @@
 # Jagains — Platform Pelacakan & Pembuktian Tindak Lanjut Aduan Fasilitas Publik
 
-> **Jagains** adalah platform *civic-tech* berbasis *Progressive Web App* (PWA) untuk melacak, mengawal transparansi, dan membuktikan tindak lanjut penanganan kerusakan fasilitas publik secara tuntas. Melalui mekanisme Service Level Agreement (SLA) dua lapis, konfirmasi kuorum warga sekitar berbasis GPS presisi dan kamera lapangan, serta pengawasan Auditor Independen, Jagains meniadakan klaim perbaikan sepihak dan laporan yang saling lempar antar-instansi.
+> **Jagains** adalah **Progressive Web App (PWA)** untuk memantau dan membuktikan tindak lanjut **kerusakan fasilitas umum**. Selain itu, Jagains menerapkan **SLA publik** serta sistem **penutupan tiket berbasis verifikasi warga** melalui **GPS dan foto aktual**, atau keputusan **Auditor Independen** jika terjadi sengketa. Melalui **peta interaktif** dan **dasbor kinerja daerah**, Jagains mendorong **transparansi pelayanan publik**.
 
 ---
 
