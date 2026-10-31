@@ -322,12 +322,24 @@ export default function AntreanTiketTable({ items, onAksi }: AntreanTiketTablePr
 
                                     {/* Dropdown Menu untuk Aksi Tambahan */}
                                     <DropdownMenu>
-                                        <DropdownMenuTrigger className="size-8 inline-flex items-center justify-center rounded-lg hover:bg-muted/80 text-foreground transition-colors cursor-pointer">
-                                            <MoreHorizontal className="size-4" />
-                                            <span className="sr-only">Menu Opsi</span>
-                                        </DropdownMenuTrigger>
+                                        <DropdownMenuTrigger
+                                            render={
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8 rounded-lg hover:bg-muted/80 text-foreground cursor-pointer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <MoreHorizontal className="size-4" />
+                                                    <span className="sr-only">Menu Opsi</span>
+                                                </Button>
+                                            }
+                                        />
                                         <DropdownMenuContent align="end" className="w-52">
-                                            <DropdownMenuLabel className="text-caption-xs">Aksi Operasional</DropdownMenuLabel>
+                                            <DropdownMenuLabel className="text-caption-xs font-semibold text-muted-foreground">
+                                                Aksi Operasional
+                                            </DropdownMenuLabel>
                                             <DropdownMenuSeparator />
 
                                             {/* Opsi Status DITERUSKAN */}
