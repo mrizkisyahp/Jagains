@@ -61,4 +61,3 @@ class KategoriSeeder extends Seeder
         }
     }
 }
-

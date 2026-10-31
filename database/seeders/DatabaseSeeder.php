@@ -23,6 +23,10 @@ class DatabaseSeeder extends Seeder
             KategoriSeeder::class,
             AturanRoutingDanSlaSeeder::class,
             AturanRoutingJakartaSeeder::class,
+            HariLiburSeeder::class,
+            PengaturanSeeder::class,
+            ParameterKuorumSeeder::class,
+            LaporanSiklusHidupDemoSeeder::class,
         ]);
     }
 }

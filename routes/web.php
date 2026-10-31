@@ -1,10 +1,19 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminRoutingController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\IdentitasPelaporController;
+use App\Http\Controllers\Admin\KonfigurasiSistemController;
+use App\Http\Controllers\Admin\ModerasiKontenController;
+use App\Http\Controllers\Admin\PetugasManagementController;
 use App\Http\Controllers\Auth\GantiSandiPertamaController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PemulihanSandiController;
 use App\Http\Controllers\Auth\PendaftaranWargaController;
+use App\Http\Controllers\Instansi\DashboardInstansiController;
 use App\Http\Controllers\Peta\PetaLaporanController;
+use App\Http\Controllers\Publik\BantuanPrivasiController;
+use App\Http\Controllers\Publik\DashboardKinerjaController;
 use App\Http\Controllers\Tiket\TiketInteraksiController;
 use App\Http\Controllers\Tiket\TiketPublikController;
 use App\Http\Controllers\Warga\LaporanWargaController;
@@ -15,6 +24,12 @@ use Inertia\Inertia;
 
 // Landing Page Publik (Default Route)
 Route::get('/', [PetaLaporanController::class, 'landingPage'])->name('home');
+
+// Halaman Bantuan dan Kebijakan Privasi Publik (FR-LAN-01)
+Route::get('/bantuan', [BantuanPrivasiController::class, 'index'])->name('bantuan');
+
+// Dashboard Komparasi Kinerja Publik (FR-DSH-01)
+Route::get('/dashboard', [DashboardKinerjaController::class, 'index'])->name('dashboard.kinerja');
 
 // Autentikasi Pengguna (FR-AKN-02)
 Route::middleware('guest')->group(function () {
@@ -35,6 +50,11 @@ Route::get('/tiket/{nomor_tiket}', [TiketPublikController::class, 'tampilkanDeta
 Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::post('/tiket/{nomor_tiket}/dukung', [TiketInteraksiController::class, 'toggleDukungan'])->name('tiket.dukung');
     Route::post('/tiket/{nomor_tiket}/lapor-konten', [TiketInteraksiController::class, 'laporkanKonten'])->name('tiket.lapor-konten');
+});
+
+// Investigasi Identitas Pelapor Khusus Admin & Auditor (FR-ADM-08)
+Route::middleware(['auth', 'role:admin,auditor'])->group(function () {
+    Route::post('/api/tiket/{nomor_tiket}/buka-identitas', [IdentitasPelaporController::class, 'buka'])->name('tiket.buka-identitas');
 });
 
 // Modul Profil, Kelurahan, Pelaporan & Peta Internal Warga (FR-AKN-04, FR-LAP-01 s.d. FR-LAP-05, FR-PET-01)
@@ -59,7 +79,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:instansi'])->group(function () {
     Route::get('/instansi/antrean', fn () => Inertia::render('instansi/antrean'))->name('instansi.antrean');
     Route::get('/instansi/sengketa', fn () => Inertia::render('instansi/sengketa'))->name('instansi.sengketa');
-    Route::get('/instansi/dashboard', fn () => Inertia::render('instansi/dashboard'))->name('instansi.dashboard');
+    Route::get('/instansi/dashboard', [DashboardInstansiController::class, 'index'])->name('instansi.dashboard');
     Route::get('/instansi/profil', fn () => Inertia::render('instansi/profil'))->name('instansi.profil');
 });
 
@@ -67,17 +87,34 @@ Route::middleware(['auth', 'role:instansi'])->group(function () {
 Route::middleware(['auth', 'role:auditor'])->group(function () {
     Route::get('/auditor/antrean', fn () => Inertia::render('auditor/antrean'))->name('auditor.antrean');
     Route::get('/auditor/pola-pengawasan', fn () => Inertia::render('auditor/pola-pengawasan'))->name('auditor.pola-pengawasan');
-    Route::get('/auditor/audit-log', fn () => Inertia::render('auditor/audit-log'))->name('auditor.audit-log');
+    Route::get('/auditor/audit-log', [AuditLogController::class, 'index'])->name('auditor.audit-log');
     Route::get('/auditor/profil', fn () => Inertia::render('auditor/profil'))->name('auditor.profil');
 });
 
 // Panel Administrator Sistem (FR-ADM-04, FR-ADM-05, FR-ADM-07)
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/antrean-routing', fn () => Inertia::render('admin/antrean-routing'))->name('admin.antrean-routing');
-    Route::get('/admin/moderasi', fn () => Inertia::render('admin/moderasi'))->name('admin.moderasi');
-    Route::get('/admin/petugas', fn () => Inertia::render('admin/petugas'))->name('admin.petugas');
-    Route::get('/admin/konfigurasi', fn () => Inertia::render('admin/konfigurasi'))->name('admin.konfigurasi');
-    Route::get('/admin/audit-log', fn () => Inertia::render('admin/audit-log'))->name('admin.audit-log');
+    Route::get('/admin/antrean-routing', [AdminRoutingController::class, 'index'])->name('admin.antrean-routing');
+    Route::post('/admin/antrean-routing/{nomor_tiket}/disposisi', [AdminRoutingController::class, 'disposisi'])->name('admin.antrean-routing.disposisi');
+    Route::get('/admin/moderasi', [ModerasiKontenController::class, 'index'])->name('admin.moderasi');
+    Route::post('/admin/moderasi/{pelanggaran}/tindak', [ModerasiKontenController::class, 'tindak'])->name('admin.moderasi.tindak');
+    Route::get('/admin/petugas', [PetugasManagementController::class, 'index'])->name('admin.petugas');
+    Route::post('/admin/petugas', [PetugasManagementController::class, 'store'])->name('admin.petugas.store');
+    Route::post('/admin/petugas/{user}/reset-sandi', [PetugasManagementController::class, 'resetSandi'])->name('admin.petugas.reset-sandi');
+    Route::patch('/admin/petugas/{user}/toggle-status', [PetugasManagementController::class, 'toggleStatus'])->name('admin.petugas.toggle-status');
+    Route::get('/admin/konfigurasi', [KonfigurasiSistemController::class, 'index'])->name('admin.konfigurasi');
+    Route::put('/admin/konfigurasi/parameter/{key}', [KonfigurasiSistemController::class, 'updateParameter'])->name('admin.konfigurasi.parameter');
+    Route::post('/admin/konfigurasi/instansi', [KonfigurasiSistemController::class, 'storeInstansi'])->name('admin.konfigurasi.instansi.store');
+    Route::put('/admin/konfigurasi/instansi/{instansi}', [KonfigurasiSistemController::class, 'updateInstansi'])->name('admin.konfigurasi.instansi.update');
+    Route::post('/admin/konfigurasi/kategori', [KonfigurasiSistemController::class, 'storeKategori'])->name('admin.konfigurasi.kategori.store');
+    Route::put('/admin/konfigurasi/kategori/{kategori}', [KonfigurasiSistemController::class, 'updateKategori'])->name('admin.konfigurasi.kategori.update');
+    Route::post('/admin/konfigurasi/wilayah', [KonfigurasiSistemController::class, 'storeWilayah'])->name('admin.konfigurasi.wilayah.store');
+    Route::put('/admin/konfigurasi/wilayah/{wilayah}', [KonfigurasiSistemController::class, 'updateWilayah'])->name('admin.konfigurasi.wilayah.update');
+    Route::post('/admin/konfigurasi/routing', [KonfigurasiSistemController::class, 'storeRouting'])->name('admin.konfigurasi.routing.store');
+    Route::put('/admin/konfigurasi/routing/{aturan}', [KonfigurasiSistemController::class, 'updateRouting'])->name('admin.konfigurasi.routing.update');
+    Route::delete('/admin/konfigurasi/routing/{aturan}', [KonfigurasiSistemController::class, 'destroyRouting'])->name('admin.konfigurasi.routing.destroy');
+    Route::post('/admin/konfigurasi/sla', [KonfigurasiSistemController::class, 'storeSla'])->name('admin.konfigurasi.sla.store');
+    Route::post('/admin/konfigurasi/kuorum', [KonfigurasiSistemController::class, 'storeKuorum'])->name('admin.konfigurasi.kuorum.store');
+    Route::get('/admin/audit-log', [AuditLogController::class, 'index'])->name('admin.audit-log');
 });
 
 // Pendaftaran Warga (FR-AKN-01)
