@@ -132,3 +132,4 @@ export interface PolaPengawasanData {
     pengalihan: MatriksPengalihanItem[];
     performa_instansi: PerformaInstansiItem[];
 }
+

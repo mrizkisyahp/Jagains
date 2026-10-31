@@ -132,3 +132,4 @@ export default function KartuEskalasi({ eskalasi, onBukaPerkara }: KartuEskalasi
         </div>
     );
 }
+
