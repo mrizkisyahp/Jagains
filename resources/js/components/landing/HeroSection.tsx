@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Link, router } from '@inertiajs/react';
-import { ArrowRight, MapPin, Play, Search, ShieldCheck } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { ArrowRight, MapPin, Play } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Dialog,
     DialogContent,
@@ -13,25 +12,7 @@ import {
 import { cn } from 'cn';
 
 export default function HeroSection() {
-    const [lacakKode, setLacakKode] = useState('');
-    const [lacakError, setLacakError] = useState<string | null>(null);
-    const [isLacakOpen, setIsLacakOpen] = useState(false);
     const [isVideoOpen, setIsVideoOpen] = useState(false);
-
-    const handleLacakSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const code = lacakKode.trim().toUpperCase();
-        if (!code) return;
-
-        if (!/^JAG-/.test(code)) {
-            setLacakError('Format kode tiket harus sesuai (contoh: JAG-2026-0001)');
-            return;
-        }
-
-        setLacakError(null);
-        setIsLacakOpen(false);
-        router.visit(`/tiket/${code}`);
-    };
 
     const scrollToPeta = () => {
         const petaSection = document.getElementById('sebaran-peta');
@@ -46,12 +27,6 @@ export default function HeroSection() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                     {/* Left Column: Heading, Subtitle, & CTAs */}
                     <div className="space-y-6 sm:space-y-8">
-                        {/* Eyebrow Pill */}
-                        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3.5 py-1 text-caption-xs font-semibold text-primary border border-primary/20">
-                            <ShieldCheck className="size-3.5" />
-                            <span>Platform Akuntabilitas Fasilitas Publik Depok</span>
-                        </div>
-
                         {/* Heading Sesuai Wireframe */}
                         <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.12]">
                             Lapor. Pantau.<br className="hidden sm:inline" /> Pastikan.
@@ -62,7 +37,7 @@ export default function HeroSection() {
                             Laporkan masalah di sekitarmu, pantau janji instansi secara terbuka, dan pastikan sendiri hasilnya bersama warga.
                         </p>
 
-                        {/* CTA Buttons (Termasuk CTA Menuju Peta sesuai instruksi pengguna) */}
+                        {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
                             <Link
                                 href="/warga/lapor"
@@ -75,7 +50,7 @@ export default function HeroSection() {
                                 <ArrowRight className="size-4" />
                             </Link>
 
-                            {/* CTA Menuju Peta di Bagian Bawah */}
+                            {/* CTA Menuju Peta */}
                             <Button
                                 type="button"
                                 variant="outline"
@@ -86,18 +61,6 @@ export default function HeroSection() {
                                 <MapPin className="size-4 text-primary" />
                                 <span>Lihat Peta Sekitar</span>
                             </Button>
-                        </div>
-
-                        {/* Teks Alternatif: Lacak Laporan dengan Kode (Sesuai Wireframe) */}
-                        <div className="pt-1">
-                            <button
-                                type="button"
-                                onClick={() => setIsLacakOpen(true)}
-                                className="text-body-sm font-medium text-muted-foreground hover:text-foreground hover:underline cursor-pointer inline-flex items-center gap-1.5"
-                            >
-                                <Search className="size-3.5 text-muted-foreground" />
-                                <span>atau <strong>Lacak Laporan dengan Kode</strong></span>
-                            </button>
                         </div>
                     </div>
 
@@ -125,69 +88,10 @@ export default function HeroSection() {
                                     </span>
                                 </div>
                             </div>
-
-                            {/* Floating Badge di Video Frame */}
-                            <div className="absolute bottom-4 left-4 z-10 px-3 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-caption-xs text-neutral-300">
-                                4 Pilar Akuntabilitas Kota Depok
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            {/* Modal Dialog Lacak Laporan dengan Kode */}
-            <Dialog open={isLacakOpen} onOpenChange={setIsLacakOpen}>
-                <DialogContent className="sm:max-w-md rounded-2xl p-6">
-                    <DialogHeader>
-                        <DialogTitle className="font-display text-body-large font-bold text-foreground">
-                            Lacak Status Laporan
-                        </DialogTitle>
-                        <DialogDescription className="text-body-sm text-muted-foreground">
-                            Masukkan nomor tiket aduan (contoh: JAG-2026-0001) untuk melihat riwayat status, foto pengerjaan, dan kuorum verifikasi.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <form onSubmit={handleLacakSubmit} className="space-y-4 pt-2">
-                        {lacakError && (
-                            <p className="text-xs text-destructive font-medium bg-destructive/10 p-2.5 rounded-lg">
-                                {lacakError}
-                            </p>
-                        )}
-                        <div className="relative">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                            <Input
-                                type="text"
-                                placeholder="JAG-2026-XXXX"
-                                value={lacakKode}
-                                onChange={(e) => {
-                                    setLacakKode(e.target.value);
-                                    if (lacakError) setLacakError(null);
-                                }}
-                                className="pl-10 h-11 text-body-base font-mono uppercase tracking-wider rounded-xl border-border"
-                                required
-                            />
-                        </div>
-
-                        <div className="flex justify-end gap-2.5">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => setIsLacakOpen(false)}
-                                className="rounded-xl text-body-sm"
-                            >
-                                Batal
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={!lacakKode.trim()}
-                                className="rounded-xl text-body-sm font-semibold"
-                            >
-                                Cari Tiket
-                            </Button>
-                        </div>
-                    </form>
-                </DialogContent>
-            </Dialog>
 
             {/* Modal Dialog Video Explainer */}
             <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
