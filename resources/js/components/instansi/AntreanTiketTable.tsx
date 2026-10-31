@@ -282,14 +282,31 @@ export default function AntreanTiketTable({ items, onAksi }: AntreanTiketTablePr
                                     )}
 
                                     {item.status === 'DIKERJAKAN' && (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => onAksi('selesai', item)}
-                                            className="h-8 text-caption-xs font-semibold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
-                                        >
-                                            <Camera className="size-3.5" />
-                                            Ajukan Selesai
-                                        </Button>
+                                        <div className="flex items-center gap-1.5">
+                                            <Button
+                                                size="sm"
+                                                onClick={() => onAksi('berita_acara', item)}
+                                                variant={item.total_berita_acara === 0 ? 'default' : 'outline'}
+                                                className={`h-8 text-caption-xs font-semibold gap-1 ${
+                                                    item.total_berita_acara === 0
+                                                        ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                                                        : 'border-border text-foreground hover:bg-muted'
+                                                }`}
+                                                title="Terbitkan / Kelola Berita Acara Pelaksanaan"
+                                            >
+                                                <FileText className="size-3.5" />
+                                                {item.total_berita_acara === 0 ? '+ Berita Acara' : `BA (${item.total_berita_acara})`}
+                                            </Button>
+
+                                            <Button
+                                                size="sm"
+                                                onClick={() => onAksi('selesai', item)}
+                                                className="h-8 text-caption-xs font-semibold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                            >
+                                                <Camera className="size-3.5" />
+                                                Ajukan Selesai
+                                            </Button>
+                                        </div>
                                     )}
 
                                     {item.status === 'DISENGKETAKAN' && (

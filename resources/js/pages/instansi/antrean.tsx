@@ -389,6 +389,7 @@ export default function AntreanInstansiPage({
             <ModalAjukanSelesai
                 open={modalAjukanSelesaiOpen}
                 onClose={() => setModalAjukanSelesaiOpen(false)}
+                onOpenBeritaAcara={() => setModalBeritaAcaraOpen(true)}
                 laporan={selectedTiket}
             />
 
