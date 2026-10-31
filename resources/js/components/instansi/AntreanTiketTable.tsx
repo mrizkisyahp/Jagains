@@ -17,6 +17,7 @@ import {
     ShieldX,
     CalendarClock,
     Undo2,
+    Scale,
 } from 'lucide-react';
 import {
     Table,
@@ -288,6 +289,17 @@ export default function AntreanTiketTable({ items, onAksi }: AntreanTiketTablePr
                                         >
                                             <Camera className="size-3.5" />
                                             Ajukan Selesai
+                                        </Button>
+                                    )}
+
+                                    {item.status === 'DISENGKETAKAN' && (
+                                        <Button
+                                            size="sm"
+                                            onClick={() => onAksi('respons_sengketa', item)}
+                                            className="h-8 text-caption-xs font-semibold gap-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                        >
+                                            <Scale className="size-3.5" />
+                                            Respons Sengketa
                                         </Button>
                                     )}
 

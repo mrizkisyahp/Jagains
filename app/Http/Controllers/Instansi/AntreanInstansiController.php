@@ -8,6 +8,7 @@ use App\Http\Requests\Instansi\AlihkanTiketRequest;
 use App\Http\Requests\Instansi\BeritaAcaraRequest;
 use App\Http\Requests\Instansi\JadwalAnggaranRequest;
 use App\Http\Requests\Instansi\KembalikanTiketRequest;
+use App\Http\Requests\Instansi\ResponsSengketaRequest;
 use App\Http\Requests\Instansi\RevisiTargetRequest;
 use App\Http\Requests\Instansi\SurveiSelesaiRequest;
 use App\Http\Requests\Instansi\TanggapanResmiRequest;
@@ -17,6 +18,7 @@ use App\Models\Instansi;
 use App\Models\Kategori;
 use App\Models\Laporan;
 use App\Services\InstansiTiketService;
+use App\Services\VerifikasiWargaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +29,7 @@ class AntreanInstansiController extends Controller
 {
     public function __construct(
         protected InstansiTiketService $service,
+        protected VerifikasiWargaService $verifikasiService,
     ) {}
 
     /**
@@ -385,5 +388,29 @@ class AntreanInstansiController extends Controller
         }
 
         return back()->with('sukses', "Tanggal target publik tiket {$updated->nomor_tiket} berhasil diperbarui.");
+    }
+
+    /**
+     * Aksi Respons Sengketa Warga (FR-VER-06).
+     * Instansi memilih: 'kerjakan_ulang' atau 'sanggah'.
+     */
+    public function responsSengketa(ResponsSengketaRequest $request, Laporan $laporan): RedirectResponse|JsonResponse
+    {
+        $hasil = $this->verifikasiService->responsSengketaInstansi(
+            $request->user(),
+            $laporan,
+            $request->validated('pilihan'),
+            $request->validated('alasan_sanggah')
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'sukses' => true,
+                'pesan' => $hasil['pesan'],
+                'status' => $hasil['status'],
+            ]);
+        }
+
+        return back()->with('sukses', $hasil['pesan']);
     }
 }

@@ -1,4 +1,5 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import NotificationBell from '@/components/notifikasi/NotificationBell';
 
 interface AppHeaderProps {
     title?: string;
@@ -22,6 +23,10 @@ export default function AppHeader({ title, breadcrumb }: AppHeaderProps) {
                         </h1>
                     )}
                 </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+                <NotificationBell />
             </div>
         </header>
     );
