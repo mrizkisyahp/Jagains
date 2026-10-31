@@ -312,14 +312,7 @@ class VerifikasiWargaService
 
             $latWarga = (float) $data['latitude'];
             $lngWarga = (float) $data['longitude'];
-            $akurasiM = isset($data['akurasi_m']) ? (float) $data['akurasi_m'] : 10.0;
-
-            // Toleransi akurasi maksimal 100m (P-12, AS-04)
-            if ($akurasiM > 100.0) {
-                throw ValidationException::withMessages([
-                    'lokasi' => ["Akurasi GPS perangkat Anda terlalu rendah ({$akurasiM} meter). Harap tunggu sinyal GPS lebih stabil atau gunakan Jalur B."],
-                ]);
-            }
+            $akurasiM = isset($data['akurasi_m']) && $data['akurasi_m'] !== null ? (float) $data['akurasi_m'] : 10.0;
 
             // Hitung jarak Haversine ke titik lokasi kerusakan awal laporan
             $jarakM = $this->hitungJarakMeter(
@@ -338,6 +331,13 @@ class VerifikasiWargaService
                             $jarakM
                         ),
                     ],
+                ]);
+            }
+
+            // Toleransi akurasi sinyal GPS maksimal 500 meter (diperluas untuk mengakomodasi penentuan posisi berbasis peramban laptop/Wi-Fi dan pengujian indoor)
+            if ($akurasiM > 500.0) {
+                throw ValidationException::withMessages([
+                    'lokasi' => ["Akurasi GPS perangkat Anda terlalu rendah ({$akurasiM} meter). Harap tunggu sinyal GPS lebih stabil atau gunakan Jalur B."],
                 ]);
             }
 
