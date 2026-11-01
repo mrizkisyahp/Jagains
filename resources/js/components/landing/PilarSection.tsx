@@ -8,10 +8,6 @@ export default function PilarSection() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
                     {/* Left Column Sesuai Wireframe */}
                     <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-28">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3.5 py-1 text-caption-xs font-semibold text-primary border border-primary/20">
-                            <span>Jaminan Transparansi 100%</span>
-                        </div>
-
                         <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
                             Tiada Laporan<br className="hidden sm:inline" /> Sepihak
                         </h2>

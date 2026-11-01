@@ -52,38 +52,38 @@ export default function SimilarReportsModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto overflow-x-hidden w-full min-w-0">
+                <DialogHeader className="min-w-0">
                     <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500">
-                        <AlertCircle className="size-5" />
+                        <AlertCircle className="size-5 shrink-0" />
                         <DialogTitle className="font-display text-display-md font-bold">
                             Ditemukan Laporan Serupa di Dekat Anda
                         </DialogTitle>
                     </div>
-                    <DialogDescription className="text-body-sm text-muted-foreground pt-1">
-                        Sistem mendeteksi ada aduan terbuka berkategori sama dalam radius lokasi Anda (FR-LAP-05). 
+                    <DialogDescription className="text-body-sm text-muted-foreground pt-1 break-words">
+                        Sistem mendeteksi ada aduan terbuka berkategori sama dalam radius lokasi Anda. 
                         Anda dapat <strong>mendukung aduan yang sudah ada</strong> untuk mempercepat penanganan dinas, 
                         atau tetap membuat aduan baru jika kerusakannya berbeda.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-3.5 my-2">
+                <div className="space-y-3.5 my-2 min-w-0 w-full">
                     {kandidat.map((item) => (
                         <div
                             key={item.id}
-                            className="p-4 rounded-xl border border-border bg-card hover:border-primary/50 transition-colors space-y-2.5 shadow-xs"
+                            className="p-4 rounded-xl border border-border bg-card hover:border-primary/50 transition-colors space-y-2.5 shadow-xs min-w-0 w-full overflow-hidden"
                         >
-                            <div className="flex items-start justify-between gap-2">
-                                <div className="space-y-0.5">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-mono text-caption-xs font-bold text-primary">
+                            <div className="flex items-start justify-between gap-2 min-w-0">
+                                <div className="space-y-0.5 min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-mono text-caption-xs font-bold text-primary shrink-0">
                                             {item.nomor_tiket}
                                         </span>
-                                        <Badge variant="outline" className="text-[10px] py-0 h-4">
+                                        <Badge variant="outline" className="text-[10px] py-0 h-4 shrink-0">
                                             {item.status}
                                         </Badge>
                                     </div>
-                                    <h4 className="font-display text-body-medium font-semibold text-foreground line-clamp-1">
+                                    <h4 className="font-display text-body-medium font-semibold text-foreground line-clamp-1 break-words">
                                         {item.judul}
                                     </h4>
                                 </div>
@@ -93,12 +93,12 @@ export default function SimilarReportsModal({
                                 </span>
                             </div>
 
-                            <p className="text-body-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                            <p className="text-body-sm text-muted-foreground line-clamp-3 leading-relaxed break-words [overflow-wrap:anywhere]">
                                 {item.keterangan}
                             </p>
 
-                            <div className="flex items-center justify-between pt-2 border-t border-border/80">
-                                <span className="text-body-sm text-muted-foreground flex items-center gap-1.5">
+                            <div className="flex items-center justify-between pt-2 border-t border-border/80 gap-2 flex-wrap">
+                                <span className="text-body-sm text-muted-foreground flex items-center gap-1.5 shrink-0">
                                     <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
                                     {item.jumlah_dukungan} warga mendukung
                                 </span>

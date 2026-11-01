@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { MapPin, Menu, X, ArrowRight, LogIn } from 'lucide-react';
+import { MapPin, Menu, X, ArrowRight } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from 'cn';
 import { User } from '@/types/auth';
@@ -92,27 +92,15 @@ export default function LandingNavbar() {
                             <ArrowRight className="size-4 ml-1.5" />
                         </Link>
                     ) : (
-                        <>
-                            <Link
-                                href="/login"
-                                className={cn(
-                                    buttonVariants({ variant: 'ghost' }),
-                                    'h-10 text-body-sm font-semibold rounded-xl text-foreground hover:bg-muted'
-                                )}
-                            >
-                                <LogIn className="size-4 mr-1.5" />
-                                <span>Masuk</span>
-                            </Link>
-                            <Link
-                                href="/warga/lapor"
-                                className={cn(
-                                    buttonVariants({ variant: 'default' }),
-                                    'h-10 text-body-sm font-semibold rounded-xl shadow-xs'
-                                )}
-                            >
-                                <span>Lapor Masalah</span>
-                            </Link>
-                        </>
+                        <Link
+                            href="/warga/lapor"
+                            className={cn(
+                                buttonVariants({ variant: 'default' }),
+                                'h-10 text-body-sm font-semibold rounded-xl shadow-xs'
+                            )}
+                        >
+                            <span>Lapor Masalah</span>
+                        </Link>
                     )}
                 </div>
 
@@ -188,20 +176,12 @@ export default function LandingNavbar() {
                                 Buka Portal ({user.username})
                             </Link>
                         ) : (
-                            <>
-                                <Link
-                                    href="/warga/lapor"
-                                    className={cn(buttonVariants({ variant: 'default' }), 'w-full h-11 font-semibold rounded-xl')}
-                                >
-                                    Lapor Masalah
-                                </Link>
-                                <Link
-                                    href="/login"
-                                    className={cn(buttonVariants({ variant: 'outline' }), 'w-full h-11 font-semibold rounded-xl border-border')}
-                                >
-                                    Masuk Akun
-                                </Link>
-                            </>
+                            <Link
+                                href="/warga/lapor"
+                                className={cn(buttonVariants({ variant: 'default' }), 'w-full h-11 font-semibold rounded-xl')}
+                            >
+                                Lapor Masalah
+                            </Link>
                         )}
                     </div>
                 </div>

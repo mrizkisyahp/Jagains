@@ -15,7 +15,7 @@ export default function PrivasiSection() {
 
                             <div className="relative z-10 flex flex-col items-center text-center space-y-6 max-w-sm">
                                 <div className="size-20 rounded-3xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-primary shadow-2xl">
-                                    <Lock className="size-10 text-emerald-400" />
+                                    <Lock className="size-10 text-white" />
                                 </div>
 
                                 <div className="space-y-2">
@@ -25,19 +25,6 @@ export default function PrivasiSection() {
                                     <p className="text-body-sm text-neutral-300">
                                         Arsitektur satu arah HMAC-SHA256 menjamin email dan identitas warga tidak pernah tersimpan di basis data aplikasi.
                                     </p>
-                                </div>
-
-                                {/* Security Badges */}
-                                <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                                    <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-mono text-emerald-300">
-                                        HMAC-SHA256
-                                    </span>
-                                    <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-mono text-emerald-300">
-                                        EXIF GPS Stripping
-                                    </span>
-                                    <span className="px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-mono text-emerald-300">
-                                        Anonymous Quorum
-                                    </span>
                                 </div>
                             </div>
                         </Card>

@@ -9,6 +9,7 @@ import {
     Loader2,
     ShieldCheck,
     Navigation,
+    FileText,
 } from 'lucide-react';
 import {
     Dialog,
@@ -26,6 +27,7 @@ import { toast } from '@/components/ui/toast';
 interface ModalAjukanSelesaiProps {
     open: boolean;
     onClose: () => void;
+    onOpenBeritaAcara?: () => void;
     laporan: {
         id: number;
         nomor_tiket: string;
@@ -39,6 +41,7 @@ interface ModalAjukanSelesaiProps {
 export default function ModalAjukanSelesai({
     open,
     onClose,
+    onOpenBeritaAcara,
     laporan,
 }: ModalAjukanSelesaiProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -186,6 +189,11 @@ export default function ModalAjukanSelesai({
         e.preventDefault();
         if (!capturedFoto || !petugasLat || !petugasLng || !isGeofenceValid) return;
 
+        if (laporan && laporan.total_berita_acara === 0) {
+            toast.error('Berita Acara Diperlukan', 'Harap terbitkan minimal satu Berita Acara pengerjaan sebelum mengajukan penyelesaian fisik.');
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             const res = await fetch(`/instansi/tiket/${laporan.id}/selesai`, {
@@ -234,6 +242,37 @@ export default function ModalAjukanSelesai({
                     </DialogHeader>
 
                     <div className="flex-1 overflow-y-auto pr-1 space-y-4">
+                        {/* Peringatan jika belum ada Berita Acara */}
+                        {laporan.total_berita_acara === 0 && (
+                            <div className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-950 dark:text-amber-200 text-body-sm space-y-2">
+                                <div className="flex items-start gap-2.5">
+                                    <AlertCircle className="size-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                                    <div className="space-y-0.5">
+                                        <p className="font-semibold text-caption-sm text-amber-900 dark:text-amber-300">
+                                            Berita Acara Belum Diterbitkan
+                                        </p>
+                                        <p className="text-caption-xs text-muted-foreground leading-relaxed">
+                                            Instansi wajib menerbitkan minimal satu Berita Acara pelaksanaan kerja sebelum mengajukan penyelesaian fisik (FR-TIK-07).
+                                        </p>
+                                    </div>
+                                </div>
+                                {onOpenBeritaAcara && (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={() => {
+                                            onClose();
+                                            onOpenBeritaAcara();
+                                        }}
+                                        className="w-full h-8 text-caption-xs font-semibold gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
+                                    >
+                                        <FileText className="size-3.5" />
+                                        Buat Berita Acara Sekarang
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+
                         {/* Ringkasan Metadata Lokasi Awal */}
                         <div className="p-3 bg-muted/40 rounded-xl border border-border text-body-sm space-y-1">
                             <div className="flex justify-between items-center">

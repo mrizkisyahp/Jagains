@@ -25,9 +25,10 @@ import { cn } from 'cn';
 interface TiketQuickSummaryProps {
     tiket: TitikLaporanPeta | null;
     onClose: () => void;
+    className?: string;
 }
 
-export default function TiketQuickSummary({ tiket, onClose }: TiketQuickSummaryProps) {
+export default function TiketQuickSummary({ tiket, onClose, className }: TiketQuickSummaryProps) {
     const [copied, setCopied] = useState(false);
 
     if (!tiket) return null;
@@ -58,7 +59,7 @@ export default function TiketQuickSummary({ tiket, onClose }: TiketQuickSummaryP
     };
 
     return (
-        <div className="fixed inset-x-0 bottom-0 z-1000 p-3 sm:p-4 md:absolute md:inset-auto md:bottom-6 md:left-6 md:w-[420px] pointer-events-none transition-all duration-300">
+        <div className={cn("fixed inset-x-0 bottom-0 z-1000 p-3 sm:p-4 md:absolute md:inset-auto md:bottom-6 md:left-6 md:w-[420px] pointer-events-none transition-all duration-300", className)}>
             <Card className="pointer-events-auto bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-2xl overflow-hidden p-4 sm:p-5 space-y-4">
                 {/* Header: Nomor Tiket & Tombol Tutup */}
                 <div className="flex items-center justify-between border-b border-border/80 pb-3">

@@ -282,14 +282,31 @@ export default function AntreanTiketTable({ items, onAksi }: AntreanTiketTablePr
                                     )}
 
                                     {item.status === 'DIKERJAKAN' && (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => onAksi('selesai', item)}
-                                            className="h-8 text-caption-xs font-semibold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
-                                        >
-                                            <Camera className="size-3.5" />
-                                            Ajukan Selesai
-                                        </Button>
+                                        <div className="flex items-center gap-1.5">
+                                            <Button
+                                                size="sm"
+                                                onClick={() => onAksi('berita_acara', item)}
+                                                variant={item.total_berita_acara === 0 ? 'default' : 'outline'}
+                                                className={`h-8 text-caption-xs font-semibold gap-1 ${
+                                                    item.total_berita_acara === 0
+                                                        ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                                                        : 'border-border text-foreground hover:bg-muted'
+                                                }`}
+                                                title="Terbitkan / Kelola Berita Acara Pelaksanaan"
+                                            >
+                                                <FileText className="size-3.5" />
+                                                {item.total_berita_acara === 0 ? '+ Berita Acara' : `BA (${item.total_berita_acara})`}
+                                            </Button>
+
+                                            <Button
+                                                size="sm"
+                                                onClick={() => onAksi('selesai', item)}
+                                                className="h-8 text-caption-xs font-semibold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                            >
+                                                <Camera className="size-3.5" />
+                                                Ajukan Selesai
+                                            </Button>
+                                        </div>
                                     )}
 
                                     {item.status === 'DISENGKETAKAN' && (
@@ -305,12 +322,24 @@ export default function AntreanTiketTable({ items, onAksi }: AntreanTiketTablePr
 
                                     {/* Dropdown Menu untuk Aksi Tambahan */}
                                     <DropdownMenu>
-                                        <DropdownMenuTrigger className="size-8 inline-flex items-center justify-center rounded-lg hover:bg-muted/80 text-foreground transition-colors cursor-pointer">
-                                            <MoreHorizontal className="size-4" />
-                                            <span className="sr-only">Menu Opsi</span>
-                                        </DropdownMenuTrigger>
+                                        <DropdownMenuTrigger
+                                            render={
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8 rounded-lg hover:bg-muted/80 text-foreground cursor-pointer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <MoreHorizontal className="size-4" />
+                                                    <span className="sr-only">Menu Opsi</span>
+                                                </Button>
+                                            }
+                                        />
                                         <DropdownMenuContent align="end" className="w-52">
-                                            <DropdownMenuLabel className="text-caption-xs">Aksi Operasional</DropdownMenuLabel>
+                                            <DropdownMenuLabel className="text-caption-xs font-semibold text-muted-foreground">
+                                                Aksi Operasional
+                                            </DropdownMenuLabel>
                                             <DropdownMenuSeparator />
 
                                             {/* Opsi Status DITERUSKAN */}
