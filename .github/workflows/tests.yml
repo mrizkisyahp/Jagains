@@ -22,7 +22,8 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
-          php-version: '8.4.27'
+          php-version: '8.4'
+          extensions: pdo, pdo_pgsql, pgsql
           tools: composer:v2
           coverage: none
 
@@ -30,6 +31,23 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
+
+      - name: Start PostgreSQL container (Podman)
+        run: |
+          sudo systemctl stop postgresql 2>/dev/null || true
+          podman run -d \
+            --name postgres \
+            -e POSTGRES_DB=Jagains \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_HOST_AUTH_METHOD=trust \
+            -p 5432:5432 \
+            docker.io/library/postgres:16-alpine
+
+          echo "Waiting for PostgreSQL to be ready..."
+          until podman exec postgres pg_isready -U postgres -d Jagains; do
+            sleep 1
+          done
+          echo "PostgreSQL is ready!"
 
       - name: Setup Application
         run: composer setup
