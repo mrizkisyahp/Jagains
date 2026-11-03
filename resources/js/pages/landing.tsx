@@ -17,7 +17,7 @@ export default function LandingPage({ masterFilter }: LandingPageProps) {
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col antialiased selection:bg-primary/20 selection:text-primary">
             <Head>
-                <title>JAGAIns — Platform Pengawasan Fasilitas Publik Kota Depok</title>
+                <title>Jagains — Platform Pengawasan Fasilitas Publik Kota Depok</title>
                 <meta
                     name="description"
                     content="Lapor kerusakan fasilitas publik di sekitarmu, pantau janji instansi secara terbuka, dan pastikan sendiri hasilnya bersama kuorum warga Kota Depok."
@@ -41,7 +41,7 @@ export default function LandingPage({ masterFilter }: LandingPageProps) {
                 <PrivasiSection />
 
                 {/* 6. Seksi Metrik Kinerja: "Ukur Kinerja Layanan Publik Berbasis Data Nyata" */}
-                <KinerjaSection />
+                <KinerjaSection statistik={masterFilter?.statistik} />
 
                 {/* 7. Banner Call to Action Bawah: "Lihat kerusakan di sekitar Anda? Laporkan sekarang." */}
                 <CtaBannerSection />

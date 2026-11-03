@@ -6,7 +6,8 @@ import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import GuestLayouts from '@/layouts/GuestLayout';
-import { MapPin, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
+import Logo from '@/components/common/Logo';
 
 interface LoginProps {
     status?: string;
@@ -32,11 +33,10 @@ export default function Login({ status, success }: LoginProps) {
                 <div className="bg-zinc-950 dark:bg-zinc-900 text-zinc-100 p-6 sm:p-10 flex flex-col justify-between">
                     <div>
                         {/* Logo & Brand Name */}
-                        <div className="flex items-center gap-2.5 mb-10">
-                            <div className="border border-white/20 p-2 rounded-xl bg-white/10 shadow-xs">
-                                <MapPin className="h-5 w-5 text-white" />
-                            </div>
-                            <span className="font-display text-display-md font-bold tracking-tight text-white">Jagains</span>
+                        <div className="flex items-center mb-10">
+                            <Link href="/">
+                                <Logo className="text-white" />
+                            </Link>
                         </div>
 
                         {/* Title Hero */}

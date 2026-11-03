@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Laporan;
 
+use App\Models\Instansi;
 use App\Models\Kategori;
 use App\Models\Laporan;
 use App\Models\User;
@@ -87,6 +88,8 @@ class CekLaporanSerupaTest extends TestCase
         $kategoriJalan = Kategori::where('nama', 'Jalan Berlubang')->first();
         $kelurahan = Wilayah::where('tingkat', 'kelurahan')->first();
 
+        $instansi = Instansi::first() ?? Instansi::factory()->create();
+
         // Buat tiket yang sudah TERTUTUP_WARGA
         DB::statement("SET LOCAL jagains.izin_status = 'on'");
         Laporan::create([
@@ -102,7 +105,7 @@ class CekLaporanSerupaTest extends TestCase
             'lokasi_sumber' => 'gps',
             'akurasi_gps_m' => 5.0,
             'status' => 'TERTUTUP_WARGA',
-            'instansi_id' => 7,
+            'instansi_id' => $instansi->id,
             'ditutup_pada' => now(),
         ]);
 

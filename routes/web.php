@@ -169,4 +169,5 @@ Route::middleware('auth')->prefix('api/laporan')->name('api.laporan.')->group(fu
 // API Peta Publik (FR-PET-01 s.d. FR-PET-03)
 Route::prefix('api/peta')->name('api.peta.')->group(function () {
     Route::get('/titik', [PetaLaporanController::class, 'ambilDataTitik'])->name('titik');
+    Route::get('/master-filter', [PetaLaporanController::class, 'ambilMasterFilter'])->name('master-filter');
 });

@@ -6,7 +6,6 @@ import {
     KondisiSla,
 } from '@/types/peta';
 import PetaCanvas from '@/components/peta/PetaCanvas';
-import PetaDrawerList from '@/components/peta/PetaDrawerList';
 import TiketQuickSummary from '@/components/peta/TiketQuickSummary';
 import {
     Select,
@@ -15,7 +14,7 @@ import {
     SelectTrigger,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Search, RotateCcw, List, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Search, RotateCcw, RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface HeroSectionProps {
     masterFilter?: MasterFilterPeta;
@@ -26,7 +25,35 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedTiket, setSelectedTiket] = useState<TitikLaporanPeta | null>(null);
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [masterFilterData, setMasterFilterData] = useState<MasterFilterPeta | undefined>(masterFilter);
+
+    // Ambil master filter dari API jika belum tersedia dari prop Inertia
+    useEffect(() => {
+        if (masterFilter && (masterFilter.kecamatan?.length > 0 || masterFilter.kategori?.length > 0)) {
+            setMasterFilterData(masterFilter);
+        } else {
+            fetch('/api/peta/master-filter', {
+                headers: {
+                    Accept: 'application/json',
+                },
+            })
+                .then((res) => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then((resJson) => {
+                    if (resJson.status === 'success' && resJson.data) {
+                        setMasterFilterData(resJson.data);
+                    }
+                })
+                .catch((err) => {
+                    console.error('Gagal mengambil master filter:', err);
+                });
+        }
+    }, [masterFilter]);
+
+    const kecamatanList = masterFilterData?.kecamatan ?? [];
+    const kategoriList = masterFilterData?.kategori ?? [];
 
     // State Filter Minimalis
     const [filters, setFilters] = useState<PetaFilterState>({
@@ -171,7 +198,7 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                                     Wilayah
                                 </label>
                                 <Select
-                                    value={filters.kecamatan_id ? String(filters.kecamatan_id) : 'semua'}
+                                    value={filters.kecamatan_id !== null ? String(filters.kecamatan_id) : 'semua'}
                                     onValueChange={(val) =>
                                         setFilters((prev) => ({
                                             ...prev,
@@ -181,16 +208,16 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                                 >
                                     <SelectTrigger className="w-full h-6 border-0 shadow-none bg-transparent p-0 text-caption-xs sm:text-body-sm font-semibold text-foreground focus:ring-0 gap-1 cursor-pointer">
                                         <span className="truncate">
-                                            {filters.kecamatan_id
-                                                ? masterFilter?.kecamatan?.find((k) => k.id === filters.kecamatan_id)?.nama || 'Kecamatan'
+                                            {filters.kecamatan_id !== null
+                                                ? kecamatanList.find((k) => k.id === filters.kecamatan_id)?.nama || 'Kecamatan'
                                                 : 'Semua Wilayah'}
                                         </span>
                                     </SelectTrigger>
-                                    <SelectContent className="max-h-60 rounded-xl">
+                                    <SelectContent className="max-h-60 min-w-[200px] rounded-xl z-[1050]">
                                         <SelectItem value="semua" className="text-body-sm font-medium">
                                             Semua Wilayah
                                         </SelectItem>
-                                        {masterFilter?.kecamatan?.map((kec) => (
+                                        {kecamatanList.map((kec) => (
                                             <SelectItem key={kec.id} value={String(kec.id)} className="text-body-sm">
                                                 {kec.nama}
                                             </SelectItem>
@@ -207,7 +234,7 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                                     Kategori
                                 </label>
                                 <Select
-                                    value={filters.kategori_id ? String(filters.kategori_id) : 'semua'}
+                                    value={filters.kategori_id !== null ? String(filters.kategori_id) : 'semua'}
                                     onValueChange={(val) =>
                                         setFilters((prev) => ({
                                             ...prev,
@@ -217,16 +244,16 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                                 >
                                     <SelectTrigger className="w-full h-6 border-0 shadow-none bg-transparent p-0 text-caption-xs sm:text-body-sm font-semibold text-foreground focus:ring-0 gap-1 cursor-pointer">
                                         <span className="truncate">
-                                            {filters.kategori_id
-                                                ? masterFilter?.kategori?.find((k) => k.id === filters.kategori_id)?.nama || 'Kategori'
+                                            {filters.kategori_id !== null
+                                                ? kategoriList.find((k) => k.id === filters.kategori_id)?.nama || 'Kategori'
                                                 : 'Semua Kategori'}
                                         </span>
                                     </SelectTrigger>
-                                    <SelectContent className="max-h-60 rounded-xl">
+                                    <SelectContent className="max-h-60 min-w-[200px] rounded-xl z-[1050]">
                                         <SelectItem value="semua" className="text-body-sm font-medium">
                                             Semua Kategori
                                         </SelectItem>
-                                        {masterFilter?.kategori?.map((kat) => (
+                                        {kategoriList.map((kat) => (
                                             <SelectItem key={kat.id} value={String(kat.id)} className="text-body-sm">
                                                 {kat.nama}
                                             </SelectItem>
@@ -237,7 +264,7 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
 
                             <div className="h-7 w-px bg-border/80 shrink-0" />
 
-                            {/* 3. Filter Kondisi SLA */}
+                            {/* 3. Filter Kondisi SLA (Bersih tanpa icon warna) */}
                             <div className="flex-1 min-w-0 px-3 sm:px-4 py-1 text-left">
                                 <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                                     Kondisi SLA
@@ -254,36 +281,36 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                                     <SelectTrigger className="w-full h-6 border-0 shadow-none bg-transparent p-0 text-caption-xs sm:text-body-sm font-semibold text-foreground focus:ring-0 gap-1 cursor-pointer">
                                         <span className="truncate">
                                             {filters.kondisi_sla === 'dalam_sla'
-                                                ? '🟢 Aman SLA'
+                                                ? 'Aman SLA'
                                                 : filters.kondisi_sla === 'hampir_lewat'
-                                                ? '🟡 Mendekati Batas'
+                                                ? 'Mendekati Batas'
                                                 : filters.kondisi_sla === 'lewat_sla'
-                                                ? '🔴 Lewat SLA'
+                                                ? 'Lewat SLA'
                                                 : filters.kondisi_sla === 'menunggu_warga'
-                                                ? '🔵 Verifikasi'
+                                                ? 'Menunggu Verifikasi'
                                                 : filters.kondisi_sla === 'selesai'
-                                                ? '⚪ Selesai'
+                                                ? 'Selesai'
                                                 : 'Semua Status'}
                                         </span>
                                     </SelectTrigger>
-                                    <SelectContent className="max-h-60 rounded-xl">
+                                    <SelectContent className="max-h-60 min-w-[200px] rounded-xl z-[1050]">
                                         <SelectItem value="semua" className="text-body-sm font-medium">
                                             Semua Status
                                         </SelectItem>
                                         <SelectItem value="dalam_sla" className="text-body-sm">
-                                            🟢 Aman Dalam SLA
+                                            Aman Dalam SLA
                                         </SelectItem>
                                         <SelectItem value="hampir_lewat" className="text-body-sm">
-                                            🟡 Mendekati Batas SLA
+                                            Mendekati Batas SLA
                                         </SelectItem>
                                         <SelectItem value="lewat_sla" className="text-body-sm">
-                                            🔴 Lewat Batas Waktu SLA
+                                            Lewat Batas Waktu SLA
                                         </SelectItem>
                                         <SelectItem value="menunggu_warga" className="text-body-sm">
-                                            🔵 Menunggu Verifikasi Warga
+                                            Menunggu Verifikasi Warga
                                         </SelectItem>
                                         <SelectItem value="selesai" className="text-body-sm">
-                                            ⚪ Selesai Diverifikasi
+                                            Selesai Diverifikasi
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -329,36 +356,11 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                     </div>
                 </div>
 
-                {/* Drawer Daftar Tiket Laporan */}
-                <PetaDrawerList
-                    titikList={filteredTitik}
-                    selectedTiket={selectedTiket}
-                    onSelectTiket={(tiket) => setSelectedTiket(tiket)}
-                    onClose={() => setIsDrawerOpen(false)}
-                    isOpen={isDrawerOpen}
-                    onResetFilter={handleResetFilter}
-                />
-
                 {/* Floating Quick Summary Card saat marker dipilih */}
                 <TiketQuickSummary
                     tiket={selectedTiket}
                     onClose={() => setSelectedTiket(null)}
-                    className="md:bottom-8 md:left-8 md:w-[420px]"
                 />
-
-                {/* Tombol Buka Drawer Daftar Laporan di Kiri Bawah Peta */}
-                <div className="absolute bottom-6 left-6 z-1000 hidden sm:flex items-center gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsDrawerOpen((prev) => !prev)}
-                        className="rounded-full shadow-md bg-card/90 backdrop-blur-md border-border text-foreground text-caption-xs font-semibold gap-1.5 h-9 px-4 hover:bg-muted"
-                    >
-                        <List className="size-3.5 text-primary" />
-                        <span>Daftar Laporan ({filteredTitik.length})</span>
-                    </Button>
-                </div>
             </div>
         </section>
     );

@@ -150,7 +150,7 @@ class PetaLaporanApiTest extends TestCase
             'disembunyikan' => false,
         ]);
 
-        $instansi = Instansi::first();
+        $instansi = Instansi::first() ?? Instansi::factory()->create();
 
         Laporan::create([
             'nomor_tiket' => 'JAG-KAT-2',

@@ -1,37 +1,36 @@
-import { ShieldCheck, Lock, EyeOff, KeyRound } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { EyeOff, ShieldCheck, KeyRound } from 'lucide-react';
+
+const PRIVASI_ITEMS = [
+    {
+        id: 1,
+        judul: 'Email Tidak Pernah Disimpan',
+        deskripsi:
+            'Alamat email diubah menjadi hash kriptografis satu arah HMAC-SHA256 sebelum masuk ke basis data.',
+        ikon: EyeOff,
+    },
+    {
+        id: 2,
+        judul: 'Pembersihan Metadata EXIF',
+        deskripsi:
+            'Tipe gawai, waktu presisi, dan koordinat mentah otomatis dihapus dari berkas foto saat Anda mengambil gambar.',
+        ikon: ShieldCheck,
+    },
+    {
+        id: 3,
+        judul: 'Voting Anonim Terlindungi',
+        deskripsi:
+            'Dukungan dan suara verifikasi warga hanya ditampilkan sebagai angka bobot agregat tanpa profil pemberi suara.',
+        ikon: KeyRound,
+    },
+];
 
 export default function PrivasiSection() {
     return (
-        <section id="privasi" className="py-20 sm:py-28 bg-muted/30 border-y border-border/80">
+        <section id="privasi" className="py-20 sm:py-28 bg-muted/20 border-y border-border/80">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-                    {/* Left Column: Gambar Illustrasi Sesuai Wireframe */}
-                    <div className="lg:col-span-6">
-                        <Card className="relative overflow-hidden p-8 sm:p-12 rounded-3xl bg-neutral-900 text-white border-neutral-800 shadow-xl flex flex-col items-center justify-center min-h-[360px] sm:min-h-[420px]">
-                            {/* Decorative Grid & Glow */}
-                            <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:20px_20px]" />
-                            <div className="absolute size-64 bg-primary/20 rounded-full blur-3xl -top-12 -left-12 pointer-events-none" />
-
-                            <div className="relative z-10 flex flex-col items-center text-center space-y-6 max-w-sm">
-                                <div className="size-20 rounded-3xl bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-primary shadow-2xl">
-                                    <Lock className="size-10 text-white" />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <span className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-white block">
-                                        Zero-Knowledge Privacy
-                                    </span>
-                                    <p className="text-body-sm text-neutral-300">
-                                        Arsitektur satu arah HMAC-SHA256 menjamin email dan identitas warga tidak pernah tersimpan di basis data aplikasi.
-                                    </p>
-                                </div>
-                            </div>
-                        </Card>
-                    </div>
-
-                    {/* Right Column: Heading & Copy Sesuai Wireframe */}
-                    <div className="lg:col-span-6 space-y-6 sm:space-y-8">
+                    {/* Kolom Kiri: Heading & 3 Item List Berupa Card */}
+                    <div className="lg:col-span-6 space-y-8">
                         <div className="space-y-4">
                             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
                                 Suara Anda Terdengar, Identitas Anda Terkunci Aman
@@ -42,50 +41,42 @@ export default function PrivasiSection() {
                             </p>
                         </div>
 
-                        {/* Fitur-Fitur Keamanan */}
+                        {/* 3 Item List dengan Ikon & Teks Singkat Padat (Dikembalikan seperti semula) */}
                         <div className="space-y-4 pt-2">
-                            <div className="flex items-start gap-4">
-                                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
-                                    <EyeOff className="size-5" />
-                                </div>
-                                <div className="space-y-1">
-                                    <h3 className="font-display text-body-medium font-bold text-foreground">
-                                        Email Tidak Pernah Disimpan
-                                    </h3>
-                                    <p className="text-body-sm text-muted-foreground">
-                                        Alamat email langsung diubah menjadi hash kriptografis sebelum masuk ke sistem. Tidak ada siapa pun yang dapat membongkar email asli Anda.
-                                    </p>
-                                </div>
-                            </div>
+                            {PRIVASI_ITEMS.map((item) => {
+                                const Icon = item.ikon;
 
-                            <div className="flex items-start gap-4">
-                                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
-                                    <ShieldCheck className="size-5" />
-                                </div>
-                                <div className="space-y-1">
-                                    <h3 className="font-display text-body-medium font-bold text-foreground">
-                                        Pembersihan Jejak Metadata Foto (ST-16)
-                                    </h3>
-                                    <p className="text-body-sm text-muted-foreground">
-                                        Metadata EXIF (tipe gawai, waktu presisi, dan lokasi mentah) otomatis dihapus dari berkas foto saat Anda mengambil gambar kerusakan di lokasi.
-                                    </p>
-                                </div>
-                            </div>
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className="flex items-start gap-4 p-4 rounded-2xl bg-card border border-border/60 shadow-2xs hover:shadow-xs transition-shadow"
+                                    >
+                                        <div className="size-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                                            <Icon className="size-5" />
+                                        </div>
 
-                            <div className="flex items-start gap-4">
-                                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
-                                    <KeyRound className="size-5" />
-                                </div>
-                                <div className="space-y-1">
-                                    <h3 className="font-display text-body-medium font-bold text-foreground">
-                                        Voting Tanpa Nama di Tampilan Publik
-                                    </h3>
-                                    <p className="text-body-sm text-muted-foreground">
-                                        Dukungan dan suara verifikasi warga hanya ditampilkan sebagai angka bobot agregat tanpa mencantumkan username atau profil pemberi suara.
-                                    </p>
-                                </div>
-                            </div>
+                                        <div className="space-y-1">
+                                            <h3 className="font-display text-body-base font-bold text-foreground">
+                                                {item.judul}
+                                            </h3>
+                                            <p className="text-body-sm text-muted-foreground leading-relaxed">
+                                                {item.deskripsi}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
+                    </div>
+
+                    {/* Kolom Kanan: Asset Ilustrasi person_with_lock.png langsung (tanpa card) */}
+                    <div className="lg:col-span-6 flex items-center justify-center">
+                        <img
+                            src="/images/landing/person_with_lock.png"
+                            alt="Ilustrasi Privasi dan Keamanan Jagains"
+                            className="w-full max-w-md lg:max-w-lg h-auto object-contain mx-auto"
+                            loading="lazy"
+                        />
                     </div>
                 </div>
             </div>
