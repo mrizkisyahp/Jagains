@@ -18,6 +18,18 @@ const badgeVariants = cva(
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        "sla-safe":
+          "border-sla-safe/30 bg-sla-safe/10 text-sla-safe dark:bg-sla-safe/15",
+        "sla-warn":
+          "border-sla-warn/30 bg-sla-warn/10 text-sla-warn dark:bg-sla-warn/15",
+        "sla-late":
+          "border-sla-late/30 bg-sla-late/10 text-sla-late dark:bg-sla-late/15",
+        "stage-verify":
+          "border-stage-verify/30 bg-stage-verify/10 text-stage-verify dark:bg-stage-verify/15",
+        "stage-audit":
+          "border-stage-audit/30 bg-stage-audit/10 text-stage-audit dark:bg-stage-audit/15",
+        closed:
+          "border-border bg-transparent text-muted-foreground",
       },
     },
     defaultVariants: {

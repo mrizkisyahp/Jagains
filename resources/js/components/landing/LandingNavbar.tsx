@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { MapPin, Menu, X, ArrowRight } from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from 'cn';
 import { User } from '@/types/auth';
+import Logo from '@/components/common/Logo';
 
 export default function LandingNavbar() {
     const { auth } = usePage<{ auth?: { user?: User | null } }>().props;
@@ -22,13 +23,8 @@ export default function LandingNavbar() {
         <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/95 backdrop-blur-md">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                 {/* Logo & Brand */}
-                <Link href="/" className="flex items-center gap-2.5">
-                    <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
-                        <MapPin className="size-5" />
-                    </div>
-                    <span className="font-display text-xl font-bold tracking-tight text-foreground">
-                        JAGAIns
-                    </span>
+                <Link href="/" className="flex items-center">
+                    <Logo />
                 </Link>
 
                 {/* Desktop Nav Links */}

@@ -27,6 +27,7 @@ export interface TitikLaporanPeta {
     lintang: number;
     bujur: number;
     jumlah_dukungan: number;
+    foto_url?: string | null;
     created_at: string;
 }
 
@@ -39,6 +40,14 @@ export interface MasterFilterStatistik {
     total_laporan: number;
     laporan_aktif: number;
     laporan_selesai: number;
+    rata_rata_respon_menit?: number;
+    persentase_terlacak?: number;
+    rasio_selesai_mingguan?: number;
+    tren_mingguan?: {
+        respon: { hari: string; nilai: number }[];
+        terlacak: { hari: string; nilai: number }[];
+        rasio: { hari: string; nilai: number }[];
+    };
 }
 
 export interface MasterFilterPeta {

@@ -6,19 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
     MapPin,
-    Clock,
     ThumbsUp,
-    ExternalLink,
+    ArrowRight,
     Share2,
     Check,
     X,
-    Building2,
-    ShieldAlert,
     ShieldCheck,
-    Hourglass,
     AlertTriangle,
+    Hourglass,
     Users,
     CheckCheck,
+    ImageIcon,
 } from 'lucide-react';
 import { cn } from 'cn';
 
@@ -41,131 +39,153 @@ export default function TiketQuickSummary({ tiket, onClose, className }: TiketQu
         });
     };
 
-    // Render Icon SLA
-    const renderSlaIcon = () => {
+    // Helper variant & label badge SLA
+    const getBadgeConfig = () => {
         switch (tiket.kondisi_sla) {
             case 'lewat_sla':
-                return <AlertTriangle className="size-4 shrink-0 text-rose-500" />;
+                return {
+                    variant: 'sla-late' as const,
+                    icon: <AlertTriangle className="size-3 shrink-0" />,
+                    label: tiket.label_sla || 'Lewat SLA',
+                };
             case 'hampir_lewat':
-                return <Hourglass className="size-4 shrink-0 text-amber-500" />;
+                return {
+                    variant: 'sla-warn' as const,
+                    icon: <Hourglass className="size-3 shrink-0" />,
+                    label: tiket.label_sla || 'Mendekati Batas',
+                };
             case 'menunggu_warga':
-                return <Users className="size-4 shrink-0 text-blue-500" />;
+                return {
+                    variant: 'stage-verify' as const,
+                    icon: <Users className="size-3 shrink-0" />,
+                    label: tiket.label_sla || 'Verifikasi Warga',
+                };
             case 'selesai':
-                return <CheckCheck className="size-4 shrink-0 text-slate-500" />;
+                return {
+                    variant: 'closed' as const,
+                    icon: <CheckCheck className="size-3 shrink-0" />,
+                    label: 'Selesai Diverifikasi',
+                };
             case 'dalam_sla':
             default:
-                return <ShieldCheck className="size-4 shrink-0 text-emerald-500" />;
+                return {
+                    variant: 'sla-safe' as const,
+                    icon: <ShieldCheck className="size-3 shrink-0" />,
+                    label: tiket.label_sla || 'Aman SLA',
+                };
         }
     };
 
+    const badgeConfig = getBadgeConfig();
+
     return (
-        <div className={cn("fixed inset-x-0 bottom-0 z-1000 p-3 sm:p-4 md:absolute md:inset-auto md:bottom-6 md:left-6 md:w-[420px] pointer-events-none transition-all duration-300", className)}>
-            <Card className="pointer-events-auto bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-2xl overflow-hidden p-4 sm:p-5 space-y-4">
-                {/* Header: Nomor Tiket & Tombol Tutup */}
-                <div className="flex items-center justify-between border-b border-border/80 pb-3">
-                    <div className="flex items-center gap-2">
-                        <span className="font-mono text-body-sm font-bold text-primary tracking-wide">
-                            {tiket.nomor_tiket}
-                        </span>
-                        <Badge variant="outline" className="text-caption-xs font-semibold px-2 py-0.5 rounded-md border-border">
+        <div
+            className={cn(
+                'fixed inset-x-4 bottom-4 z-1000 sm:inset-x-auto sm:bottom-6 sm:left-6 sm:w-[320px] md:w-[340px] pointer-events-none transition-all duration-300',
+                className
+            )}
+        >
+            <Card className="pointer-events-auto overflow-hidden rounded-2xl bg-card border border-border shadow-2xl p-0 transition-all duration-200">
+                {/* 1. Gambar Laporan (Sesuai Referensi image 21.png) */}
+                <div className="relative w-full h-44 sm:h-48 bg-muted overflow-hidden flex items-center justify-center">
+                    {tiket.foto_url ? (
+                        <img
+                            src={tiket.foto_url}
+                            alt={tiket.judul}
+                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            onError={(e) => {
+                                // Fallback jika gambar gagal dimuat
+                                (e.target as HTMLElement).style.display = 'none';
+                            }}
+                        />
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-muted via-muted/80 to-muted/50 text-muted-foreground p-4">
+                            <ImageIcon className="size-10 mb-2 opacity-40 text-foreground" />
+                            <span className="text-caption-xs font-medium text-center">
+                                Dokumentasi Titik Laporan
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Tombol Aksi di Sudut Atas Gambar */}
+                    <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="icon"
+                            onClick={handleCopyLink}
+                            className="size-8 rounded-full bg-background/80 backdrop-blur-md text-foreground shadow-sm hover:bg-background"
+                            title="Salin Tautan Tiket"
+                        >
+                            {copied ? <Check className="size-3.5 text-sla-safe" /> : <Share2 className="size-3.5" />}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="icon"
+                            onClick={onClose}
+                            className="size-8 rounded-full bg-background/80 backdrop-blur-md text-foreground shadow-sm hover:bg-background"
+                            title="Tutup Ringkasan"
+                        >
+                            <X className="size-3.5" />
+                        </Button>
+                    </div>
+
+                    {/* Kategori Badge di Kiri Atas */}
+                    <div className="absolute top-2.5 left-2.5 z-10">
+                        <Badge variant="outline" className="bg-background/90 backdrop-blur-md text-caption-xs font-semibold px-2 py-0.5 rounded-full border-border">
                             {tiket.kategori_nama}
                         </Badge>
                     </div>
-
-                    <div className="flex items-center gap-1">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleCopyLink}
-                            className="size-8 rounded-lg text-muted-foreground hover:text-foreground"
-                            title="Salin Tautan Tiket"
-                        >
-                            {copied ? <Check className="size-4 text-emerald-600" /> : <Share2 className="size-4" />}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={onClose}
-                            className="size-8 rounded-lg text-muted-foreground hover:text-foreground"
-                            title="Tutup Ringkasan"
-                        >
-                            <X className="size-4" />
-                        </Button>
-                    </div>
                 </div>
 
-                {/* Judul Laporan */}
-                <div>
-                    <h3 className="font-display text-body-medium font-bold text-foreground leading-snug">
+                {/* Konten Utama Card: Judul, Lokasi, Status, Dukungan */}
+                <div className="p-4 sm:p-5 space-y-3.5">
+                    {/* Status SLA */}
+                    <div className="flex items-center justify-between gap-2">
+                        <Badge variant={badgeConfig.variant} className="text-caption-xs font-semibold gap-1.5 px-2.5 py-0.5">
+                            {badgeConfig.icon}
+                            <span>{badgeConfig.label}</span>
+                        </Badge>
+                        <span className="font-mono text-caption-xs font-semibold text-muted-foreground">
+                            {tiket.nomor_tiket}
+                        </span>
+                    </div>
+
+                    {/* 2. Judul Laporan */}
+                    <h3 className="font-display text-body-base font-bold text-foreground leading-snug line-clamp-2">
                         {tiket.judul}
                     </h3>
-                    <p className="flex items-center gap-1.5 text-caption-xs text-muted-foreground mt-1">
+
+                    {/* 3. Lokasi */}
+                    <p className="flex items-center gap-1.5 text-caption-xs text-muted-foreground">
                         <MapPin className="size-3.5 text-muted-foreground shrink-0" />
-                        <span>
+                        <span className="truncate">
                             Kel. {tiket.kelurahan_nama}, Kec. {tiket.kecamatan_nama}
                         </span>
                     </p>
-                </div>
 
-                {/* Indikator Status Dua Lapisan (Sistem & Fisik/SLA) */}
-                <div className="p-3 bg-muted/50 rounded-xl border border-border/60 space-y-2">
-                    <div className="flex items-center justify-between text-caption-xs">
-                        <span className="text-muted-foreground font-medium">Status Administrasi:</span>
-                        <Badge variant="secondary" className="font-semibold text-caption-xs uppercase tracking-wider px-2 py-0.5">
-                            {tiket.status.replace(/_/g, ' ')}
-                        </Badge>
-                    </div>
-
-                    <div className="flex items-center justify-between text-caption-xs pt-1 border-t border-border/40">
-                        <span className="text-muted-foreground font-medium">Kondisi Batas Waktu SLA:</span>
-                        <div className="flex items-center gap-1.5">
-                            <span
-                                className="size-2 rounded-full shrink-0"
-                                style={{ backgroundColor: tiket.warna_sla }}
-                            />
-                            <span
-                                className="font-bold text-caption-xs"
-                                style={{ color: tiket.warna_sla }}
-                            >
-                                {tiket.label_sla}
-                            </span>
+                    {/* 4. Jumlah Dukungan & Instansi */}
+                    <div className="pt-2 border-t border-border/60 flex items-center justify-between text-caption-xs">
+                        <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                            <ThumbsUp className="size-3.5 text-primary" />
+                            <span>{tiket.jumlah_dukungan} Dukungan Warga</span>
                         </div>
                     </div>
 
-                    {/* Deskripsi Sisa Waktu SLA */}
-                    <div className="flex items-start gap-2 pt-1 text-caption-xs text-muted-foreground font-medium">
-                        {renderSlaIcon()}
-                        <span className="leading-tight">{tiket.sisa_sla_teks}</span>
+                    {/* 5. Aksi Lihat Detail Lengkap */}
+                    <div className="pt-1">
+                        <Link
+                            href={`/tiket/${tiket.nomor_tiket}`}
+                            className={cn(
+                                buttonVariants({ variant: 'default' }),
+                                'w-full h-10 font-semibold gap-2 shadow-xs rounded-xl justify-center'
+                            )}
+                        >
+                            <span>Lihat Detail Lengkap</span>
+                            <ArrowRight className="size-4" />
+                        </Link>
                     </div>
-                </div>
-
-                {/* Info Instansi & Dukungan Warga */}
-                <div className="flex items-center justify-between text-caption-xs text-muted-foreground">
-                    <div className="flex items-center gap-1.5 truncate max-w-[220px]">
-                        <Building2 className="size-3.5 shrink-0" />
-                        <span className="truncate">{tiket.instansi_nama || 'Belum Ditugaskan'}</span>
-                    </div>
-
-                    <div className="flex items-center gap-1 font-mono font-semibold text-foreground">
-                        <ThumbsUp className="size-3.5 text-primary" />
-                        <span>{tiket.jumlah_dukungan} Dukungan</span>
-                    </div>
-                </div>
-
-                {/* Tombol Aksi Detail Tiket Publik (FR-TKT-01) */}
-                <div className="pt-1">
-                    <Link
-                        href={`/tiket/${tiket.nomor_tiket}`}
-                        className={cn(
-                            buttonVariants({ variant: 'default' }),
-                            'w-full h-10 font-semibold gap-2 shadow-sm rounded-xl'
-                        )}
-                    >
-                        <span>Lihat Detail Lengkap</span>
-                        <ExternalLink className="size-4" />
-                    </Link>
                 </div>
             </Card>
         </div>

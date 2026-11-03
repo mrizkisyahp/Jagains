@@ -69,4 +69,17 @@ class PetaLaporanController extends Controller
             'data' => $titikList,
         ]);
     }
+
+    /**
+     * Endpoint API JSON master filter untuk wilayah kecamatan, kategori, dan kondisi status.
+     */
+    public function ambilMasterFilter(): JsonResponse
+    {
+        $masterFilter = $this->petaService->ambilMasterFilter();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $masterFilter,
+        ]);
+    }
 }

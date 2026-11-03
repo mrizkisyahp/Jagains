@@ -463,7 +463,7 @@ export default function DetailTiketPage({ tiket: initialTiket }: DetailTiketProp
                 breadcrumb={getRoleBreadcrumb(currentUser.peran)}
             >
                 <Head>
-                    <title>{`Tiket ${tiket.nomor_tiket}: ${tiket.judul} — JAGAIns`}</title>
+                    <title>{`Tiket ${tiket.nomor_tiket}: ${tiket.judul} — Jagains`}</title>
                     <meta
                         name="description"
                         content={`Pantau akuntabilitas penanganan laporan fasilitas publik nomor tiket ${tiket.nomor_tiket} di Kota Depok secara transparan.`}
@@ -479,7 +479,7 @@ export default function DetailTiketPage({ tiket: initialTiket }: DetailTiketProp
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col antialiased selection:bg-primary/20 selection:text-primary">
             <Head>
-                <title>{`Tiket ${tiket.nomor_tiket}: ${tiket.judul} — JAGAIns`}</title>
+                <title>{`Tiket ${tiket.nomor_tiket}: ${tiket.judul} — Jagains`}</title>
                 <meta
                     name="description"
                     content={`Pantau akuntabilitas penanganan laporan fasilitas publik nomor tiket ${tiket.nomor_tiket} di Kota Depok secara transparan.`}

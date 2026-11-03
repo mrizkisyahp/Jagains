@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
-import { MapPin, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+import Logo from '@/components/common/Logo';
 
 export default function LandingFooter() {
     return (
@@ -8,13 +9,8 @@ export default function LandingFooter() {
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                     {/* Brand & Slogan */}
                     <div className="space-y-2">
-                        <Link href="/" className="flex items-center gap-2.5">
-                            <div className="flex size-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
-                                <MapPin className="size-4" />
-                            </div>
-                            <span className="font-display text-lg font-bold tracking-tight text-foreground">
-                                JAGAIns
-                            </span>
+                        <Link href="/" className="flex items-center">
+                            <Logo />
                         </Link>
                         <p className="text-caption-xs text-muted-foreground max-w-sm">
                             Platform Pengawasan & Transparansi Penanganan Fasilitas Publik Berbasis Kuorum Warga Kota Depok.
@@ -37,7 +33,7 @@ export default function LandingFooter() {
                             className="hover:text-foreground transition-colors inline-flex items-center gap-1 text-primary"
                         >
                             <ShieldCheck className="size-3.5" />
-                            <span>Zero-Knowledge Privacy (FR-LAN-01)</span>
+                            <span>Zero-Knowledge Privacy</span>
                         </Link>
                     </div>
                 </div>

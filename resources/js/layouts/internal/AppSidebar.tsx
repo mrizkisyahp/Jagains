@@ -1,5 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { MapPin, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
+import Logo from '@/components/common/Logo';
 import {
     Sidebar,
     SidebarContent,
@@ -43,14 +44,9 @@ export default function AppSidebar() {
         <Sidebar className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
             {/* Header: Logo & App Name */}
             <SidebarHeader className="p-5 pb-3">
-                <div className="flex items-center gap-3">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-xs">
-                        <MapPin className="size-5" />
-                    </div>
-                    <span className="font-display text-display-md font-bold tracking-tight text-sidebar-foreground">
-                        Jagains
-                    </span>
-                </div>
+                <Link href="/" className="flex items-center">
+                    <Logo />
+                </Link>
             </SidebarHeader>
 
             {/* Content: Role Navigation Items */}
