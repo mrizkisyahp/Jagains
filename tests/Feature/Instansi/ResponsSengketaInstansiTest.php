@@ -244,3 +244,21 @@ test('penolakan sengketa ke-4 langsung dialihkan ke Auditor dengan pemicu RONDE 
     expect($eskalasi)->not->toBeNull();
     expect($eskalasi->pemicu)->toBe('RONDE');
 });
+
+test('respons sengketa dapat dipanggil menggunakan nomor tiket string maupun integer id', function () {
+    [$laporan, $ronde, $sengketa] = buatLaporanSengketaFixture($this, rondeSengketa: 1);
+
+    $response = $this->actingAs($this->petugas)
+        ->postJson("/instansi/tiket/{$laporan->nomor_tiket}/respons-sengketa", [
+            'pilihan' => 'sanggah',
+            'alasan_sanggah' => 'Ini sanggahan yang menggunakan nomor tiket langsung pada URL.',
+        ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'sukses' => true,
+        'status' => 'MENUNGGU_KEPUTUSAN_AUDITOR',
+    ]);
+
+    expect($laporan->fresh()->status)->toBe('MENUNGGU_KEPUTUSAN_AUDITOR');
+});

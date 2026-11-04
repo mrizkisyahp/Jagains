@@ -1,12 +1,13 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import {
     MasterFilterPeta,
     TitikLaporanPeta,
     PetaFilterState,
     KondisiSla,
 } from '@/types/peta';
-import PetaCanvas from '@/components/peta/PetaCanvas';
 import TiketQuickSummary from '@/components/peta/TiketQuickSummary';
+
+const PetaCanvas = lazy(() => import('@/components/peta/PetaCanvas'));
 import {
     Select,
     SelectContent,
@@ -21,11 +22,16 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ masterFilter }: HeroSectionProps) {
+    const [isMounted, setIsMounted] = useState(false);
     const [allTitik, setAllTitik] = useState<TitikLaporanPeta[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedTiket, setSelectedTiket] = useState<TitikLaporanPeta | null>(null);
     const [masterFilterData, setMasterFilterData] = useState<MasterFilterPeta | undefined>(masterFilter);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Ambil master filter dari API jika belum tersedia dari prop Inertia
     useEffect(() => {
@@ -168,14 +174,28 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
     return (
         <section id="sebaran-peta" className="relative w-full overflow-hidden bg-background">
             {/* Kanvas Peta Interaktif Leaflet (Full 1 Canvas, Edge-to-Edge tanpa rounded) */}
-            <div className="relative w-full h-[680px] sm:h-[760px] lg:h-[840px] overflow-hidden">
-                <PetaCanvas
-                    titikList={filteredTitik}
-                    selectedTiket={selectedTiket}
-                    onSelectTiket={setSelectedTiket}
-                    isLoading={isLoading}
-                    className="w-full h-full rounded-none border-none shadow-none"
-                />
+            <div className="relative w-full h-[680px] sm:h-[760px] lg:h-[840px] overflow-hidden bg-muted/40">
+                {isMounted ? (
+                    <Suspense
+                        fallback={
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 animate-pulse text-muted-foreground gap-2">
+                                <span className="text-body-small font-medium">Memuat peta sebaran...</span>
+                            </div>
+                        }
+                    >
+                        <PetaCanvas
+                            titikList={filteredTitik}
+                            selectedTiket={selectedTiket}
+                            onSelectTiket={setSelectedTiket}
+                            isLoading={isLoading}
+                            className="w-full h-full rounded-none border-none shadow-none"
+                        />
+                    </Suspense>
+                ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
+                        <span className="text-body-small font-medium">Memuat peta sebaran...</span>
+                    </div>
+                )}
 
                 {/* Container Atas dengan Gradasi Putih/Background Menipis ke Bawah */}
                 <div className="absolute inset-x-0 top-0 z-20 pointer-events-none flex flex-col items-center pt-8 sm:pt-12 md:pt-14 pb-20 sm:pb-32 bg-gradient-to-b from-background via-background/90 to-transparent">

@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { MasterFilterPeta, TitikLaporanPeta, PetaFilterState, KondisiSla } from '@/types/peta';
-import PetaCanvas from '@/components/peta/PetaCanvas';
+const PetaCanvas = lazy(() => import('@/components/peta/PetaCanvas'));
 import PetaFilterBar from '@/components/peta/PetaFilterBar';
 import PetaDrawerList from '@/components/peta/PetaDrawerList';
 import TiketQuickSummary from '@/components/peta/TiketQuickSummary';
@@ -13,11 +13,16 @@ interface PetaSectionProps {
 }
 
 export default function PetaSection({ masterFilter }: PetaSectionProps) {
+    const [isMounted, setIsMounted] = useState(false);
     const [allTitik, setAllTitik] = useState<TitikLaporanPeta[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedTiket, setSelectedTiket] = useState<TitikLaporanPeta | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Filter State
     const [filters, setFilters] = useState<PetaFilterState>({
@@ -195,12 +200,28 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
 
                 {/* Kanvas Peta Interaktif Leaflet + Clustering */}
                 <div className="relative w-full h-[620px] lg:h-[720px] overflow-hidden rounded-3xl shadow-md border border-border">
-                    <PetaCanvas
-                        titikList={filteredTitik}
-                        selectedTiket={selectedTiket}
-                        onSelectTiket={setSelectedTiket}
-                        isLoading={isLoading}
-                    />
+                    {isMounted ? (
+                        <Suspense
+                            fallback={
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
+                                    <RefreshCw className="size-6 animate-spin text-primary" />
+                                    <span className="text-body-sm font-medium">Memuat peta sebaran...</span>
+                                </div>
+                            }
+                        >
+                            <PetaCanvas
+                                titikList={filteredTitik}
+                                selectedTiket={selectedTiket}
+                                onSelectTiket={setSelectedTiket}
+                                isLoading={isLoading}
+                            />
+                        </Suspense>
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
+                            <RefreshCw className="size-6 animate-spin text-primary" />
+                            <span className="text-body-sm font-medium">Memuat peta sebaran...</span>
+                        </div>
+                    )}
 
                     {/* Drawer Daftar Tiket Laporan */}
                     <PetaDrawerList

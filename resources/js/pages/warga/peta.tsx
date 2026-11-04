@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect, useMemo, useCallback } from 'react';
+import { ReactNode, useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Head } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
 import {
@@ -7,12 +7,13 @@ import {
     PetaFilterState,
     KondisiSla,
 } from '@/types/peta';
-import PetaCanvas from '@/components/peta/PetaCanvas';
 import PetaFilterBar from '@/components/peta/PetaFilterBar';
 import PetaDrawerList from '@/components/peta/PetaDrawerList';
 import TiketQuickSummary from '@/components/peta/TiketQuickSummary';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+
+const PetaCanvas = lazy(() => import('@/components/peta/PetaCanvas'));
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface PetaPageProps {
@@ -26,11 +27,16 @@ interface PetaPageProps {
 }
 
 export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPageProps) {
+    const [isMounted, setIsMounted] = useState(false);
     const [allTitik, setAllTitik] = useState<TitikLaporanPeta[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedTiket, setSelectedTiket] = useState<TitikLaporanPeta | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Filter State
     const [filters, setFilters] = useState<PetaFilterState>({
@@ -217,12 +223,28 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
 
                 {/* Kontainer Peta Utama */}
                 <div className="relative w-full h-[620px] lg:h-[700px] overflow-hidden rounded-2xl shadow-sm">
-                    <PetaCanvas
-                        titikList={filteredTitik}
-                        selectedTiket={selectedTiket}
-                        onSelectTiket={setSelectedTiket}
-                        isLoading={isLoading}
-                    />
+                    {isMounted ? (
+                        <Suspense
+                            fallback={
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
+                                    <RefreshCw className="size-6 animate-spin text-primary" />
+                                    <span className="text-body-sm font-medium">Memuat peta interaktif...</span>
+                                </div>
+                            }
+                        >
+                            <PetaCanvas
+                                titikList={filteredTitik}
+                                selectedTiket={selectedTiket}
+                                onSelectTiket={setSelectedTiket}
+                                isLoading={isLoading}
+                            />
+                        </Suspense>
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
+                            <RefreshCw className="size-6 animate-spin text-primary" />
+                            <span className="text-body-sm font-medium">Memuat peta interaktif...</span>
+                        </div>
+                    )}
 
                     {/* Drawer Daftar Tiket Laporan (Slide-in) */}
                     <PetaDrawerList

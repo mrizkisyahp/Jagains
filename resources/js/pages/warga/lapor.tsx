@@ -1,8 +1,8 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, lazy, Suspense } from 'react';
 import { router } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
 import CameraCapture from '@/components/laporan/CameraCapture';
-import LocationPickerMap from '@/components/laporan/LocationPickerMap';
+const LocationPickerMap = lazy(() => import('@/components/laporan/LocationPickerMap'));
 import SimilarReportsModal, { LaporanKandidat } from '@/components/laporan/SimilarReportsModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -65,8 +65,13 @@ interface LaporKerusakanPageProps {
 }
 
 export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusakanPageProps) {
+    const [isMounted, setIsMounted] = useState(false);
     // Form Wizard Step (1: Foto, 2: Lokasi, 3: Rincian Kerusakan)
     const [step, setStep] = useState<1 | 2 | 3>(1);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Form Data State
     const [foto, setFoto] = useState<string | null>(null);
@@ -378,14 +383,30 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                     {/* TAHAP 2: LOKASI PETA & GPS */}
                     {step === 2 && (
                         <div className="space-y-6">
-                            <LocationPickerMap
-                                lintang={lintang}
-                                bujur={bujur}
-                                akurasiGpsM={akurasiGpsM}
-                                lokasiSumber={lokasiSumber}
-                                kelurahanNama={kelurahanNama}
-                                onChangeLocation={handleLocationChange}
-                            />
+                            {isMounted ? (
+                                <Suspense
+                                    fallback={
+                                        <div className="h-[460px] w-full flex items-center justify-center bg-muted/20 rounded-2xl text-muted-foreground gap-2">
+                                            <Loader2 className="size-6 animate-spin text-primary" />
+                                            <span className="text-body-sm font-medium">Memuat peta lokasi...</span>
+                                        </div>
+                                    }
+                                >
+                                    <LocationPickerMap
+                                        lintang={lintang}
+                                        bujur={bujur}
+                                        akurasiGpsM={akurasiGpsM}
+                                        lokasiSumber={lokasiSumber}
+                                        kelurahanNama={kelurahanNama}
+                                        onChangeLocation={handleLocationChange}
+                                    />
+                                </Suspense>
+                            ) : (
+                                <div className="h-[460px] w-full flex items-center justify-center bg-muted/20 rounded-2xl text-muted-foreground gap-2">
+                                    <Loader2 className="size-6 animate-spin text-primary" />
+                                    <span className="text-body-sm font-medium">Memuat peta lokasi...</span>
+                                </div>
+                            )}
 
                             <div className="flex items-center justify-between pt-2 border-t border-border">
                                 <Button

@@ -132,4 +132,23 @@ class LoginDanSesiTest extends TestCase
         $response = $this->actingAs($warga)->get('/auditor/antrean');
         $response->assertStatus(403);
     }
+
+    public function test_login_instansi_membersihkan_url_intended_yang_tidak_sesuai_peran()
+    {
+        $petugas = User::factory()->instansi()->create([
+            'username' => 'petugas_intended',
+            'password' => bcrypt('password123'),
+            'status_akun' => 'aktif',
+            'wajib_ganti_sandi' => false,
+        ]);
+
+        // Simulasikan session url.intended berisi halaman warga
+        $response = $this->withSession(['url.intended' => 'http://localhost/warga/lapor'])
+            ->post('/login', [
+                'username' => 'petugas_intended',
+                'password' => 'password123',
+            ]);
+
+        $response->assertRedirect('/instansi/antrean');
+    }
 }

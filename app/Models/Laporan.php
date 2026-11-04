@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class Laporan extends Model
 {
@@ -141,5 +143,26 @@ class Laporan extends Model
     public function pelanggaran(): HasMany
     {
         return $this->hasMany(LaporanPelanggaran::class, 'laporan_id');
+    }
+
+    /**
+     * Menyesuaikan query route model binding agar mendukung pencarian berdasarkan ID maupun nomor tiket.
+     *
+     * @param  Builder|Relation  $query
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return \Illuminate\Contracts\Database\Eloquent\Builder
+     */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        if ($field) {
+            return parent::resolveRouteBindingQuery($query, $value, $field);
+        }
+
+        if (is_numeric($value)) {
+            return $query->where('id', $value);
+        }
+
+        return $query->where('nomor_tiket', $value);
     }
 }

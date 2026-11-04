@@ -56,7 +56,7 @@ export default function ModalResponsSengketa({
         setIsSubmitting(true);
 
         router.post(
-            `/instansi/tiket/${laporan.nomor_tiket}/respons-sengketa`,
+            `/instansi/tiket/${laporan.id}/respons-sengketa`,
             {
                 pilihan: pilihan,
                 alasan_sanggah: pilihan === 'sanggah' ? alasanSanggah.trim() : null,
@@ -79,8 +79,8 @@ export default function ModalResponsSengketa({
 
     return (
         <Dialog open={open} onOpenChange={(v) => (!v ? handleClose() : null)}>
-            <DialogContent className="max-w-xl rounded-3xl p-6 sm:p-8">
-                <DialogHeader className="space-y-1 pb-3 border-b border-border/60">
+            <DialogContent className="max-w-xl max-h-[92vh] flex flex-col rounded-3xl p-6 sm:p-8 overflow-hidden">
+                <DialogHeader className="space-y-1 pb-3 border-b border-border/60 shrink-0">
                     <div className="flex items-center gap-2">
                         <Badge variant="outline" className="font-mono text-xs">
                             {laporan.nomor_tiket}
@@ -97,105 +97,107 @@ export default function ModalResponsSengketa({
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-5 pt-3">
-                    {/* Ringkasan Laporan */}
-                    <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 space-y-2">
-                        <div className="flex items-center gap-2 text-destructive font-semibold text-xs">
-                            <ShieldAlert className="size-4 shrink-0" />
-                            <span>Kuorum Penolakan Warga Terpenuhi</span>
-                        </div>
-                        <p className="text-xs font-bold text-foreground">{laporan.judul}</p>
-                        <p className="text-[11px] text-muted-foreground">
-                            Warga menilai pekerjaan belum tuntas atau tidak sesuai standar kontrak. Sesuai aturan P-04, Anda wajib memilih apakah bersedia melakukan pengerjaan ulang atau mengajukan sanggahan formal ke Auditor Independen.
-                        </p>
-                    </div>
-
-                    {/* Dua Pilihan Sikap Instansi */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-foreground">
-                            Pilih Sikap Resmi Instansi:
-                        </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setPilihan('kerjakan_ulang')}
-                                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                                    pilihan === 'kerjakan_ulang'
-                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                                        : 'border-border/80 bg-card hover:border-primary/40'
-                                }`}
-                            >
-                                <div className="space-y-1">
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-display text-sm font-bold text-foreground flex items-center gap-1.5">
-                                            <RotateCcw className="size-3.5 text-primary" /> Kerjakan Ulang
-                                        </span>
-                                    </div>
-                                    <p className="text-[11px] text-muted-foreground">
-                                        Instansi menerima catatan warga dan berkomitmen memperbaiki ulang fisik di lapangan (Maksimal 3x).
-                                    </p>
-                                </div>
-                                <span className="text-[10px] font-semibold text-primary pt-2">
-                                    Status kembali DIKERJAKAN
-                                </span>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setPilihan('sanggah')}
-                                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                                    pilihan === 'sanggah'
-                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                                        : 'border-border/80 bg-card hover:border-primary/40'
-                                }`}
-                            >
-                                <div className="space-y-1">
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-display text-sm font-bold text-foreground flex items-center gap-1.5">
-                                            <Scale className="size-3.5 text-amber-600" /> Sanggah Penolakan
-                                        </span>
-                                    </div>
-                                    <p className="text-[11px] text-muted-foreground">
-                                        Instansi menyatakan pekerjaan sudah sesuai spesifikasi dan meminta Auditor Independen memutuskan.
-                                    </p>
-                                </div>
-                                <span className="text-[10px] font-semibold text-amber-600 pt-2">
-                                    Dialihkan ke meja Auditor
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Form Alasan Sanggahan Teknis */}
-                    {pilihan === 'sanggah' && (
-                        <div className="space-y-2 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 animate-in fade-in">
-                            <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold text-foreground flex items-center gap-1">
-                                    <AlertTriangle className="size-3.5 text-amber-600" /> Alasan Sanggahan Teknis (Wajib):
-                                </label>
-                                <span
-                                    className={`text-[10px] font-mono ${
-                                        alasanSanggah.trim().length >= 10 ? 'text-emerald-600 font-semibold' : 'text-destructive'
-                                    }`}
-                                >
-                                    {alasanSanggah.trim().length} / 10 karakter minimum
-                                </span>
+                <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 pt-3">
+                    <div className="flex-1 overflow-y-auto pr-1.5 space-y-5">
+                        {/* Ringkasan Laporan */}
+                        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 space-y-2">
+                            <div className="flex items-center gap-2 text-destructive font-semibold text-xs">
+                                <ShieldAlert className="size-4 shrink-0" />
+                                <span>Kuorum Penolakan Warga Terpenuhi</span>
                             </div>
-                            <Textarea
-                                rows={3}
-                                placeholder="Jelaskan spesifikasi teknis, bukti pengujian, atau justifikasi resmi mengapa klaim penolakan warga tidak berdasar..."
-                                value={alasanSanggah}
-                                onChange={(e) => setAlasanSanggah(e.target.value)}
-                                className="text-xs bg-background"
-                            />
-                            <p className="text-[10px] text-muted-foreground">
-                                Sanggahan dan alasan teknis Anda akan dicatat dalam audit log serta ditampilkan secara terbuka di linimasa publik.
+                            <p className="text-xs font-bold text-foreground">{laporan.judul}</p>
+                            <p className="text-[11px] text-muted-foreground">
+                                Warga menilai pekerjaan belum tuntas atau tidak sesuai standar kontrak. Sesuai aturan P-04, Anda wajib memilih apakah bersedia melakukan pengerjaan ulang atau mengajukan sanggahan formal ke Auditor Independen.
                             </p>
                         </div>
-                    )}
+
+                        {/* Dua Pilihan Sikap Instansi */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-foreground">
+                                Pilih Sikap Resmi Instansi:
+                            </label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setPilihan('kerjakan_ulang')}
+                                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                                        pilihan === 'kerjakan_ulang'
+                                            ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                                            : 'border-border/80 bg-card hover:border-primary/40'
+                                    }`}
+                                >
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-display text-sm font-bold text-foreground flex items-center gap-1.5">
+                                                <RotateCcw className="size-3.5 text-primary" /> Kerjakan Ulang
+                                            </span>
+                                        </div>
+                                        <p className="text-[11px] text-muted-foreground">
+                                            Instansi menerima catatan warga dan berkomitmen memperbaiki ulang fisik di lapangan (Maksimal 3x).
+                                        </p>
+                                    </div>
+                                    <span className="text-[10px] font-semibold text-primary pt-2">
+                                        Status kembali DIKERJAKAN
+                                    </span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setPilihan('sanggah')}
+                                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                                        pilihan === 'sanggah'
+                                            ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                                            : 'border-border/80 bg-card hover:border-primary/40'
+                                    }`}
+                                >
+                                    <div className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-display text-sm font-bold text-foreground flex items-center gap-1.5">
+                                                <Scale className="size-3.5 text-amber-600" /> Sanggah Penolakan
+                                            </span>
+                                        </div>
+                                        <p className="text-[11px] text-muted-foreground">
+                                            Instansi menyatakan pekerjaan sudah sesuai spesifikasi dan meminta Auditor Independen memutuskan.
+                                        </p>
+                                    </div>
+                                    <span className="text-[10px] font-semibold text-amber-600 pt-2">
+                                        Dialihkan ke meja Auditor
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Form Alasan Sanggahan Teknis */}
+                        {pilihan === 'sanggah' && (
+                            <div className="space-y-2 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 animate-in fade-in">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-bold text-foreground flex items-center gap-1">
+                                        <AlertTriangle className="size-3.5 text-amber-600" /> Alasan Sanggahan Teknis (Wajib):
+                                    </label>
+                                    <span
+                                        className={`text-[10px] font-mono ${
+                                            alasanSanggah.trim().length >= 10 ? 'text-emerald-600 font-semibold' : 'text-destructive'
+                                        }`}
+                                    >
+                                        {alasanSanggah.trim().length} / 10 karakter minimum
+                                    </span>
+                                </div>
+                                <Textarea
+                                    rows={3}
+                                    placeholder="Jelaskan spesifikasi teknis, bukti pengujian, atau justifikasi resmi mengapa klaim penolakan warga tidak berdasar..."
+                                    value={alasanSanggah}
+                                    onChange={(e) => setAlasanSanggah(e.target.value)}
+                                    className="text-xs bg-background"
+                                />
+                                <p className="text-[10px] text-muted-foreground">
+                                    Sanggahan dan alasan teknis Anda akan dicatat dalam audit log serta ditampilkan secara terbuka di linimasa publik.
+                                </p>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Tombol Aksi Bawah */}
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+                    <div className="flex items-center justify-end gap-2 pt-3 mt-3 border-t border-border/60 shrink-0">
                         <Button type="button" variant="outline" size="sm" onClick={handleClose}>
                             Batal
                         </Button>

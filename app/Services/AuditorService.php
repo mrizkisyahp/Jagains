@@ -250,6 +250,8 @@ class AuditorService
         }
 
         return DB::transaction(function () use ($auditor, $eskalasi, $data) {
+            DB::statement("SET LOCAL jagains.izin_status = 'on'");
+
             // Lock baris eskalasi dan laporan
             $eskalasiTerkunci = Eskalasi::where('id', $eskalasi->id)->lockForUpdate()->firstOrFail();
             $laporanTerkunci = Laporan::where('id', $eskalasiTerkunci->laporan_id)->lockForUpdate()->firstOrFail();
