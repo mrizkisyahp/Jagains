@@ -59,13 +59,19 @@ class AntreanAuditorController extends Controller
     }
 
     /**
-     * Mengambil detail perkara eskalasi untuk modal telaah sidang (FR-AUD-01).
+     * Mengambil detail perkara eskalasi untuk telaah sidang (FR-AUD-01).
      */
-    public function show(Request $request, Eskalasi $eskalasi): JsonResponse
+    public function show(Request $request, Eskalasi $eskalasi): JsonResponse|Response
     {
         $detail = $this->service->ambilDetailEskalasi($request->user(), $eskalasi->id);
 
-        return response()->json($detail);
+        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+            return response()->json($detail);
+        }
+
+        return Inertia::render('auditor/detail', [
+            'detail' => $detail,
+        ]);
     }
 
     /**
@@ -87,6 +93,8 @@ class AntreanAuditorController extends Controller
             ]);
         }
 
-        return back()->with('sukses', $hasil['pesan']);
+        return redirect()->route('auditor.antrean')
+            ->with('success', $hasil['pesan'])
+            ->with('sukses', $hasil['pesan']);
     }
 }
