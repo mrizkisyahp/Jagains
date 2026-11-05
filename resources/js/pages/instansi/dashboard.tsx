@@ -1,352 +1,424 @@
-import { ReactNode } from 'react';
-import { Head, Link } from '@inertiajs/react';
-import InternalLayout from '@/layouts/InternalLayout';
+import type { ReactNode } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
-    Activity,
     AlertTriangle,
-    CheckCircle2,
-    Clock,
-    FileText,
-    ArrowUpRight,
-    Calendar,
-    ChevronRight,
-    MapPin,
-    Tag,
+    ArrowRight,
+    CalendarClock,
+    CircleAlert,
+    Clock3,
+    MessageSquareWarning,
+    Users,
 } from 'lucide-react';
+import InternalLayout from '@/layouts/InternalLayout';
+import InstansiEmptyState from '@/components/instansi/InstansiEmptyState';
+import InstansiStatusBadge, {
+    INSTANSI_STATUS,
+} from '@/components/instansi/InstansiStatusBadge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { antrean, dashboard } from '@/routes/instansi';
+import { detail } from '@/routes/tiket';
 
-interface StatistikKinerja {
-    total_tiket: number;
-    tiket_berjalan: number;
-    tiket_lewat_sla: number;
-    tiket_menunggu_verifikasi: number;
-    tiket_selesai: number;
-}
+type PeriodeDashboard = '30_hari' | '90_hari' | 'semua';
 
 interface TiketPrioritas {
     id: number;
     nomor_tiket: string;
     judul: string;
+    status: string;
     kategori: string | null;
     kelurahan: string | null;
-    status: string;
-    sla_jatuh_tempo: string | null;
-    created_at: string;
+    urgensi: 'lewat_sla' | 'perlu_respons' | 'sengketa' | 'sla_aktif';
+    sisa_hari_sla: number | null;
 }
 
 interface DashboardInstansiProps {
-    statistik: StatistikKinerja;
-    distribusiTahap: Record<string, number>;
-    tiketPrioritas: TiketPrioritas[];
+    periode: PeriodeDashboard;
+    diperbarui_pada: string;
+    tindakan: {
+        lewat_sla: number;
+        perlu_respons: number;
+        perlu_respons_sengketa: number;
+        menunggu_verifikasi: number;
+        prioritas: TiketPrioritas[];
+    };
+    pipeline: Array<{ status: string; jumlah: number }>;
+    kualitas: {
+        data_cukup: boolean;
+        ambang_tiket_tertutup: number;
+        tiket_tertutup: number;
+        median_respons_hk: number | null;
+        median_selesai_hk: number | null;
+        janji_ditepati_persen: number | null;
+        anggaran_menggantung_total: number;
+        tingkat_verifikasi_persen: number | null;
+        tingkat_sengketa_persen: number | null;
+    };
 }
 
-const NAMA_STATUS: Record<string, string> = {
-    DITERUSKAN: 'Diteruskan ke Unit',
-    DITERIMA: 'Diterima Disposisi',
-    DISURVEI: 'Tahap Survei Lapangan',
-    TERJADWAL_ANGGARAN: 'Terjadwal Anggaran',
-    DIKERJAKAN: 'Sedang Dikerjakan',
-    MENUNGGU_VERIFIKASI: 'Menunggu Verifikasi',
-    DISENGKETAKAN: 'Dalam Sengketa',
-    TERTUTUP_WARGA: 'Selesai & Tertutup',
+const PERIOD_LABELS: Record<PeriodeDashboard, string> = {
+    '30_hari': '30 hari terakhir',
+    '90_hari': '90 hari terakhir',
+    semua: 'Semua periode',
 };
 
-const WARNA_STATUS: Record<string, string> = {
-    DITERUSKAN: 'bg-amber-100 text-amber-800 border-amber-200',
-    DITERIMA: 'bg-blue-100 text-blue-800 border-blue-200',
-    DISURVEI: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-    TERJADWAL_ANGGARAN: 'bg-purple-100 text-purple-800 border-purple-200',
-    DIKERJAKAN: 'bg-cyan-100 text-cyan-800 border-cyan-200',
-    MENUNGGU_VERIFIKASI: 'bg-orange-100 text-orange-800 border-orange-200',
-    DISENGKETAKAN: 'bg-rose-100 text-rose-800 border-rose-200',
-    TERTUTUP_WARGA: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-};
+const TERMINAL_STATUSES = new Set([
+    'DITOLAK',
+    'TERTUTUP_WARGA',
+    'TERTUTUP_AUDITOR',
+]);
+
+function alasanUrgensi(tiket: TiketPrioritas): string {
+    if (tiket.urgensi === 'lewat_sla') {
+        return 'Melewati batas waktu layanan';
+    }
+
+    if (tiket.urgensi === 'sengketa') {
+        return 'Menunggu respons sengketa';
+    }
+
+    if (tiket.urgensi === 'perlu_respons') {
+        return 'Perlu respons awal';
+    }
+
+    if (tiket.sisa_hari_sla === null) {
+        return 'Batas waktu belum ditetapkan';
+    }
+
+    if (tiket.sisa_hari_sla === 0) {
+        return 'Batas waktu berakhir hari ini';
+    }
+
+    return `Sisa ${tiket.sisa_hari_sla} hari`;
+}
+
+function formatNilai(nilai: number | null, suffix: string): string {
+    return nilai === null ? '—' : `${nilai.toLocaleString('id-ID')}${suffix}`;
+}
 
 export default function DashboardInstansiPage({
-    statistik,
-    distribusiTahap,
-    tiketPrioritas,
+    periode,
+    diperbarui_pada,
+    tindakan,
+    pipeline,
+    kualitas,
 }: DashboardInstansiProps) {
-    const formatTanggal = (isoString: string | null) => {
-        if (!isoString) return '-';
-        return new Date(isoString).toLocaleDateString('id-ID', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    };
+    const tindakanUtama = [
+        {
+            label: 'Lewat batas waktu',
+            value: tindakan.lewat_sla,
+            href: antrean({ query: { status: 'LEWAT_SLA' } }),
+            icon: AlertTriangle,
+        },
+        {
+            label: 'Perlu respons awal',
+            value: tindakan.perlu_respons,
+            href: antrean({ query: { status: 'PERLU_RESPONS' } }),
+            icon: Clock3,
+        },
+        {
+            label: 'Perlu respons sengketa',
+            value: tindakan.perlu_respons_sengketa,
+            href: antrean({ query: { status: 'SENGKETA' } }),
+            icon: MessageSquareWarning,
+        },
+        {
+            label: 'Menunggu verifikasi',
+            value: tindakan.menunggu_verifikasi,
+            href: antrean({ query: { status: 'MENUNGGU_VERIFIKASI' } }),
+            icon: Users,
+        },
+    ];
+    const pipelineAktif = pipeline.filter(
+        ({ status }) => !TERMINAL_STATUSES.has(status),
+    );
+    const pipelineTerminal = pipeline.filter(({ status }) =>
+        TERMINAL_STATUSES.has(status),
+    );
+    const totalAktif = pipelineAktif.reduce(
+        (total, item) => total + item.jumlah,
+        0,
+    );
+    const diperbarui = new Intl.DateTimeFormat('id-ID', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    }).format(new Date(diperbarui_pada));
 
-    const hitungSisaHari = (isoString: string | null) => {
-        if (!isoString) return null;
-        const target = new Date(isoString).getTime();
-        const sekarang = new Date().getTime();
-        const diffMs = target - sekarang;
-        const diffHari = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-        return diffHari;
-    };
+    const metrikKualitas = [
+        [
+            'Respons awal median',
+            formatNilai(kualitas.median_respons_hk, ' hari kerja'),
+        ],
+        [
+            'Sampai diajukan selesai',
+            formatNilai(kualitas.median_selesai_hk, ' hari kerja'),
+        ],
+        [
+            'Janji target dipenuhi',
+            formatNilai(kualitas.janji_ditepati_persen, '%'),
+        ],
+        [
+            'Anggaran melewati target',
+            `${kualitas.anggaran_menggantung_total.toLocaleString('id-ID')} tiket`,
+        ],
+        [
+            'Verifikasi warga',
+            formatNilai(kualitas.tingkat_verifikasi_persen, '%'),
+        ],
+        [
+            'Sengketa setelah verifikasi',
+            formatNilai(kualitas.tingkat_sengketa_persen, '%'),
+        ],
+    ];
 
     return (
-        <div className="space-y-6">
-            <Head title="Dashboard Kinerja Instansi - Jagains" />
+        <div className="flex min-w-0 flex-col gap-5">
+            <Head title="Dashboard Kinerja Instansi" />
 
-            {/* Header Ringkasan */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <header className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                        Dashboard Kinerja Internal
+                    <h1 className="text-display-sm font-display font-semibold tracking-tight">
+                        Kinerja penanganan
                     </h1>
-                    <p className="text-sm text-slate-500">
-                        Monitoring beban kerja tiket, pemenuhan standar pelayanan (SLA), dan status penanganan unit.
+                    <p className="mt-1 text-body-sm text-muted-foreground">
+                        Prioritaskan laporan yang membutuhkan tindakan hari ini.
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Link
-                        href="/instansi/antrean"
-                        className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 transition"
-                    >
-                        <span>Buka Antrean Tiket</span>
-                        <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                </div>
-            </div>
+                <div className="flex items-center gap-3">
+                    <span className="hidden text-caption-xs text-muted-foreground sm:inline">
+                        Diperbarui {diperbarui}
+                    </span>
+                    <Select
+                        value={periode}
+                        onValueChange={(value) => {
+                            if (!value) {
+                                return;
+                            }
 
-            {/* Metrik KPI Cards */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-slate-500">Total Tiket Masuk</span>
-                        <div className="rounded-md bg-slate-100 p-2 text-slate-600">
-                            <FileText className="h-4 w-4" />
-                        </div>
-                    </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-slate-900">
-                            {statistik.total_tiket.toLocaleString('id-ID')}
-                        </span>
-                        <span className="text-xs text-slate-400">tiket</span>
-                    </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-slate-500">Sedang Diproses</span>
-                        <div className="rounded-md bg-blue-50 p-2 text-blue-600">
-                            <Activity className="h-4 w-4" />
-                        </div>
-                    </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-blue-700">
-                            {statistik.tiket_berjalan.toLocaleString('id-ID')}
-                        </span>
-                        <span className="text-xs text-blue-500">aktif</span>
-                    </div>
-                </div>
-
-                <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-4 shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-rose-700">Terlambat SLA</span>
-                        <div className="rounded-md bg-rose-100 p-2 text-rose-700">
-                            <AlertTriangle className="h-4 w-4" />
-                        </div>
-                    </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-rose-800">
-                            {statistik.tiket_lewat_sla.toLocaleString('id-ID')}
-                        </span>
-                        <span className="text-xs text-rose-600">kritis</span>
-                    </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-slate-500">Menunggu Verifikasi</span>
-                        <div className="rounded-md bg-orange-50 p-2 text-orange-600">
-                            <Clock className="h-4 w-4" />
-                        </div>
-                    </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-orange-700">
-                            {statistik.tiket_menunggu_verifikasi.toLocaleString('id-ID')}
-                        </span>
-                        <span className="text-xs text-orange-500">evaluasi</span>
-                    </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-slate-500">Tuntas Diselesaikan</span>
-                        <div className="rounded-md bg-emerald-50 p-2 text-emerald-600">
-                            <CheckCircle2 className="h-4 w-4" />
-                        </div>
-                    </div>
-                    <div className="mt-2 flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-emerald-700">
-                            {statistik.tiket_selesai.toLocaleString('id-ID')}
-                        </span>
-                        <span className="text-xs text-emerald-500">selesai</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Distribusi Tahap & Tiket Prioritas SLA */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                {/* Distribusi Beban per Tahap Penanganan */}
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-1">
-                    <div className="border-b border-slate-100 pb-3">
-                        <h2 className="text-base font-semibold text-slate-900">Distribusi Beban Kerja</h2>
-                        <p className="text-xs text-slate-500">Sebaran tiket berdasarkan tahapan operasional</p>
-                    </div>
-
-                    <div className="mt-4 space-y-3">
-                        {Object.entries(distribusiTahap).map(([statusKode, jumlah]) => {
-                            const persen =
-                                statistik.total_tiket > 0
-                                    ? Math.round((jumlah / statistik.total_tiket) * 100)
-                                    : 0;
-                            return (
-                                <div key={statusKode} className="space-y-1">
-                                    <div className="flex items-center justify-between text-xs">
-                                        <span className="font-medium text-slate-700">
-                                            {NAMA_STATUS[statusKode] || statusKode}
-                                        </span>
-                                        <div className="flex items-center gap-1.5 font-semibold text-slate-900">
-                                            <span>{jumlah}</span>
-                                            <span className="text-[10px] font-normal text-slate-400">
-                                                ({persen}%)
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                                        <div
-                                            className="h-full rounded-full bg-teal-500 transition-all duration-300"
-                                            style={{ width: `${Math.min(persen, 100)}%` }}
-                                        />
-                                    </div>
-                                </div>
+                            router.get(
+                                dashboard.url({ query: { periode: value } }),
                             );
-                        })}
-                    </div>
+                        }}
+                    >
+                        <SelectTrigger
+                            aria-label="Pilih periode dashboard"
+                            className="min-w-44 shadow-none"
+                        >
+                            <SelectValue>
+                                {(value: string | null) =>
+                                    PERIOD_LABELS[
+                                        (value ?? 'semua') as PeriodeDashboard
+                                    ]
+                                }
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                {Object.entries(PERIOD_LABELS).map(
+                                    ([value, label]) => (
+                                        <SelectItem key={value} value={value}>
+                                            {label}
+                                        </SelectItem>
+                                    ),
+                                )}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                 </div>
+            </header>
 
-                {/* Tiket Prioritas & SLA */}
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+
+            <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(20rem,1fr)]">
+                <section
+                    className="min-w-0 overflow-hidden rounded-xl border border-border"
+                    aria-labelledby="prioritas-heading"
+                >
+                    <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
                         <div>
-                            <h2 className="text-base font-semibold text-slate-900">
-                                Tiket Prioritas Batas Waktu SLA
+                            <h2
+                                id="prioritas-heading"
+                                className="text-body-medium font-semibold"
+                            >
+                                Perlu ditangani
                             </h2>
-                            <p className="text-xs text-slate-500">
-                                Tiket aktif dengan batas waktu penanganan terdekat atau terlambat
+                            <p className="text-body-sm text-muted-foreground">
+                                Hingga delapan tiket berisiko tertinggi pada
+                                periode ini.
                             </p>
                         </div>
-                        <Link
-                            href="/instansi/antrean"
-                            className="text-xs font-medium text-teal-600 hover:text-teal-700 hover:underline flex items-center gap-1"
+                        <Button
+                            render={<Link href={antrean()} />}
+                            variant="ghost"
+                            size="sm"
                         >
-                            Lihat Semua
-                            <ChevronRight className="h-3 w-3" />
-                        </Link>
-                    </div>
-
-                    <div className="mt-4 divide-y divide-slate-100">
-                        {tiketPrioritas.length === 0 ? (
-                            <div className="py-8 text-center text-sm text-slate-400">
-                                Tidak ada tiket aktif yang memerlukan perhatian khusus saat ini.
-                            </div>
-                        ) : (
-                            tiketPrioritas.map((tiket) => {
-                                const sisaHari = hitungSisaHari(tiket.sla_jatuh_tempo);
-                                const isLewatSla = sisaHari !== null && sisaHari < 0;
-                                const isKritis = sisaHari !== null && sisaHari >= 0 && sisaHari <= 2;
-
-                                return (
-                                    <div
-                                        key={tiket.id}
-                                        className="py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/60 rounded-lg px-2 -mx-2 transition"
-                                    >
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-mono text-xs font-semibold text-slate-900">
-                                                    {tiket.nomor_tiket}
-                                                </span>
-                                                <span
-                                                    className={`inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-medium ${
-                                                        WARNA_STATUS[tiket.status] || 'bg-slate-100 text-slate-800'
-                                                    }`}
-                                                >
-                                                    {NAMA_STATUS[tiket.status] || tiket.status}
-                                                </span>
-                                            </div>
-                                            <div className="text-sm font-medium text-slate-800 line-clamp-1">
-                                                {tiket.judul}
-                                            </div>
-                                            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                                                {tiket.kategori && (
-                                                    <span className="inline-flex items-center gap-1">
-                                                        <Tag className="h-3 w-3 text-slate-400" />
-                                                        {tiket.kategori}
-                                                    </span>
-                                                )}
-                                                {tiket.kelurahan && (
-                                                    <span className="inline-flex items-center gap-1">
-                                                        <MapPin className="h-3 w-3 text-slate-400" />
-                                                        {tiket.kelurahan}
-                                                    </span>
-                                                )}
-                                                <span className="inline-flex items-center gap-1">
-                                                    <Calendar className="h-3 w-3 text-slate-400" />
-                                                    {formatTanggal(tiket.created_at)}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-3 self-end sm:self-center">
-                                            <div className="text-right">
-                                                <div className="text-[11px] font-medium text-slate-500">
-                                                    Batas Waktu SLA
-                                                </div>
-                                                <div className="text-xs font-semibold">
-                                                    {tiket.sla_jatuh_tempo ? (
-                                                        <span
-                                                            className={
-                                                                isLewatSla
-                                                                    ? 'text-rose-600 font-bold'
-                                                                    : isKritis
-                                                                    ? 'text-amber-600 font-bold'
-                                                                    : 'text-slate-700'
-                                                            }
-                                                        >
-                                                            {isLewatSla
-                                                                ? `Lewat ${Math.abs(sisaHari)} Hari`
-                                                                : `Sisa ${sisaHari} Hari`}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-slate-400">-</span>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <Link
-                                                href={`/tiket/${tiket.nomor_tiket}`}
-                                                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 hover:text-teal-600 transition"
-                                            >
-                                                Detail
-                                            </Link>
-                                        </div>
+                            Buka antrean
+                            <ArrowRight data-icon="inline-end" />
+                        </Button>
+                    </header>
+                    {tindakan.prioritas.length === 0 ? (
+                        <InstansiEmptyState
+                            title="Belum ada tiket untuk ditangani."
+                            description="Tiket aktif dan batas waktu layanan akan muncul di sini."
+                        />
+                    ) : (
+                        <ul className="divide-y divide-border">
+                            {tindakan.prioritas.map((tiket) => (
+                                <li
+                                    key={tiket.id}
+                                    className="flex min-w-0 items-center gap-3 px-4 py-3"
+                                >
+                                    <div className="min-w-0 flex-1">
+                                        <Link
+                                            href={detail(tiket.nomor_tiket)}
+                                            className="block truncate text-body-base font-medium underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                        >
+                                            {tiket.judul}
+                                        </Link>
+                                        <p className="mt-0.5 truncate text-body-sm text-muted-foreground">
+                                            {alasanUrgensi(tiket)}
+                                            {tiket.kelurahan
+                                                ? ` · ${tiket.kelurahan}`
+                                                : ''}
+                                        </p>
                                     </div>
-                                );
-                            })
-                        )}
+                                    <InstansiStatusBadge
+                                        status={tiket.status}
+                                    />
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
+
+                <section
+                    className="min-w-0 rounded-xl border border-border"
+                    aria-labelledby="pipeline-heading"
+                >
+                    <header className="border-b border-border px-4 py-3">
+                        <h2
+                            id="pipeline-heading"
+                            className="text-body-medium font-semibold"
+                        >
+                            Alur penanganan
+                        </h2>
+                        <p className="text-body-sm text-muted-foreground">
+                            Sebaran tiket pada setiap tahap kerja.
+                        </p>
+                    </header>
+                    <div className="flex flex-col gap-3 px-4 py-4">
+                        {pipelineAktif.map(({ status, jumlah }) => (
+                            <div key={status} className="flex flex-col gap-1.5">
+                                <div className="flex items-center justify-between gap-3 text-body-sm">
+                                    <span className="truncate text-muted-foreground">
+                                        {INSTANSI_STATUS[status]?.label ??
+                                            status}
+                                    </span>
+                                    <span className="text-foreground tabular-nums">
+                                        {jumlah.toLocaleString('id-ID')}
+                                    </span>
+                                </div>
+                                <Progress
+                                    value={
+                                        totalAktif === 0
+                                            ? 0
+                                            : (jumlah / totalAktif) * 100
+                                    }
+                                    aria-label={`${INSTANSI_STATUS[status]?.label ?? status}: ${jumlah} tiket`}
+                                    className="h-1 bg-muted [&_[data-slot=progress-indicator]]:bg-foreground"
+                                />
+                            </div>
+                        ))}
+                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 border-t border-border pt-3 text-caption-xs text-muted-foreground">
+                            {pipelineTerminal.map(({ status, jumlah }) => (
+                                <span key={status}>
+                                    {INSTANSI_STATUS[status]?.label ?? status}:{' '}
+                                    <span className="text-foreground tabular-nums">
+                                        {jumlah}
+                                    </span>
+                                </span>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                </section>
             </div>
+
+            <section
+                className="rounded-xl border border-border"
+                aria-labelledby="kualitas-heading"
+            >
+                <header className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
+                    <div>
+                        <h2
+                            id="kualitas-heading"
+                            className="text-body-medium font-semibold"
+                        >
+                            Kualitas penanganan
+                        </h2>
+                        <p className="text-body-sm text-muted-foreground">
+                            Indikator kinerja laporan yang masuk pada{' '}
+                            {PERIOD_LABELS[periode].toLowerCase()}.
+                        </p>
+                    </div>
+                    <CalendarClock
+                        className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                    />
+                </header>
+                {!kualitas.data_cukup ? (
+                    <div className="flex items-start gap-3 px-4 py-5">
+                        <CircleAlert
+                            className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                            aria-hidden="true"
+                        />
+                        <div>
+                            <p className="text-body-base font-medium">
+                                Data belum cukup untuk evaluasi kinerja.
+                            </p>
+                            <p className="mt-1 text-body-sm text-muted-foreground">
+                                {kualitas.tiket_tertutup.toLocaleString(
+                                    'id-ID',
+                                )}{' '}
+                                dari{' '}
+                                {kualitas.ambang_tiket_tertutup.toLocaleString(
+                                    'id-ID',
+                                )}{' '}
+                                tiket tertutup pada periode ini diperlukan untuk
+                                menampilkan indikator kualitas.
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <dl className="grid sm:grid-cols-2 xl:grid-cols-3">
+                        {metrikKualitas.map(([label, value], index) => (
+                            <div
+                                key={label}
+                                className={`flex min-h-24 flex-col justify-center gap-1 px-4 py-3 ${index % 2 === 0 ? 'sm:border-r sm:border-border xl:border-r' : ''} ${index < 4 ? 'border-b border-border xl:border-b' : ''}`}
+                            >
+                                <dt className="text-body-sm text-muted-foreground">
+                                    {label}
+                                </dt>
+                                <dd className="text-display-sm font-display font-semibold tabular-nums">
+                                    {value}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                )}
+            </section>
         </div>
     );
 }
 
 DashboardInstansiPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Dashboard Kinerja" breadcrumb="Instansi > Analitik">
+    <InternalLayout title="Dashboard kinerja" breadcrumb="Instansi > Kinerja">
         {page}
     </InternalLayout>
 );

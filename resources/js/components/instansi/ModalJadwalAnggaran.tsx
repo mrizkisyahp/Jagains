@@ -1,6 +1,11 @@
+import { formatInstansiMessage } from '@/components/instansi/InstansiStatusBadge';
+import { FieldError } from '@/components/ui/field';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import InstansiTicketContext from '@/components/instansi/InstansiTicketContext';
+import { anggaran } from '@/routes/instansi/tiket';
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
-import { CalendarDays, Coins, Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -11,11 +16,12 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Field, FieldLabel, FieldGroup } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue,
@@ -41,6 +47,10 @@ export default function ModalJadwalAnggaran({
     const [tanggalTarget, setTanggalTarget] = useState<string>('');
     const [catatan, setCatatan] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submissionError, setSubmissionError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>(
+        {},
+    );
 
     if (!laporan) return null;
 
@@ -54,14 +64,21 @@ export default function ModalJadwalAnggaran({
         e.preventDefault();
         if (!jenisPendanaan || !tanggalTarget) return;
 
+        setSubmissionError(null);
+        setFieldErrors({});
         setIsSubmitting(true);
         try {
-            const res = await fetch(`/instansi/tiket/${laporan.id}/anggaran`, {
+            const res = await fetch(anggaran.url(laporan.id), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN':
+                        (
+                            document.querySelector(
+                                'meta[name="csrf-token"]',
+                            ) as HTMLMetaElement
+                        )?.content || '',
                 },
                 body: JSON.stringify({
                     jenis_pendanaan: jenisPendanaan,
@@ -70,17 +87,47 @@ export default function ModalJadwalAnggaran({
                 }),
             });
 
-            const data = await res.json();
+            const data = (await res.json()) as {
+                sukses?: boolean;
+                pesan?: string;
+                message?: string;
+                errors?: Record<string, string[]>;
+            };
             if (res.ok && data.sukses) {
-                toast.success('Jadwal Anggaran Ditetapkan', data.pesan);
+                toast.success(
+                    'Jadwal Anggaran Ditetapkan',
+                    formatInstansiMessage(data.pesan),
+                );
                 onClose();
                 setTanggalTarget('');
                 setCatatan('');
                 router.reload({ only: ['antrean', 'ringkasan'] });
             } else {
-                toast.error('Gagal Menetapkan Anggaran', data.message || 'Terjadi kesalahan sistem.');
+                setFieldErrors(
+                    Object.fromEntries(
+                        Object.entries(data.errors ?? {}).map(
+                            ([name, messages]) => [
+                                name,
+                                messages.map(formatInstansiMessage),
+                            ],
+                        ),
+                    ),
+                );
+                setSubmissionError(
+                    formatInstansiMessage(data.message) ||
+                        'Permintaan belum berhasil. Periksa isian dan coba lagi.',
+                );
+                if (!data.errors)
+                    toast.error(
+                        'Gagal Menetapkan Anggaran',
+                        formatInstansiMessage(data.message) ||
+                            'Terjadi kesalahan sistem.',
+                    );
             }
         } catch {
+            setSubmissionError(
+                'Gagal menghubungi server. Periksa koneksi lalu kirim kembali; isian Anda tetap tersedia.',
+            );
             toast.error('Terjadi Kesalahan', 'Gagal menghubungi server.');
         } finally {
             setIsSubmitting(false);
@@ -89,92 +136,204 @@ export default function ModalJadwalAnggaran({
 
     return (
         <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className="sm:max-w-md">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <DialogHeader>
-                        <div className="size-10 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-600 mb-2">
-                            <Coins className="size-5" />
-                        </div>
-                        <DialogTitle className="text-body-large font-bold">Jadwalkan Anggaran & Janji Target</DialogTitle>
-                        <DialogDescription className="text-body-sm text-muted-foreground">
-                            Status tiket akan menjadi <span className="font-semibold text-foreground">TERJADWAL_ANGGARAN</span>. Tanggal target menjadi komitmen publik yang transparan pada detail tiket (maksimal 180 hari sesuai Parameter P-15).
-                        </DialogDescription>
-                    </DialogHeader>
+            <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    <FieldGroup className="gap-6">
+                        <DialogHeader>
+                            <DialogTitle className="pr-6 text-display-sm font-display font-semibold">
+                                Jadwalkan anggaran & target selesai
+                            </DialogTitle>
+                            <DialogDescription className="text-body-base text-muted-foreground">
+                                Tentukan sumber dana dan tanggal target selesai.
+                                Tanggal ini dapat dilihat masyarakat sebagai
+                                janji penyelesaian. Target paling jauh 180 hari
+                                dari penjadwalan.
+                            </DialogDescription>
+                        </DialogHeader>
+                        {submissionError && (
+                            <Alert variant="destructive">
+                                <AlertDescription className="text-body-base">
+                                    {submissionError}
+                                    {Object.entries(fieldErrors)
+                                        .filter(
+                                            ([name]) =>
+                                                ![
+                                                    'catatan',
+                                                    'tanggal_target',
+                                                ].includes(name),
+                                        )
+                                        .flatMap(([name, messages]) =>
+                                            messages.map((message, index) => (
+                                                <p key={`${name}-${index}`}>
+                                                    {message}
+                                                </p>
+                                            )),
+                                        )}
+                                </AlertDescription>
+                            </Alert>
+                        )}
 
-                    <div className="p-3 bg-muted/40 rounded-xl border border-border text-body-sm space-y-1">
-                        <p className="text-caption-xs text-muted-foreground">Nomor Tiket:</p>
-                        <p className="font-mono font-bold text-foreground">{laporan.nomor_tiket}</p>
-                        <p className="text-caption-xs text-muted-foreground line-clamp-1">{laporan.judul}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="jenis-pendanaan" className="text-body-sm font-semibold">
-                            Sumber Pendanaan <span className="text-destructive">*</span>
-                        </Label>
-                        <Select value={jenisPendanaan} onValueChange={(val) => setJenisPendanaan(val ?? 'APBD_KOTA')}>
-                            <SelectTrigger id="jenis-pendanaan" className="w-full h-10 text-body-sm">
-                                <SelectValue placeholder="Pilih Jenis Pendanaan" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="APBD_KOTA">APBD Kota / Pemda Setempat</SelectItem>
-                                <SelectItem value="APBD_PROVINSI">APBD Provinsi</SelectItem>
-                                <SelectItem value="APBN">APBN / Kementerian</SelectItem>
-                                <SelectItem value="LAINNYA">Lainnya / Swasta / CSR</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="tanggal-target" className="text-body-sm font-semibold">
-                            Janji Tanggal Target Selesai <span className="text-destructive">*</span>
-                        </Label>
-                        <Input
-                            id="tanggal-target"
-                            type="date"
-                            min={today}
-                            max={maxDateStr}
-                            value={tanggalTarget}
-                            onChange={(e) => setTanggalTarget(e.target.value)}
-                            required
-                            className="h-10 text-body-sm"
+                        <InstansiTicketContext
+                            nomorTiket={laporan.nomor_tiket}
+                            judul={laporan.judul}
                         />
-                        <p className="text-caption-xs text-muted-foreground">
-                            Maksimal s.d. {maxDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} (180 hari).
-                        </p>
-                    </div>
 
-                    <div className="space-y-1.5">
-                        <Label htmlFor="catatan-anggaran" className="text-body-sm font-semibold">
-                            Keterangan Rencana Kegiatan <span className="text-caption-xs text-muted-foreground font-normal">(Opsional)</span>
-                        </Label>
-                        <Textarea
-                            id="catatan-anggaran"
-                            placeholder="Contoh: Pekerjaan diplot pada mata anggaran pemeliharaan berkala triwulan berjalan..."
-                            value={catatan}
-                            onChange={(e) => setCatatan(e.target.value)}
-                            rows={2}
-                            className="text-body-sm rounded-xl resize-none"
-                        />
-                    </div>
+                        <Field className="gap-2">
+                            <FieldLabel
+                                htmlFor="jenis-pendanaan"
+                                className="text-body-base font-semibold"
+                            >
+                                Sumber Pendanaan{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Select
+                                value={jenisPendanaan}
+                                onValueChange={(val) =>
+                                    setJenisPendanaan(val ?? 'APBD_KOTA')
+                                }
+                            >
+                                <SelectTrigger
+                                    id="jenis-pendanaan"
+                                    className="h-11 w-full text-body-base shadow-none data-[size=default]:h-11 md:h-10 md:data-[size=default]:h-10"
+                                >
+                                    <SelectValue placeholder="Pilih Jenis Pendanaan">
+                                        {(value: string | null) =>
+                                            (
+                                                {
+                                                    APBD_KOTA:
+                                                        'Anggaran pemerintah kota (APBD)',
+                                                    APBD_PROVINSI:
+                                                        'Anggaran pemerintah provinsi (APBD)',
+                                                    APBN: 'Anggaran pemerintah pusat (APBN)',
+                                                    LAINNYA:
+                                                        'Sumber dana lainnya',
+                                                } as Record<string, string>
+                                            )[value ?? ''] ??
+                                            'Pilih Jenis Pendanaan'
+                                        }
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="APBD_KOTA">
+                                            Anggaran pemerintah kota (APBD)
+                                        </SelectItem>
+                                        <SelectItem value="APBD_PROVINSI">
+                                            Anggaran pemerintah provinsi (APBD)
+                                        </SelectItem>
+                                        <SelectItem value="APBN">
+                                            Anggaran pemerintah pusat (APBN)
+                                        </SelectItem>
+                                        <SelectItem value="LAINNYA">
+                                            Sumber dana lainnya
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </Field>
 
-                    <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border">
-                        <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-                            Batal
-                        </Button>
-                        <Button type="submit" disabled={isSubmitting || !jenisPendanaan || !tanggalTarget} className="gap-2">
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="size-4 animate-spin" />
-                                    Menetapkan...
-                                </>
-                            ) : (
-                                <>
-                                    Tetapkan Janji Target
-                                    <ArrowRight className="size-4" />
-                                </>
-                            )}
-                        </Button>
-                    </DialogFooter>
+                        <Field className="gap-2">
+                            <FieldLabel
+                                htmlFor="tanggal-target"
+                                className="text-body-base font-semibold"
+                            >
+                                Tanggal target penyelesaian{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Input
+                                id="tanggal-target"
+                                type="date"
+                                min={today}
+                                max={maxDateStr}
+                                aria-invalid={Boolean(
+                                    fieldErrors.tanggal_target,
+                                )}
+                                aria-describedby="error-ModalJadwalAnggaran-tanggal_target"
+                                value={tanggalTarget}
+                                onChange={(e) =>
+                                    setTanggalTarget(e.target.value)
+                                }
+                                required
+                                className="h-11 text-body-base md:h-10"
+                            />
+                            <FieldError
+                                id="error-ModalJadwalAnggaran-tanggal_target"
+                                errors={fieldErrors.tanggal_target?.map(
+                                    (message) => ({ message }),
+                                )}
+                            />
+                            <p className="text-body-sm text-muted-foreground">
+                                Maksimal s.d.{' '}
+                                {maxDate.toLocaleDateString('id-ID', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric',
+                                })}{' '}
+                                (180 hari).
+                            </p>
+                        </Field>
+
+                        <Field className="gap-2">
+                            <FieldLabel
+                                htmlFor="catatan-anggaran"
+                                className="text-body-base font-semibold"
+                            >
+                                Keterangan Rencana Kegiatan{' '}
+                                <span className="text-body-sm font-normal text-muted-foreground">
+                                    (Opsional)
+                                </span>
+                            </FieldLabel>
+                            <Textarea
+                                id="catatan-anggaran"
+                                placeholder="Contoh: Pekerjaan diplot pada mata anggaran pemeliharaan berkala triwulan berjalan..."
+                                aria-invalid={Boolean(fieldErrors.catatan)}
+                                aria-describedby="error-ModalJadwalAnggaran-catatan"
+                                value={catatan}
+                                onChange={(e) => setCatatan(e.target.value)}
+                                rows={2}
+                                className="resize-none rounded-xl text-body-base"
+                            />
+                            <FieldError
+                                id="error-ModalJadwalAnggaran-catatan"
+                                errors={fieldErrors.catatan?.map((message) => ({
+                                    message,
+                                }))}
+                            />
+                        </Field>
+
+                        <DialogFooter className="gap-3 border-t border-border pt-6">
+                            <Button
+                                className="h-11 text-body-medium shadow-none md:h-10"
+                                type="button"
+                                variant="outline"
+                                onClick={onClose}
+                                disabled={isSubmitting}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={
+                                    isSubmitting ||
+                                    !jenisPendanaan ||
+                                    !tanggalTarget
+                                }
+                                className="h-11 gap-2 text-body-medium shadow-none md:h-10"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="size-4 animate-spin" />
+                                        Menetapkan...
+                                    </>
+                                ) : (
+                                    <>
+                                        Tetapkan Janji Target
+                                        <ArrowRight className="size-4" />
+                                    </>
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </FieldGroup>
                 </form>
             </DialogContent>
         </Dialog>

@@ -1,7 +1,10 @@
-import { ReactNode, useState } from 'react';
+import { cn } from '@/lib/utils';
+import { type ReactNode, useEffect, useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
-import AntreanTiketTable, { LaporanItem } from '@/components/instansi/AntreanTiketTable';
+import AntreanTiketTable, {
+    LaporanItem,
+} from '@/components/instansi/AntreanTiketTable';
 import AntreanFilterBar from '@/components/instansi/AntreanFilterBar';
 import ModalTerimaTiket from '@/components/instansi/ModalTerimaTiket';
 import ModalAlihkanTiket from '@/components/instansi/ModalAlihkanTiket';
@@ -15,19 +18,23 @@ import ModalTanggapanResmi from '@/components/instansi/ModalTanggapanResmi';
 import ModalUsulanTolak from '@/components/instansi/ModalUsulanTolak';
 import ModalRevisiTarget from '@/components/instansi/ModalRevisiTarget';
 import ModalResponsSengketa from '@/components/instansi/ModalResponsSengketa';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { antrean as antreanRoute } from '@/routes/instansi';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
-    Inbox,
-    Clock,
-    ClipboardCheck,
-    Hammer,
-    ShieldCheck,
-    AlertOctagon,
     ChevronLeft,
     ChevronRight,
-    Building2,
+    ChevronsLeft,
+    ChevronsRight,
 } from 'lucide-react';
 
 interface PaginatedAntrean {
@@ -46,6 +53,7 @@ interface AntreanPageProps {
         status?: string;
         q?: string;
         kategori_id?: string | number;
+        per_page?: string | number;
     };
     ringkasan: {
         semua: number;
@@ -70,12 +78,45 @@ export default function AntreanInstansiPage({
     ringkasan,
     kategoriList,
     instansiList,
-    instansiSaya,
 }: AntreanPageProps) {
-    const currentTab = filters.status || 'semua';
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadError, setLoadError] = useState(false);
+    const visitOptions = {
+        preserveState: true,
+        preserveScroll: true,
+        onStart: () => {
+            setLoadError(false);
+            setIsLoading(true);
+        },
+        onFinish: () => setIsLoading(false),
+        onError: () => setLoadError(true),
+        onNetworkError: () => {
+            setLoadError(true);
+            return false;
+        },
+    };
+    useEffect(() => {
+        if (!filters.per_page || filters.status === 'verifikasi') {
+            router.get(
+                antreanRoute.url(),
+                {
+                    ...filters,
+                    per_page: filters.per_page || 10,
+                    page: antrean.current_page,
+                    status:
+                        filters.status === 'verifikasi'
+                            ? 'MENUNGGU_VERIFIKASI'
+                            : filters.status,
+                },
+                { replace: true, preserveState: true, preserveScroll: true },
+            );
+        }
+    }, [filters, antrean.current_page]);
 
     // State Modal Aksi
-    const [selectedTiket, setSelectedTiket] = useState<LaporanItem | null>(null);
+    const [selectedTiket, setSelectedTiket] = useState<LaporanItem | null>(
+        null,
+    );
     const [modalTerimaOpen, setModalTerimaOpen] = useState(false);
     const [modalAlihkanOpen, setModalAlihkanOpen] = useState(false);
     const [modalKembalikanOpen, setModalKembalikanOpen] = useState(false);
@@ -87,47 +128,70 @@ export default function AntreanInstansiPage({
     const [modalTanggapanOpen, setModalTanggapanOpen] = useState(false);
     const [modalUsulTolakOpen, setModalUsulTolakOpen] = useState(false);
     const [modalRevisiTargetOpen, setModalRevisiTargetOpen] = useState(false);
-    const [modalResponsSengketaOpen, setModalResponsSengketaOpen] = useState(false);
-
-    // Navigasi Filter Tab
-    const handleTabChange = (val: string) => {
-        router.get(
-            '/instansi/antrean',
-            {
-                ...filters,
-                status: val === 'semua' ? undefined : val,
-                page: undefined,
-            },
-            { preserveState: true, preserveScroll: true }
-        );
-    };
+    const [modalResponsSengketaOpen, setModalResponsSengketaOpen] =
+        useState(false);
 
     // Handler Filter Teks / Kategori
-    const handleFilterChange = (newFilters: { q?: string; kategori_id?: string }) => {
+    const handleFilterChange = (newFilters: {
+        q?: string;
+        kategori_id?: string;
+        status?: string;
+    }) => {
         router.get(
-            '/instansi/antrean',
+            antreanRoute.url(),
             {
                 ...filters,
                 ...newFilters,
                 page: undefined,
             },
-            { preserveState: true, preserveScroll: true }
+            visitOptions,
         );
     };
 
     const handleResetFilters = () => {
-        router.get('/instansi/antrean', {}, { preserveState: false });
+        router.get(
+            antreanRoute.url(),
+            { per_page: antrean.per_page },
+            { ...visitOptions, preserveState: false },
+        );
     };
 
     // Handler Paginasi
     const handlePageChange = (targetPage: number) => {
+        if (
+            targetPage < 1 ||
+            targetPage > antrean.last_page ||
+            targetPage === antrean.current_page
+        )
+            return;
         router.get(
-            '/instansi/antrean',
+            antreanRoute.url(),
             {
                 ...filters,
                 page: targetPage,
             },
-            { preserveState: true, preserveScroll: true }
+            visitOptions,
+        );
+    };
+
+    const lastPage = Math.max(1, antrean.last_page);
+    const pageNumbers = [
+        ...new Set([
+            1,
+            lastPage,
+            antrean.current_page - 1,
+            antrean.current_page,
+            antrean.current_page + 1,
+        ]),
+    ]
+        .filter((page) => page > 0 && page <= lastPage)
+        .sort((a, b) => a - b);
+    const handlePageSizeChange = (value: string | null) => {
+        if (!value) return;
+        router.get(
+            antreanRoute.url(),
+            { ...filters, per_page: Number(value), page: 1 },
+            visitOptions,
         );
     };
 
@@ -175,181 +239,230 @@ export default function AntreanInstansiPage({
     };
 
     return (
-        <div className="w-full space-y-6 pb-12">
-            <Head title="Antrean Tiket Instansi" />
-
-            {/* Header & Profil Instansi */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
-                <div>
-                    <h1 className="font-display text-display-md font-bold tracking-tight text-foreground">
-                        Antrean Penanganan Tiket
-                    </h1>
-                    <p className="text-body-sm text-muted-foreground mt-1">
-                        Daftar aduan masyarakat yang didelegasikan ke OPD Anda, diurutkan berdasarkan sisa waktu SLA paling mendesak.
-                    </p>
-                </div>
-
-                {instansiSaya && (
-                    <div className="flex items-center gap-2.5 p-2.5 rounded-xl border border-border bg-card shadow-2xs self-start sm:self-auto">
-                        <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
-                            <Building2 className="size-4" />
-                        </div>
-                        <div className="text-left">
-                            <p className="text-caption-xs font-semibold text-foreground">{instansiSaya.nama}</p>
-                            <p className="text-[11px] font-mono text-muted-foreground">Kode OPD: {instansiSaya.singkatan}</p>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Rekapitulasi Metrik Alur Kerja Instansi */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                <div
-                    onClick={() => handleTabChange('semua')}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                        currentTab === 'semua'
-                            ? 'bg-primary/10 border-primary text-primary shadow-2xs'
-                            : 'bg-card border-border hover:bg-muted/40'
-                    }`}
-                >
-                    <div className="flex items-center justify-between">
-                        <span className="text-caption-xs font-semibold text-muted-foreground">Semua Tiket</span>
-                        <Inbox className="size-3.5" />
-                    </div>
-                    <p className="text-xl font-bold font-mono mt-1 text-foreground">{ringkasan.semua}</p>
-                </div>
-
-                <div
-                    onClick={() => handleTabChange('perlu_respons')}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                        currentTab === 'perlu_respons'
-                            ? 'bg-sky-500/10 border-sky-500 text-sky-700 dark:text-sky-300 shadow-2xs'
-                            : 'bg-card border-border hover:bg-muted/40'
-                    }`}
-                >
-                    <div className="flex items-center justify-between">
-                        <span className="text-caption-xs font-semibold text-muted-foreground">Perlu Respons</span>
-                        <Clock className="size-3.5 text-sky-600" />
-                    </div>
-                    <p className="text-xl font-bold font-mono mt-1 text-foreground">{ringkasan.perlu_respons}</p>
-                </div>
-
-                <div
-                    onClick={() => handleTabChange('survei_anggaran')}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                        currentTab === 'survei_anggaran'
-                            ? 'bg-blue-500/10 border-blue-500 text-blue-700 dark:text-blue-300 shadow-2xs'
-                            : 'bg-card border-border hover:bg-muted/40'
-                    }`}
-                >
-                    <div className="flex items-center justify-between">
-                        <span className="text-caption-xs font-semibold text-muted-foreground">Survei & Anggaran</span>
-                        <ClipboardCheck className="size-3.5 text-blue-600" />
-                    </div>
-                    <p className="text-xl font-bold font-mono mt-1 text-foreground">{ringkasan.survei_anggaran}</p>
-                </div>
-
-                <div
-                    onClick={() => handleTabChange('pengerjaan')}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                        currentTab === 'pengerjaan'
-                            ? 'bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-300 shadow-2xs'
-                            : 'bg-card border-border hover:bg-muted/40'
-                    }`}
-                >
-                    <div className="flex items-center justify-between">
-                        <span className="text-caption-xs font-semibold text-muted-foreground">Pengerjaan Fisik</span>
-                        <Hammer className="size-3.5 text-amber-600" />
-                    </div>
-                    <p className="text-xl font-bold font-mono mt-1 text-foreground">{ringkasan.pengerjaan}</p>
-                </div>
-
-                <div
-                    onClick={() => handleTabChange('verifikasi')}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                        currentTab === 'verifikasi'
-                            ? 'bg-emerald-500/10 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-2xs'
-                            : 'bg-card border-border hover:bg-muted/40'
-                    }`}
-                >
-                    <div className="flex items-center justify-between">
-                        <span className="text-caption-xs font-semibold text-muted-foreground">Verifikasi Warga</span>
-                        <ShieldCheck className="size-3.5 text-emerald-600" />
-                    </div>
-                    <p className="text-xl font-bold font-mono mt-1 text-foreground">{ringkasan.verifikasi}</p>
-                </div>
-
-                <div
-                    onClick={() => handleTabChange('sengketa')}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                        currentTab === 'sengketa'
-                            ? 'bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-300 shadow-2xs'
-                            : 'bg-card border-border hover:bg-muted/40'
-                    }`}
-                >
-                    <div className="flex items-center justify-between">
-                        <span className="text-caption-xs font-semibold text-muted-foreground">Sengketa/Revisi</span>
-                        <AlertOctagon className="size-3.5 text-rose-600" />
-                    </div>
-                    <p className="text-xl font-bold font-mono mt-1 text-foreground">{ringkasan.sengketa}</p>
-                </div>
-            </div>
-
-            {/* Filter Bar Teks & Kategori */}
+        <div className="flex w-full min-w-0 flex-col gap-5 pb-6">
+            <Head title="Antrean tiket" />
+            <header className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="text-display-sm font-display font-semibold tracking-tight">
+                            Antrean tiket
+                        </h1>
+                        <p className="mt-1 text-body-sm text-muted-foreground">
+                            Laporan masuk dari warga yang menunggu untuk ditindaklanjuti oleh instansi Anda.
+                        </p>
+                    </div>                                     
+            </header>
+            
             <AntreanFilterBar
+                key={filters.q ?? ''}
                 filters={filters}
                 kategoriList={kategoriList}
                 onFilterChange={handleFilterChange}
                 onReset={handleResetFilters}
+                isLoading={isLoading}
             />
-
-            {/* Tabel Antrean Tiket */}
-            <AntreanTiketTable items={antrean.data} onAksi={handleTriggerAksi} />
-
-            {/* Kontrol Paginasi */}
-            {antrean.last_page > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-body-sm text-muted-foreground">
-                    <p className="text-caption-xs">
-                        Menampilkan <span className="font-semibold text-foreground">{antrean.from || 0}</span> s.d.{' '}
-                        <span className="font-semibold text-foreground">{antrean.to || 0}</span> dari{' '}
-                        <span className="font-semibold text-foreground">{antrean.total}</span> tiket
-                    </p>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={antrean.current_page <= 1}
-                            onClick={() => handlePageChange(antrean.current_page - 1)}
-                            className="h-8 gap-1 text-caption-xs"
-                        >
-                            <ChevronLeft className="size-3.5" />
-                            Sebelumnya
-                        </Button>
-                        <span className="text-caption-xs font-mono font-semibold px-2 text-foreground">
-                            {antrean.current_page} / {antrean.last_page}
-                        </span>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={antrean.current_page >= antrean.last_page}
-                            onClick={() => handlePageChange(antrean.current_page + 1)}
-                            className="h-8 gap-1 text-caption-xs"
-                        >
-                            Berikutnya
-                            <ChevronRight className="size-3.5" />
-                        </Button>
+            <dl
+                className="grid grid-cols-2 overflow-hidden rounded-xl border border-border bg-card sm:grid-cols-3 xl:grid-cols-6"
+                aria-label="Ringkasan tiket instansi"
+            >
+                {(
+                    [
+                        ['Semua tiket', ringkasan.semua],
+                        ['Perlu respons', ringkasan.perlu_respons],
+                        ['Survei & anggaran', ringkasan.survei_anggaran],
+                        ['Pengerjaan', ringkasan.pengerjaan],
+                        ['Verifikasi warga', ringkasan.verifikasi],
+                        ['Sengketa & audit', ringkasan.sengketa],
+                    ] as const
+                ).map(([label, count]) => (
+                    <div
+                        key={label}
+                        className="flex flex-col gap-1 border-r border-b border-border px-4 py-3 last:border-r-0 xl:border-b-0"
+                    >
+                        <dt className="text-body-sm text-muted-foreground">
+                            {label}
+                        </dt>
+                        <dd className="font-display text-2xl font-semibold text-foreground tabular-nums">
+                            {count.toLocaleString('id-ID')}
+                        </dd>
                     </div>
-                </div>
+                ))}
+            </dl>
+            {loadError && (
+                <Alert variant="destructive">
+                    <AlertDescription>
+                        Daftar tiket gagal diperbarui. Terapkan kembali filter
+                        untuk mencoba lagi.
+                    </AlertDescription>
+                </Alert>
             )}
+            <section
+                aria-label="Daftar tiket"
+                aria-busy={isLoading}
+                className="min-w-0 overflow-hidden rounded-xl border border-border bg-card"
+            >
+                <AntreanTiketTable
+                    items={antrean.data}
+                    onAksi={handleTriggerAksi}
+                    hasFilters={Boolean(
+                        filters.status || filters.q || filters.kategori_id,
+                    )}
+                    onReset={handleResetFilters}
+                />
+                <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-border px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <p className="text-body-sm text-muted-foreground">
+                            {antrean.from ?? 0}–{antrean.to ?? 0} dari{' '}
+                            <span className="font-medium text-foreground">
+                                {antrean.total.toLocaleString('id-ID')}
+                            </span>{' '}
+                            tiket
+                        </p>
+                        <Field
+                            orientation="horizontal"
+                            className="w-auto items-center gap-2"
+                        >
+                            <FieldLabel
+                                htmlFor="jumlah-baris"
+                                className="text-body-sm font-normal text-muted-foreground"
+                            >
+                                Baris per halaman
+                            </FieldLabel>
+                            <Select
+                                value={String(antrean.per_page)}
+                                onValueChange={handlePageSizeChange}
+                            >
+                                <SelectTrigger
+                                    id="jumlah-baris"
+                                    className="w-20 shadow-none data-[size=default]:h-11 md:data-[size=default]:h-9"
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {[
+                                            ...new Set([
+                                                5,
+                                                10,
+                                                15,
+                                                25,
+                                                antrean.per_page,
+                                            ]),
+                                        ]
+                                            .sort((a, b) => a - b)
+                                            .map((size) => (
+                                                <SelectItem
+                                                    key={size}
+                                                    value={String(size)}
+                                                >
+                                                    {size}
+                                                </SelectItem>
+                                            ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </Field>
+                    </div>
+                    <nav
+                        aria-label="Halaman antrean tiket"
+                        className="flex items-center gap-1"
+                    >
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Halaman pertama"
+                            disabled={antrean.current_page <= 1 || isLoading}
+                            onClick={() => handlePageChange(1)}
+                            className="hidden size-11 sm:inline-flex md:size-9"
+                        >
+                            <ChevronsLeft />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            aria-label="Halaman sebelumnya"
+                            disabled={antrean.current_page <= 1 || isLoading}
+                            onClick={() =>
+                                handlePageChange(antrean.current_page - 1)
+                            }
+                            className="size-11 shadow-none md:size-9"
+                        >
+                            <ChevronLeft />
+                        </Button>
+                        {pageNumbers.map((page, index) => (
+                            <span
+                                key={page}
+                                className={cn(
+                                    'flex items-center gap-1',
+                                    Math.abs(page - antrean.current_page) > 1 &&
+                                        'hidden sm:flex',
+                                )}
+                            >
+                                {index > 0 &&
+                                    page - pageNumbers[index - 1] > 1 && (
+                                        <span className="px-1 text-body-sm text-muted-foreground">
+                                            …
+                                        </span>
+                                    )}
+                                <Button
+                                    variant={
+                                        page === antrean.current_page
+                                            ? 'secondary'
+                                            : 'ghost'
+                                    }
+                                    aria-current={
+                                        page === antrean.current_page
+                                            ? 'page'
+                                            : undefined
+                                    }
+                                    aria-label={`Halaman ${page}`}
+                                    disabled={isLoading}
+                                    onClick={() => handlePageChange(page)}
+                                    className="size-11 p-0 tabular-nums shadow-none md:size-9"
+                                >
+                                    {page}
+                                </Button>
+                            </span>
+                        ))}
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            aria-label="Halaman berikutnya"
+                            disabled={
+                                antrean.current_page >= lastPage || isLoading
+                            }
+                            onClick={() =>
+                                handlePageChange(antrean.current_page + 1)
+                            }
+                            className="size-11 shadow-none md:size-9"
+                        >
+                            <ChevronRight />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Halaman terakhir"
+                            disabled={
+                                antrean.current_page >= lastPage || isLoading
+                            }
+                            onClick={() => handlePageChange(lastPage)}
+                            className="hidden size-11 sm:inline-flex md:size-9"
+                        >
+                            <ChevronsRight />
+                        </Button>
+                    </nav>
+                </footer>
+            </section>
 
             {/* Modal Dialog Aksi-Aksi Operasional */}
             <ModalTerimaTiket
+                key={`ModalTerimaTiket-${selectedTiket?.id ?? 'none'}`}
                 open={modalTerimaOpen}
                 onClose={() => setModalTerimaOpen(false)}
                 laporan={selectedTiket}
             />
 
             <ModalAlihkanTiket
+                key={`ModalAlihkanTiket-${selectedTiket?.id ?? 'none'}`}
                 open={modalAlihkanOpen}
                 onClose={() => setModalAlihkanOpen(false)}
                 laporan={selectedTiket}
@@ -357,71 +470,84 @@ export default function AntreanInstansiPage({
             />
 
             <ModalKembalikanTiket
+                key={`ModalKembalikanTiket-${selectedTiket?.id ?? 'none'}`}
                 open={modalKembalikanOpen}
                 onClose={() => setModalKembalikanOpen(false)}
                 laporan={selectedTiket}
             />
 
             <ModalSurveiSelesai
+                key={`ModalSurveiSelesai-${selectedTiket?.id ?? 'none'}`}
                 open={modalSurveiOpen}
                 onClose={() => setModalSurveiOpen(false)}
                 laporan={selectedTiket}
             />
 
             <ModalJadwalAnggaran
+                key={`ModalJadwalAnggaran-${selectedTiket?.id ?? 'none'}`}
                 open={modalAnggaranOpen}
                 onClose={() => setModalAnggaranOpen(false)}
                 laporan={selectedTiket}
             />
 
             <ModalMulaiPengerjaan
+                key={`ModalMulaiPengerjaan-${selectedTiket?.id ?? 'none'}`}
                 open={modalMulaiOpen}
                 onClose={() => setModalMulaiOpen(false)}
                 laporan={selectedTiket}
             />
 
             <ModalBeritaAcara
+                key={`ModalBeritaAcara-${selectedTiket?.id ?? 'none'}`}
                 open={modalBeritaAcaraOpen}
                 onClose={() => setModalBeritaAcaraOpen(false)}
                 laporan={selectedTiket}
             />
 
             <ModalAjukanSelesai
+                key={`ModalAjukanSelesai-${selectedTiket?.id ?? 'none'}`}
                 open={modalAjukanSelesaiOpen}
                 onClose={() => setModalAjukanSelesaiOpen(false)}
-                onOpenBeritaAcara={() => setModalBeritaAcaraOpen(true)}
+                onOpenBeritaAcara={() => {
+                    setModalAjukanSelesaiOpen(false);
+                    setModalBeritaAcaraOpen(true);
+                }}
                 laporan={selectedTiket}
             />
 
             <ModalTanggapanResmi
+                key={`ModalTanggapanResmi-${selectedTiket?.id ?? 'none'}`}
                 open={modalTanggapanOpen}
                 onClose={() => setModalTanggapanOpen(false)}
                 laporan={selectedTiket}
             />
 
             <ModalUsulanTolak
+                key={`ModalUsulanTolak-${selectedTiket?.id ?? 'none'}`}
                 open={modalUsulTolakOpen}
                 onClose={() => setModalUsulTolakOpen(false)}
                 laporan={selectedTiket}
             />
 
             <ModalRevisiTarget
+                key={`ModalRevisiTarget-${selectedTiket?.id ?? 'none'}`}
                 open={modalRevisiTargetOpen}
                 onClose={() => setModalRevisiTargetOpen(false)}
                 laporan={selectedTiket}
             />
 
             <ModalResponsSengketa
+                key={`ModalResponsSengketa-${selectedTiket?.id ?? 'none'}`}
                 open={modalResponsSengketaOpen}
                 onClose={() => setModalResponsSengketaOpen(false)}
-                laporan={selectedTiket as any}
+                laporan={selectedTiket}
             />
         </div>
     );
 }
 
 AntreanInstansiPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Antrean Tiket Instansi" breadcrumb="Instansi > Antrean Tiket">
+    <InternalLayout title="Antrean tiket" breadcrumb="Instansi">
         {page}
     </InternalLayout>
 );

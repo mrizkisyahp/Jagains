@@ -1,71 +1,105 @@
-import { Clock, AlertTriangle, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+const TAHAP_LAYANAN: Record<string, { label: string; instruction: string }> = {
+    RESPONS: {
+        label: 'Respons awal',
+        instruction: 'Terima, alihkan, atau kembalikan tiket.',
+    },
+    SURVEI: {
+        label: 'Survei lapangan',
+        instruction: 'Selesaikan pemeriksaan kondisi di lokasi laporan.',
+    },
+    ANGGARAN: {
+        label: 'Penjadwalan anggaran',
+        instruction: 'Tetapkan sumber dana dan tanggal target selesai.',
+    },
+    PELAKSANAAN: {
+        label: 'Pelaksanaan perbaikan',
+        instruction:
+            'Selesaikan perbaikan dan ajukan hasilnya untuk diperiksa warga.',
+    },
+    JAWAB_SENGKETA: {
+        label: 'Respons sengketa',
+        instruction:
+            'Pilih kerjakan ulang atau kirim sanggahan kepada Auditor.',
+    },
+};
 
 interface BadgeSlaCountdownProps {
     tahap: string | null;
     jatuhTempo: string | null;
     sisaHari: number | null;
     persenSla: number | null;
+    status?: string;
+    compact?: boolean;
 }
 
 export default function BadgeSlaCountdown({
     tahap,
     jatuhTempo,
     sisaHari,
-    persenSla,
+    status,
+    compact = false,
 }: BadgeSlaCountdownProps) {
-    if (!tahap || !jatuhTempo || sisaHari === null) {
+    const waitingLabel =
+        status === 'MENUNGGU_VERIFIKASI'
+            ? compact
+                ? 'Menunggu warga'
+                : 'Menunggu warga memeriksa hasil perbaikan'
+            : ['USULAN_TOLAK', 'MENUNGGU_KEPUTUSAN_AUDITOR'].includes(
+                    status ?? '',
+                )
+              ? compact
+                  ? 'Menunggu Auditor'
+                  : 'Menunggu peninjauan Auditor'
+              : null;
+    if (waitingLabel || !tahap || !jatuhTempo || sisaHari === null) {
         return (
-            <Badge variant="outline" className="text-muted-foreground font-mono text-caption-xs">
-                Tidak Terikat SLA
-            </Badge>
+            <span className="text-body-sm text-muted-foreground">
+                {waitingLabel ??
+                    (['TERTUTUP_WARGA', 'TERTUTUP_AUDITOR'].includes(
+                        status ?? '',
+                    )
+                        ? compact
+                            ? 'Selesai'
+                            : 'Penanganan tiket sudah selesai'
+                        : status === 'DITOLAK'
+                          ? compact
+                              ? 'Laporan ditolak'
+                              : 'Laporan sudah ditolak oleh Auditor'
+                          : compact
+                            ? 'Belum tersedia'
+                            : 'Batas waktu tahap ini belum tersedia')}
+            </span>
         );
     }
-
-    // Semantik warna SLA Jagains (FR-TIK-10 & P-25)
-    // Merah: Terlambat / lewat jatuh tempo (sisaHari < 0)
-    // Kuning: Sisa waktu <= 50% atau sisa <= 1 hari
-    // Hijau: Sisa waktu > 50%
-    const isOverdue = sisaHari < 0;
-    const isWarning = !isOverdue && (sisaHari <= 1 || (persenSla !== null && persenSla <= 50));
-
-    let badgeClass = 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400';
-    let icon = <CheckCircle2 className="size-3 text-emerald-600 dark:text-emerald-400" />;
-    let label = `Sisa ${sisaHari} Hari`;
-
-    if (isOverdue) {
-        badgeClass = 'border-destructive/30 bg-destructive/10 text-destructive';
-        icon = <AlertCircle className="size-3 text-destructive animate-pulse" />;
-        label = `Lewat ${Math.abs(sisaHari)} Hari`;
-    } else if (isWarning) {
-        badgeClass = 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400';
-        icon = <AlertTriangle className="size-3 text-amber-600 dark:text-amber-400" />;
-        label = sisaHari === 0 ? 'Hari Ini' : `Sisa ${sisaHari} Hari`;
-    }
-
+    const stage = TAHAP_LAYANAN[tahap.toUpperCase()];
+    const label =
+        sisaHari < 0
+            ? `Lewat ${Math.abs(sisaHari)} hari kalender`
+            : sisaHari === 0
+              ? 'Jatuh tempo hari ini'
+              : `Sisa ${sisaHari} hari kalender`;
     return (
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger>
-                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-caption-xs font-semibold border ${badgeClass} cursor-help transition-colors`}>
-                        {icon}
-                        <span className="font-mono">{label}</span>
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs text-caption-xs space-y-1">
-                    <p className="font-semibold">Batas Waktu Tahap: {tahap}</p>
-                    <p className="text-muted-foreground">Tenggat resmi: {jatuhTempo}</p>
-                    {persenSla !== null && (
-                        <p className="text-muted-foreground">Sisa alokasi waktu: {persenSla}%</p>
-                    )}
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
+        <div className="flex flex-col items-start gap-1.5">
+            <span className="text-body-sm text-muted-foreground tabular-nums">
+                {label}
+            </span>
+            {!compact &&
+                (stage ? (
+                    <>
+                        {tahap.toUpperCase() !== 'RESPONS' && (
+                            <span className="text-body-sm font-medium text-foreground">
+                                Tahap: {stage.label}
+                            </span>
+                        )}
+                        <span className="max-w-56 text-body-sm text-muted-foreground">
+                            {stage.instruction}
+                        </span>
+                    </>
+                ) : (
+                    <span className="text-body-sm text-muted-foreground">
+                        Rincian tahap layanan belum tersedia.
+                    </span>
+                ))}
+        </div>
     );
 }
