@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import GuestLayouts from '@/layouts/GuestLayout';
-import { CheckCircle2 } from 'lucide-react';
-import Logo from '@/components/common/Logo';
+import AuthSplitCard from '@/components/auth/AuthSplitCard';
+import { CheckCircle2, Eye, EyeOff, Lock, User } from 'lucide-react';
 
 interface LoginProps {
     status?: string;
@@ -20,6 +19,8 @@ export default function Login({ status, success }: LoginProps) {
         password: '',
     });
 
+    const [showPassword, setShowPassword] = useState(false);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/login');
@@ -28,146 +29,146 @@ export default function Login({ status, success }: LoginProps) {
     return (
         <GuestLayouts>
             <Head title="Masuk - Jagains" />
-            <Card className="max-w-5xl w-full p-0 grid grid-cols-1 md:grid-cols-2 border border-border bg-card shadow-2xl rounded-2xl overflow-hidden">
-                {/* Sisi Kiri - Dark Branding Section */}
-                <div className="bg-zinc-950 dark:bg-zinc-900 text-zinc-100 p-6 sm:p-10 flex flex-col justify-between">
-                    <div>
-                        {/* Logo & Brand Name */}
-                        <div className="flex items-center mb-10">
-                            <Link href="/">
-                                <Logo className="text-white" />
-                            </Link>
-                        </div>
 
-                        {/* Title Hero */}
-                        <h1 className="font-display text-display-lg font-bold leading-tight tracking-tight mb-8">
-                            Jaga Kontribusi Anda,<br />
-                            Jaga Fasilitas Rakyat.
-                        </h1>
-
-                        {/* Description List */}
-                        <div className="space-y-4 text-body-sm text-zinc-400">
-                            <div>
-                                <p className="font-semibold text-white">Warga</p>
-                                <p>Lapor, pantau tenggat, dan verifikasi hasil perbaikan.</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold text-white">Instansi</p>
-                                <p>Terima, survei, kerjakan, dan ajukan selesai dengan berita acara.</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold text-white">Admin dan Auditor</p>
-                                <p>Pengelolaan platform dan penengah sengketa. Akun dibuat oleh admin.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Bottom Link */}
-                    <div className="pt-8">
-                        <Link 
-                            href="/#sebaran-peta" 
-                            className="text-caption-xs font-medium text-zinc-300 underline underline-offset-4 hover:text-white transition-colors"
-                        >
-                            Hanya ingin melihat peta? Buka di beranda publik
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Sisi Kanan - Login Form Section */}
-                <div className="bg-card text-card-foreground p-6 sm:p-10 flex flex-col justify-between">
-                    <div className="max-w-md w-full mx-auto my-auto space-y-6">
-                        {/* Form Header */}
-                        <div>
-                            <span className="text-caption-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Masuk ke Akun
-                            </span>
-                            <h2 className="font-display text-display-md font-bold text-foreground mt-1">
-                                Selamat datang kembali
-                            </h2>
-                            <p className="text-body-sm text-muted-foreground mt-1">
-                                Masukkan kredensial Anda untuk mengakses sistem.
-                            </p>
-                        </div>
-
-                        {(success || status) && (
-                            <Alert variant="default" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300">
-                                <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
-                                <AlertDescription className="text-body-sm">
-                                    {success || status}
-                                </AlertDescription>
-                            </Alert>
-                        )}
-
-                        {/* Login Form */}
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <FieldGroup className="w-full space-y-4">
-                                {/* Field 1: Username */}
-                                <Field className="w-full">
-                                    <FieldLabel htmlFor="username" className="text-body-medium">Username</FieldLabel>
-                                    <Input
-                                        id="username"
-                                        type="text"
-                                        placeholder="Masukkan username"
-                                        value={data.username}
-                                        onChange={(e) => setData('username', e.target.value)}
-                                        className="w-full h-11 text-body-base"
-                                        required
-                                    />
-                                    {errors.username && (
-                                        <FieldError>{errors.username}</FieldError>
-                                    )}
-                                </Field>
-
-                                {/* Field 2: Password */}
-                                <Field className="w-full">
-                                    <FieldLabel htmlFor="password" className="text-body-medium">Password</FieldLabel>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        value={data.password}
-                                        onChange={(e) => setData('password', e.target.value)}
-                                        className="w-full h-11 text-body-base"
-                                        required
-                                    />
-                                    {errors.password && (
-                                        <FieldError>{errors.password}</FieldError>
-                                    )}
-                                </Field>
-                            </FieldGroup>
-
-                            {/* Field 3: Submit Button */}
-                            <Button 
-                                type="submit" 
-                                disabled={processing} 
-                                className="w-full h-11 font-semibold"
+            <AuthSplitCard
+                heroBadge="Sistem Pengawasan Depok"
+                heroTitle="Jaga Kontribusi Anda, Jaga Fasilitas Rakyat."
+                heroDescription="Platform audit sengketa fisik independen dan transparansi penanganan fasilitas publik Kota Depok."
+                title="Selamat Datang Kembali"
+                subtitle="Masukkan kredensial akun Anda untuk mengakses sistem."
+                footer={
+                    <div className="space-y-1.5 text-caption-xs text-muted-foreground">
+                        <p>Data pribadi warga dikelola aman sesuai standar UU PDP.</p>
+                        <p>
+                            Hanya ingin memantau persebaran?{' '}
+                            <Link
+                                href="/#sebaran-peta"
+                                className="font-semibold text-primary underline underline-offset-4 hover:opacity-80"
                             >
-                                {processing ? 'Memproses...' : 'Masuk'}
-                            </Button>
+                                Buka di beranda publik
+                            </Link>
+                        </p>
+                    </div>
+                }
+            >
+                {(success || status) && (
+                    <Alert
+                        variant="default"
+                        className="mb-4 rounded-xl border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300"
+                    >
+                        <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
+                        <AlertDescription className="text-body-sm">
+                            {success || status}
+                        </AlertDescription>
+                    </Alert>
+                )}
 
-                            <div className="flex items-center justify-between text-body-sm pt-1">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <FieldGroup className="space-y-4">
+                        {/* Field: Username */}
+                        <Field className="w-full">
+                            <FieldLabel
+                                htmlFor="username"
+                                className="text-body-sm font-semibold text-foreground"
+                            >
+                                Username
+                            </FieldLabel>
+                            <div className="relative">
+                                <Input
+                                    id="username"
+                                    type="text"
+                                    placeholder="Masukkan username Anda"
+                                    value={data.username}
+                                    onChange={(e) =>
+                                        setData('username', e.target.value)
+                                    }
+                                    className="h-11 w-full rounded-xl pl-10 text-body-sm"
+                                    required
+                                    autoComplete="username"
+                                />
+                                <User className="absolute top-3.5 left-3.5 size-4 text-muted-foreground" />
+                            </div>
+                            {errors.username && (
+                                <FieldError>{errors.username}</FieldError>
+                            )}
+                        </Field>
+
+                        {/* Field: Password */}
+                        <Field className="w-full">
+                            <div className="flex items-center justify-between">
+                                <FieldLabel
+                                    htmlFor="password"
+                                    className="text-body-sm font-semibold text-foreground"
+                                >
+                                    Password
+                                </FieldLabel>
                                 <Link
                                     href="/lupa-sandi"
-                                    className="text-muted-foreground hover:text-foreground underline underline-offset-4"
+                                    className="text-caption-xs font-medium text-muted-foreground hover:text-foreground hover:underline"
                                 >
                                     Lupa kata sandi?
                                 </Link>
-                                <Link
-                                    href="/daftar"
-                                    className="font-semibold text-primary hover:underline underline-offset-4"
-                                >
-                                    Daftar akun warga
-                                </Link>
                             </div>
-                        </form>
-                    </div>
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder="••••••••"
+                                    value={data.password}
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
+                                    className="h-11 w-full rounded-xl pr-10 pl-10 text-body-sm"
+                                    required
+                                    autoComplete="current-password"
+                                />
+                                <Lock className="absolute top-3.5 left-3.5 size-4 text-muted-foreground" />
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowPassword(!showPassword)
+                                    }
+                                    className="absolute top-3.5 right-3 text-muted-foreground hover:text-foreground focus:outline-none"
+                                    aria-label={
+                                        showPassword
+                                            ? 'Sembunyikan password'
+                                            : 'Lihat password'
+                                    }
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="size-4" />
+                                    ) : (
+                                        <Eye className="size-4" />
+                                    )}
+                                </button>
+                            </div>
+                            {errors.password && (
+                                <FieldError>{errors.password}</FieldError>
+                            )}
+                        </Field>
+                    </FieldGroup>
 
-                    {/* Footer Info */}
-                    <p className="text-caption-xs text-center text-muted-foreground mt-6">
-                        Data pribadi dikelola sesuai UU PDP. Layanan gratis bagi warga.
-                    </p>
-                </div>
-            </Card>
+                    {/* Tombol Submit */}
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="h-11 w-full rounded-xl font-semibold shadow-sm transition-all"
+                    >
+                        {processing ? 'Memproses Masuk...' : 'Masuk'}
+                    </Button>
+
+                    {/* Link Daftar */}
+                    <div className="flex items-center justify-center gap-1.5 text-body-sm text-muted-foreground pt-1">
+                        <span>Belum memiliki akun warga?</span>
+                        <Link
+                            href="/daftar"
+                            className="font-semibold text-primary underline underline-offset-4 hover:opacity-80"
+                        >
+                            Daftar sekarang
+                        </Link>
+                    </div>
+                </form>
+            </AuthSplitCard>
         </GuestLayouts>
     );
 }
