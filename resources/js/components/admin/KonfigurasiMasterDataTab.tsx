@@ -1,6 +1,45 @@
-import { useState, useMemo } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 import { useForm } from '@inertiajs/react';
-import { Building2, Plus, Edit2, X, Layers, MapPin, Search } from 'lucide-react';
+import {
+    Building2,
+    Edit2,
+    Layers,
+    MapPin,
+    Plus,
+    Search,
+    X,
+} from 'lucide-react';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import AdminTablePagination from '@/components/admin/AdminTablePagination';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
 
 export interface InstansiRow {
     id: number;
@@ -47,21 +86,31 @@ export default function KonfigurasiMasterDataTab({
     masterKategori,
     masterWilayah,
 }: KonfigurasiMasterDataTabProps) {
-    const [subTab, setSubTab] = useState<'instansi' | 'kategori' | 'wilayah'>('instansi');
+    const [subTab, setSubTab] = useState<'instansi' | 'kategori' | 'wilayah'>(
+        'instansi',
+    );
 
     // State Instansi
     const [modalInstansiBuka, setModalInstansiBuka] = useState(false);
     const [editInstansiId, setEditInstansiId] = useState<number | null>(null);
+    const [searchInstansi, setSearchInstansi] = useState('');
+    const [filterStatusInstansi, setFilterStatusInstansi] = useState('semua');
+    const [pageInstansi, setPageInstansi] = useState(1);
 
     // State Kategori
     const [modalKategoriBuka, setModalKategoriBuka] = useState(false);
     const [editKategoriId, setEditKategoriId] = useState<number | null>(null);
+    const [searchKategori, setSearchKategori] = useState('');
+    const [filterStatusKategori, setFilterStatusKategori] = useState('semua');
+    const [pageKategori, setPageKategori] = useState(1);
 
     // State Wilayah
     const [modalWilayahBuka, setModalWilayahBuka] = useState(false);
     const [editWilayahId, setEditWilayahId] = useState<number | null>(null);
     const [searchWilayah, setSearchWilayah] = useState('');
-    const [filterTingkatWilayah, setFilterTingkatWilayah] = useState('');
+    const [filterTingkatWilayah, setFilterTingkatWilayah] = useState('semua');
+    const [pageWilayah, setPageWilayah] = useState(1);
+    const PAGE_SIZE = 10;
 
     // Form Instansi
     const formInstansi = useForm({
@@ -111,7 +160,7 @@ export default function KonfigurasiMasterDataTab({
         setModalInstansiBuka(true);
     };
 
-    const simpanInstansi = (e: React.FormEvent) => {
+    const simpanInstansi = (e: FormEvent) => {
         e.preventDefault();
         if (editInstansiId) {
             formInstansi.put(`/admin/konfigurasi/instansi/${editInstansiId}`, {
@@ -147,7 +196,7 @@ export default function KonfigurasiMasterDataTab({
         setModalKategoriBuka(true);
     };
 
-    const simpanKategori = (e: React.FormEvent) => {
+    const simpanKategori = (e: FormEvent) => {
         e.preventDefault();
         if (editKategoriId) {
             formKategori.put(`/admin/konfigurasi/kategori/${editKategoriId}`, {
@@ -163,7 +212,9 @@ export default function KonfigurasiMasterDataTab({
     // Wilayah Handlers
     const bukaTambahWilayah = () => {
         setEditWilayahId(null);
-        const kotaDefault = masterWilayah.find((w) => w.tingkat === 'kecamatan') || masterWilayah[0];
+        const kotaDefault =
+            masterWilayah.find((w) => w.tingkat === 'kecamatan') ||
+            masterWilayah[0];
         formWilayah.setData({
             tingkat: 'kelurahan',
             nama: '',
@@ -186,7 +237,7 @@ export default function KonfigurasiMasterDataTab({
         setModalWilayahBuka(true);
     };
 
-    const simpanWilayah = (e: React.FormEvent) => {
+    const simpanWilayah = (e: FormEvent) => {
         e.preventDefault();
         if (editWilayahId) {
             formWilayah.put(`/admin/konfigurasi/wilayah/${editWilayahId}`, {
@@ -199,625 +250,1103 @@ export default function KonfigurasiMasterDataTab({
         }
     };
 
-    // Filter Wilayah
+    // Filter & Paginasi Instansi
+    const instansiTersaring = useMemo(() => {
+        return masterInstansi.filter((ins) => {
+            const matchSearch =
+                !searchInstansi.trim() ||
+                ins.nama
+                    .toLowerCase()
+                    .includes(searchInstansi.trim().toLowerCase()) ||
+                ins.singkatan
+                    .toLowerCase()
+                    .includes(searchInstansi.trim().toLowerCase());
+            const matchStatus =
+                filterStatusInstansi === 'semua' ||
+                (filterStatusInstansi === 'aktif' && ins.aktif) ||
+                (filterStatusInstansi === 'nonaktif' && !ins.aktif);
+            return matchSearch && matchStatus;
+        });
+    }, [masterInstansi, searchInstansi, filterStatusInstansi]);
+
+    const paginatedInstansi = useMemo(() => {
+        const start = (pageInstansi - 1) * PAGE_SIZE;
+        return instansiTersaring.slice(start, start + PAGE_SIZE);
+    }, [instansiTersaring, pageInstansi]);
+
+    // Filter & Paginasi Kategori
+    const kategoriTersaring = useMemo(() => {
+        return masterKategori.filter((kat) => {
+            const matchSearch =
+                !searchKategori.trim() ||
+                kat.nama
+                    .toLowerCase()
+                    .includes(searchKategori.trim().toLowerCase());
+            const matchStatus =
+                filterStatusKategori === 'semua' ||
+                (filterStatusKategori === 'aktif' && kat.aktif) ||
+                (filterStatusKategori === 'nonaktif' && !kat.aktif);
+            return matchSearch && matchStatus;
+        });
+    }, [masterKategori, searchKategori, filterStatusKategori]);
+
+    const paginatedKategori = useMemo(() => {
+        const start = (pageKategori - 1) * PAGE_SIZE;
+        return kategoriTersaring.slice(start, start + PAGE_SIZE);
+    }, [kategoriTersaring, pageKategori]);
+
+    // Filter & Paginasi Wilayah
     const wilayahTersaring = useMemo(() => {
         return masterWilayah.filter((wil) => {
             const cocokNama =
-                !searchWilayah ||
-                wil.nama.toLowerCase().includes(searchWilayah.toLowerCase()) ||
-                (wil.kode_bps && wil.kode_bps.toLowerCase().includes(searchWilayah.toLowerCase()));
-            const cocokTingkat = !filterTingkatWilayah || wil.tingkat === filterTingkatWilayah;
+                !searchWilayah.trim() ||
+                wil.nama
+                    .toLowerCase()
+                    .includes(searchWilayah.trim().toLowerCase()) ||
+                (wil.kode_bps &&
+                    wil.kode_bps
+                        .toLowerCase()
+                        .includes(searchWilayah.trim().toLowerCase()));
+            const cocokTingkat =
+                filterTingkatWilayah === 'semua' ||
+                wil.tingkat === filterTingkatWilayah;
             return cocokNama && cocokTingkat;
         });
     }, [masterWilayah, searchWilayah, filterTingkatWilayah]);
 
+    const paginatedWilayah = useMemo(() => {
+        const start = (pageWilayah - 1) * PAGE_SIZE;
+        return wilayahTersaring.slice(start, start + PAGE_SIZE);
+    }, [wilayahTersaring, pageWilayah]);
+
     return (
         <div className="space-y-4">
             {/* Sub-tab Switcher */}
-            <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                <button
-                    type="button"
-                    onClick={() => setSubTab('instansi')}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                        subTab === 'instansi'
-                            ? 'bg-slate-900 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                    }`}
-                >
-                    <Building2 className="h-3.5 w-3.5" />
-                    <span>Instansi Teknis ({masterInstansi.length})</span>
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setSubTab('kategori')}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                        subTab === 'kategori'
-                            ? 'bg-slate-900 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                    }`}
-                >
-                    <Layers className="h-3.5 w-3.5" />
-                    <span>Kategori Kerusakan ({masterKategori.length})</span>
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setSubTab('wilayah')}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                        subTab === 'wilayah'
-                            ? 'bg-slate-900 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                    }`}
-                >
-                    <MapPin className="h-3.5 w-3.5" />
-                    <span>Wilayah Administratif ({masterWilayah.length})</span>
-                </button>
-            </div>
+            <Tabs
+                value={subTab}
+                onValueChange={(val) => val && setSubTab(val as typeof subTab)}
+                className="w-full"
+            >
+                <div className="w-full scrollbar-none overflow-x-auto pb-1">
+                    <TabsList className="inline-flex w-max min-w-full justify-start bg-muted/50 p-1">
+                        <TabsTrigger
+                            value="instansi"
+                            className="shrink-0 gap-1.5"
+                        >
+                            <Building2
+                                className="size-3.5"
+                                aria-hidden="true"
+                            />
+                            <span>
+                                Instansi Teknis ({masterInstansi.length})
+                            </span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="kategori"
+                            className="shrink-0 gap-1.5"
+                        >
+                            <Layers className="size-3.5" aria-hidden="true" />
+                            <span>
+                                Kategori Kerusakan ({masterKategori.length})
+                            </span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="wilayah"
+                            className="shrink-0 gap-1.5"
+                        >
+                            <MapPin className="size-3.5" aria-hidden="true" />
+                            <span>
+                                Wilayah Administratif ({masterWilayah.length})
+                            </span>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+            </Tabs>
 
             {/* Sub-Tab 1: Instansi */}
             {subTab === 'instansi' && (
-                <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h4 className="font-semibold text-slate-900 text-sm">Daftar Instansi Teknis</h4>
-                            <p className="text-xs text-slate-500">
-                                Organisasi Perangkat Daerah (OPD) penanggung jawab pekerjaan fisik di lapangan.
+                            <h4 className="text-body-medium font-semibold text-foreground">
+                                Daftar Instansi Teknis
+                            </h4>
+                            <p className="text-caption-xs text-muted-foreground">
+                                Organisasi Perangkat Daerah (OPD) penanggung
+                                jawab pekerjaan fisik di lapangan.
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={bukaTambahInstansi}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition"
-                        >
-                            <Plus className="h-3.5 w-3.5" />
-                            <span>Tambah Instansi</span>
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="relative min-w-[200px] flex-1 sm:w-56">
+                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Cari instansi atau singkatan..."
+                                    value={searchInstansi}
+                                    onChange={(e) => {
+                                        setSearchInstansi(e.target.value);
+                                        setPageInstansi(1);
+                                    }}
+                                    className="h-9 pr-8 pl-9 text-xs"
+                                />
+                                {searchInstansi && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSearchInstansi('');
+                                            setPageInstansi(1);
+                                        }}
+                                        className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                        aria-label="Hapus filter pencarian"
+                                    >
+                                        <X className="size-3.5" />
+                                    </button>
+                                )}
+                            </div>
+
+                            <Select
+                                value={filterStatusInstansi}
+                                onValueChange={(val) => {
+                                    setFilterStatusInstansi(val ?? 'semua');
+                                    setPageInstansi(1);
+                                }}
+                            >
+                                <SelectTrigger className="h-9 w-[120px] text-xs">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="semua">
+                                            Semua Status
+                                        </SelectItem>
+                                        <SelectItem value="aktif">
+                                            Aktif
+                                        </SelectItem>
+                                        <SelectItem value="nonaktif">
+                                            Nonaktif
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+
+                            <Button
+                                size="sm"
+                                variant="default"
+                                onClick={bukaTambahInstansi}
+                                title="Tambah Instansi"
+                                aria-label="Tambah Instansi"
+                            >
+                                <Plus className="size-3.5" aria-hidden="true" />
+                                <span className="hidden sm:inline">
+                                    Tambah Instansi
+                                </span>
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className="overflow-x-auto w-full">
-                        <table className="w-full text-left text-xs min-w-[650px]">
-                            <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
-                                <tr>
-                                    <th className="p-3.5 pl-4 font-semibold">Singkatan</th>
-                                    <th className="p-3.5 font-semibold">Nama Lengkap Instansi</th>
-                                    <th className="p-3.5 font-semibold">Wilayah Induk</th>
-                                    <th className="p-3.5 font-semibold">Status</th>
-                                    <th className="p-3.5 pr-4 text-right font-semibold">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 text-slate-700">
-                                {masterInstansi.map((ins) => (
-                                    <tr key={ins.id} className="hover:bg-slate-50/70 transition">
-                                        <td className="p-3.5 pl-4 font-mono font-bold text-slate-900">
+                    <Table>
+                        <TableHeader className="bg-muted/40">
+                            <TableRow>
+                                <TableHead className="font-semibold text-foreground">
+                                    Singkatan
+                                </TableHead>
+                                <TableHead className="font-semibold text-foreground">
+                                    Nama Lengkap Instansi
+                                </TableHead>
+                                <TableHead className="font-semibold text-foreground">
+                                    Wilayah Induk
+                                </TableHead>
+                                <TableHead className="font-semibold text-foreground">
+                                    Status
+                                </TableHead>
+                                <TableHead className="text-right font-semibold text-foreground">
+                                    Aksi
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {paginatedInstansi.length === 0 ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="h-32 text-center"
+                                    >
+                                        <AdminEmptyState
+                                            icon={Building2}
+                                            title="Instansi Tidak Ditemukan"
+                                            description="Tidak ada data instansi yang cocok dengan filter pencarian."
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                paginatedInstansi.map((ins) => (
+                                    <TableRow
+                                        key={ins.id}
+                                        className="transition-colors hover:bg-muted/30"
+                                    >
+                                        <TableCell className="text-body-sm font-mono font-semibold text-foreground">
                                             {ins.singkatan}
-                                        </td>
-                                        <td className="p-3.5 font-medium text-slate-800">{ins.nama}</td>
-                                        <td className="p-3.5 text-slate-500">{ins.wilayah?.nama || '-'}</td>
-                                        <td className="p-3.5">
-                                            {ins.aktif ? (
-                                                <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-semibold">
-                                                    Aktif
-                                                </span>
-                                            ) : (
-                                                <span className="rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-semibold">
-                                                    Nonaktif
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="p-3.5 pr-4 text-right">
-                                            <button
-                                                type="button"
-                                                onClick={() => bukaEditInstansi(ins)}
-                                                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50 hover:text-teal-600 transition shadow-sm font-medium"
+                                        </TableCell>
+                                        <TableCell className="text-body-sm font-medium text-foreground">
+                                            {ins.nama}
+                                        </TableCell>
+                                        <TableCell className="text-caption-xs text-muted-foreground">
+                                            {ins.wilayah?.nama || '-'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                variant={
+                                                    ins.aktif
+                                                        ? 'sla-safe'
+                                                        : 'closed'
+                                                }
+                                                className="text-caption-xs"
                                             >
-                                                <Edit2 className="h-3 w-3" />
-                                                <span>Ubah</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                                {ins.aktif
+                                                    ? 'Aktif'
+                                                    : 'Nonaktif'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    bukaEditInstansi(ins)
+                                                }
+                                                title={`Ubah data ${ins.nama}`}
+                                                aria-label={`Ubah data ${ins.nama}`}
+                                            >
+                                                <Edit2
+                                                    className="size-3 text-muted-foreground"
+                                                    aria-hidden="true"
+                                                />
+                                                <span className="hidden sm:inline">
+                                                    Ubah
+                                                </span>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+
+                    <AdminTablePagination
+                        currentPage={pageInstansi}
+                        totalItems={instansiTersaring.length}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={setPageInstansi}
+                        itemName="instansi"
+                    />
                 </div>
             )}
 
             {/* Sub-Tab 2: Kategori */}
             {subTab === 'kategori' && (
-                <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h4 className="font-semibold text-slate-900 text-sm">Daftar Kategori Kerusakan</h4>
-                            <p className="text-xs text-slate-500">
-                                Klasifikasi fasilitas publik dan batas radius deteksi kemiripan/duplikasi aduan (meter).
+                            <h4 className="text-body-medium font-semibold text-foreground">
+                                Daftar Kategori Kerusakan
+                            </h4>
+                            <p className="text-caption-xs text-muted-foreground">
+                                Klasifikasi fasilitas publik dan batas radius
+                                deteksi kemiripan/duplikasi aduan (meter).
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={bukaTambahKategori}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition"
-                        >
-                            <Plus className="h-3.5 w-3.5" />
-                            <span>Tambah Kategori</span>
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="relative min-w-[200px] flex-1 sm:w-56">
+                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Cari kategori kerusakan..."
+                                    value={searchKategori}
+                                    onChange={(e) => {
+                                        setSearchKategori(e.target.value);
+                                        setPageKategori(1);
+                                    }}
+                                    className="h-9 pr-8 pl-9 text-xs"
+                                />
+                                {searchKategori && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSearchKategori('');
+                                            setPageKategori(1);
+                                        }}
+                                        className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                        aria-label="Hapus filter pencarian"
+                                    >
+                                        <X className="size-3.5" />
+                                    </button>
+                                )}
+                            </div>
+
+                            <Select
+                                value={filterStatusKategori}
+                                onValueChange={(val) => {
+                                    setFilterStatusKategori(val ?? 'semua');
+                                    setPageKategori(1);
+                                }}
+                            >
+                                <SelectTrigger className="h-9 w-[120px] text-xs">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="semua">
+                                            Semua Status
+                                        </SelectItem>
+                                        <SelectItem value="aktif">
+                                            Aktif
+                                        </SelectItem>
+                                        <SelectItem value="nonaktif">
+                                            Nonaktif
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+
+                            <Button
+                                size="sm"
+                                variant="default"
+                                onClick={bukaTambahKategori}
+                                title="Tambah Kategori"
+                                aria-label="Tambah Kategori"
+                            >
+                                <Plus className="size-3.5" aria-hidden="true" />
+                                <span className="hidden sm:inline">
+                                    Tambah Kategori
+                                </span>
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className="overflow-x-auto w-full">
-                        <table className="w-full text-left text-xs min-w-[650px]">
-                            <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
-                                <tr>
-                                    <th className="p-3.5 pl-4 font-semibold">ID</th>
-                                    <th className="p-3.5 font-semibold">Nama Kategori Kerusakan</th>
-                                    <th className="p-3.5 font-semibold">Radius Deteksi Duplikat</th>
-                                    <th className="p-3.5 font-semibold">Status</th>
-                                    <th className="p-3.5 pr-4 text-right font-semibold">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 text-slate-700">
-                                {masterKategori.map((kat) => (
-                                    <tr key={kat.id} className="hover:bg-slate-50/70 transition">
-                                        <td className="p-3.5 pl-4 font-mono font-bold text-slate-900">
+                    <Table>
+                        <TableHeader className="bg-muted/40">
+                            <TableRow>
+                                <TableHead className="font-semibold text-foreground">
+                                    ID
+                                </TableHead>
+                                <TableHead className="font-semibold text-foreground">
+                                    Nama Kategori Kerusakan
+                                </TableHead>
+                                <TableHead className="font-semibold text-foreground">
+                                    Radius Deteksi Duplikat
+                                </TableHead>
+                                <TableHead className="font-semibold text-foreground">
+                                    Status
+                                </TableHead>
+                                <TableHead className="text-right font-semibold text-foreground">
+                                    Aksi
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {paginatedKategori.length === 0 ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="h-32 text-center"
+                                    >
+                                        <AdminEmptyState
+                                            icon={Layers}
+                                            title="Kategori Tidak Ditemukan"
+                                            description="Tidak ada kategori kerusakan yang cocok dengan filter pencarian."
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                paginatedKategori.map((kat) => (
+                                    <TableRow
+                                        key={kat.id}
+                                        className="transition-colors hover:bg-muted/30"
+                                    >
+                                        <TableCell className="text-body-sm font-mono font-semibold text-foreground">
                                             #{kat.id}
-                                        </td>
-                                        <td className="p-3.5 font-medium text-slate-900">{kat.nama}</td>
-                                        <td className="p-3.5 text-slate-600 font-mono">
+                                        </TableCell>
+                                        <TableCell className="text-body-sm font-medium text-foreground">
+                                            {kat.nama}
+                                        </TableCell>
+                                        <TableCell className="text-caption-xs font-mono text-muted-foreground">
                                             {kat.radius_gabung_m ?? 25} meter
-                                        </td>
-                                        <td className="p-3.5">
-                                            {kat.aktif ? (
-                                                <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-semibold">
-                                                    Aktif
-                                                </span>
-                                            ) : (
-                                                <span className="rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-semibold">
-                                                    Nonaktif
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="p-3.5 pr-4 text-right">
-                                            <button
-                                                type="button"
-                                                onClick={() => bukaEditKategori(kat)}
-                                                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50 hover:text-teal-600 transition shadow-sm font-medium"
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                variant={
+                                                    kat.aktif
+                                                        ? 'sla-safe'
+                                                        : 'closed'
+                                                }
+                                                className="text-caption-xs"
                                             >
-                                                <Edit2 className="h-3 w-3" />
-                                                <span>Ubah</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                                {kat.aktif
+                                                    ? 'Aktif'
+                                                    : 'Nonaktif'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    bukaEditKategori(kat)
+                                                }
+                                                title={`Ubah data ${kat.nama}`}
+                                                aria-label={`Ubah data ${kat.nama}`}
+                                            >
+                                                <Edit2
+                                                    className="size-3 text-muted-foreground"
+                                                    aria-hidden="true"
+                                                />
+                                                <span className="hidden sm:inline">
+                                                    Ubah
+                                                </span>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+
+                    <AdminTablePagination
+                        currentPage={pageKategori}
+                        totalItems={kategoriTersaring.length}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={setPageKategori}
+                        itemName="kategori"
+                    />
                 </div>
             )}
 
             {/* Sub-Tab 3: Wilayah */}
             {subTab === 'wilayah' && (
-                <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="space-y-3">
+                    <div className="overflow-hidden rounded-xl border border-border bg-card">
+                       <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h4 className="font-semibold text-slate-900 text-sm">Daftar Wilayah Administratif</h4>
-                            <p className="text-xs text-slate-500">
-                                Struktur hierarki teritorial Kota, Kecamatan, dan Kelurahan di Kota Depok.
+                            <h4 className="text-body-medium font-semibold text-foreground">
+                                Wilayah Administratif
+                            </h4>
+                            <p className="text-caption-xs text-muted-foreground">
+                                Data wilayah administratif yang digunakan untuk
+                                mengelompokkan aduan dan instansi teknis.
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={bukaTambahWilayah}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition"
-                        >
-                            <Plus className="h-3.5 w-3.5" />
-                            <span>Tambah Wilayah</span>
-                        </button>
-                    </div>
-
-                    {/* Filter & Search Bar */}
-                    <div className="px-4 py-2.5 bg-slate-50/70 border-b border-slate-200 flex flex-col sm:flex-row items-center gap-2 text-xs">
-                        <div className="relative w-full sm:w-64">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                            <input
-                                type="text"
-                                value={searchWilayah}
-                                onChange={(e) => setSearchWilayah(e.target.value)}
-                                placeholder="Cari nama wilayah atau kode BPS..."
-                                className="w-full h-8 pl-8 pr-3 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 focus:border-teal-500 focus:outline-none"
-                            />
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-1 flex-wrap items-center gap-2">
+                            <div className="relative max-w-sm min-w-[200px] flex-1">
+                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Cari kelurahan, kecamatan, BPS..."
+                                    value={searchWilayah}
+                                    onChange={(e) => {
+                                        setSearchWilayah(e.target.value);
+                                        setPageWilayah(1);
+                                    }}
+                                    className="h-9 pr-8 pl-9 text-xs"
+                                />
+                                {searchWilayah && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSearchWilayah('');
+                                            setPageWilayah(1);
+                                        }}
+                                        className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                        aria-label="Hapus filter pencarian"
+                                    >
+                                        <X className="size-3.5" />
+                                    </button>
+                                )}
+                            </div>
+                            <Select
+                                value={filterTingkatWilayah}
+                                onValueChange={(val) => {
+                                    setFilterTingkatWilayah(val ?? 'semua');
+                                    setPageWilayah(1);
+                                }}
+                            >
+                                <SelectTrigger className="h-9 w-[160px] text-xs">
+                                    <SelectValue placeholder="Tingkat Wilayah" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="semua">
+                                            Semua Tingkat
+                                        </SelectItem>
+                                        <SelectItem value="kelurahan">
+                                            Kelurahan
+                                        </SelectItem>
+                                        <SelectItem value="kecamatan">
+                                            Kecamatan
+                                        </SelectItem>
+                                        <SelectItem value="kota">
+                                            Kota
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <select
-                            value={filterTingkatWilayah}
-                            onChange={(e) => setFilterTingkatWilayah(e.target.value)}
-                            className="w-full sm:w-44 h-8 px-2.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 focus:border-teal-500 focus:outline-none"
+                        <Button
+                            size="sm"
+                            variant="default"
+                            onClick={bukaTambahWilayah}
+                            title="Tambah Wilayah"
+                            aria-label="Tambah Wilayah"
                         >
-                            <option value="">Semua Tingkat</option>
-                            <option value="kota">Kota</option>
-                            <option value="kecamatan">Kecamatan</option>
-                            <option value="kelurahan">Kelurahan</option>
-                        </select>
-                        <span className="text-slate-500 text-[11px] sm:ml-auto">
-                            Menampilkan <strong>{Math.min(wilayahTersaring.length, 50)}</strong> dari <strong>{wilayahTersaring.length}</strong> wilayah
-                        </span>
+                            <Plus className="size-3.5" aria-hidden="true" />
+                            <span className="hidden sm:inline">
+                                Tambah Wilayah
+                            </span>
+                        </Button>
                     </div>
-
-                    <div className="overflow-x-auto w-full">
-                        <table className="w-full text-left text-xs min-w-[650px]">
-                            <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
-                                <tr>
-                                    <th className="p-3.5 pl-4 font-semibold">Kode BPS</th>
-                                    <th className="p-3.5 font-semibold">Nama Wilayah</th>
-                                    <th className="p-3.5 font-semibold">Tingkat</th>
-                                    <th className="p-3.5 font-semibold">Wilayah Induk</th>
-                                    <th className="p-3.5 pr-4 text-right font-semibold">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 text-slate-700">
-                                {wilayahTersaring.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="py-8 text-center text-slate-400">
-                                            Tidak ada wilayah yang cocok dengan pencarian.
-                                        </td>
-                                    </tr>
+                    </div>
+                        <Table>
+                            <TableHeader className="bg-muted/40">
+                                <TableRow>
+                                    <TableHead className="font-semibold text-foreground">
+                                        Nama Wilayah
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-foreground">
+                                        Tingkat
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-foreground">
+                                        Kode BPS
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-foreground">
+                                        Wilayah Induk
+                                    </TableHead>
+                                    <TableHead className="text-right font-semibold text-foreground">
+                                        Aksi
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {paginatedWilayah.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={5}
+                                            className="h-32 text-center"
+                                        >
+                                            <AdminEmptyState
+                                                icon={MapPin}
+                                                title="Wilayah Tidak Ditemukan"
+                                                description="Tidak ada data wilayah yang cocok dengan filter pencarian."
+                                            />
+                                        </TableCell>
+                                    </TableRow>
                                 ) : (
-                                    wilayahTersaring.slice(0, 50).map((wil) => (
-                                        <tr key={wil.id} className="hover:bg-slate-50/70 transition">
-                                            <td className="p-3.5 pl-4 font-mono font-bold text-slate-900">
-                                                {wil.kode_bps || wil.kode || '-'}
-                                            </td>
-                                            <td className="p-3.5 font-medium text-slate-900">{wil.nama}</td>
-                                            <td className="p-3.5 capitalize">
-                                                <span
-                                                    className={`rounded border px-2 py-0.5 font-mono text-[10px] font-semibold ${
-                                                        wil.tingkat === 'kota'
-                                                            ? 'bg-blue-50 text-blue-800 border-blue-200'
-                                                            : wil.tingkat === 'kecamatan'
-                                                            ? 'bg-purple-50 text-purple-800 border-purple-200'
-                                                            : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                                    }`}
+                                    paginatedWilayah.map((wil) => (
+                                        <TableRow
+                                            key={wil.id}
+                                            className="transition-colors hover:bg-muted/30"
+                                        >
+                                            <TableCell className="text-body-sm font-semibold text-foreground">
+                                                {wil.nama}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant={
+                                                        wil.tingkat ===
+                                                        'kelurahan'
+                                                            ? 'outline'
+                                                            : wil.tingkat ===
+                                                                'kecamatan'
+                                                              ? 'secondary'
+                                                              : 'default'
+                                                    }
+                                                    className="text-caption-xs capitalize"
                                                 >
                                                     {wil.tingkat}
-                                                </span>
-                                            </td>
-                                            <td className="p-3.5 text-slate-600">
-                                                {wil.induk?.nama || (wil.tingkat === 'kota' ? 'Pusat (Pemerintah Kota)' : '-')}
-                                            </td>
-                                            <td className="p-3.5 pr-4 text-right">
-                                                <button
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-caption-xs font-mono text-muted-foreground">
+                                                {wil.kode_bps || '—'}
+                                            </TableCell>
+                                            <TableCell className="text-caption-xs text-muted-foreground">
+                                                {wil.induk?.nama || '—'}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
                                                     type="button"
-                                                    onClick={() => bukaEditWilayah(wil)}
-                                                    className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50 hover:text-teal-600 transition shadow-sm font-medium"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        bukaEditWilayah(wil)
+                                                    }
+                                                    title={`Ubah data ${wil.nama}`}
+                                                    aria-label={`Ubah data ${wil.nama}`}
                                                 >
-                                                    <Edit2 className="h-3 w-3" />
-                                                    <span>Ubah</span>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                                    <Edit2
+                                                        className="size-3 text-muted-foreground"
+                                                        aria-hidden="true"
+                                                    />
+                                                    <span className="hidden sm:inline">
+                                                        Ubah
+                                                    </span>
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
                                     ))
                                 )}
-                            </tbody>
-                        </table>
+                            </TableBody>
+                        </Table>
+
+                        <AdminTablePagination
+                            currentPage={pageWilayah}
+                            totalItems={wilayahTersaring.length}
+                            pageSize={PAGE_SIZE}
+                            onPageChange={setPageWilayah}
+                            itemName="wilayah"
+                        />
                     </div>
                 </div>
             )}
 
             {/* Modal Tambah/Edit Instansi */}
-            {modalInstansiBuka && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="w-full max-w-md rounded-xl bg-white shadow-xl overflow-hidden border border-slate-200">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <h3 className="font-semibold text-slate-900 text-base">
-                                {editInstansiId ? 'Ubah Data Instansi' : 'Tambah Instansi Baru'}
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setModalInstansiBuka(false)}
-                                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            <Dialog
+                open={modalInstansiBuka}
+                onOpenChange={setModalInstansiBuka}
+            >
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editInstansiId
+                                ? 'Ubah Data Instansi'
+                                : 'Tambah Instansi Baru'}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Organisasi Perangkat Daerah teknis penanggung jawab
+                            tindak lanjut laporan fisik.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={simpanInstansi} className="space-y-4 pt-1">
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="ins-singkatan">
+                                Singkatan OPD{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Input
+                                id="ins-singkatan"
+                                type="text"
+                                value={formInstansi.data.singkatan}
+                                onChange={(e) =>
+                                    formInstansi.setData(
+                                        'singkatan',
+                                        e.target.value,
+                                    )
+                                }
+                                placeholder="Contoh: DISHUB, PUPR"
+                                required
+                            />
+                            {formInstansi.errors.singkatan && (
+                                <FieldError>
+                                    {formInstansi.errors.singkatan}
+                                </FieldError>
+                            )}
+                        </Field>
+
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="ins-nama">
+                                Nama Lengkap Instansi{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Input
+                                id="ins-nama"
+                                type="text"
+                                value={formInstansi.data.nama}
+                                onChange={(e) =>
+                                    formInstansi.setData('nama', e.target.value)
+                                }
+                                placeholder="Contoh: Dinas Perhubungan Kota Depok"
+                                required
+                            />
+                            {formInstansi.errors.nama && (
+                                <FieldError>
+                                    {formInstansi.errors.nama}
+                                </FieldError>
+                            )}
+                        </Field>
+
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="ins-wilayah">
+                                Wilayah Induk{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Select
+                                value={String(formInstansi.data.wilayah_id)}
+                                onValueChange={(val) =>
+                                    formInstansi.setData(
+                                        'wilayah_id',
+                                        Number(val),
+                                    )
+                                }
                             >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={simpanInstansi} className="p-6 space-y-4">
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Singkatan OPD <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formInstansi.data.singkatan}
-                                    onChange={(e) => formInstansi.setData('singkatan', e.target.value)}
-                                    placeholder="contoh: DISHUB"
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                    required
-                                />
-                                {formInstansi.errors.singkatan && (
-                                    <p className="text-xs text-rose-600">{formInstansi.errors.singkatan}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Nama Lengkap Instansi <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formInstansi.data.nama}
-                                    onChange={(e) => formInstansi.setData('nama', e.target.value)}
-                                    placeholder="contoh: Dinas Perhubungan Kota Depok"
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                    required
-                                />
-                                {formInstansi.errors.nama && (
-                                    <p className="text-xs text-rose-600">{formInstansi.errors.nama}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Wilayah Induk <span className="text-rose-500">*</span>
-                                </label>
-                                <select
-                                    value={formInstansi.data.wilayah_id}
-                                    onChange={(e) => formInstansi.setData('wilayah_id', Number(e.target.value))}
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
+                                <SelectTrigger
+                                    id="ins-wilayah"
+                                    className="w-full"
                                 >
-                                    {masterWilayah
-                                        .filter((w) => w.tingkat === 'kota' || w.tingkat === 'provinsi')
-                                        .map((w) => (
-                                            <option key={w.id} value={w.id}>
-                                                {w.nama} ({w.tingkat})
-                                            </option>
-                                        ))}
-                                </select>
-                            </div>
-
-                            <div className="flex items-center gap-2 pt-1">
-                                <input
-                                    type="checkbox"
-                                    id="instansi_aktif"
-                                    checked={formInstansi.data.aktif}
-                                    onChange={(e) => formInstansi.setData('aktif', e.target.checked)}
-                                    className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                                />
-                                <label htmlFor="instansi_aktif" className="text-xs font-semibold text-slate-700">
-                                    Status Instansi Aktif
-                                </label>
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                                <button
-                                    type="button"
-                                    onClick={() => setModalInstansiBuka(false)}
-                                    className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={formInstansi.processing}
-                                    className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-700 transition"
-                                >
-                                    Simpan
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal Tambah/Edit Kategori */}
-            {modalKategoriBuka && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="w-full max-w-md rounded-xl bg-white shadow-xl overflow-hidden border border-slate-200">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <h3 className="font-semibold text-slate-900 text-base">
-                                {editKategoriId ? 'Ubah Data Kategori Kerusakan' : 'Tambah Kategori Baru'}
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setModalKategoriBuka(false)}
-                                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={simpanKategori} className="p-6 space-y-4">
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Nama Kategori Kerusakan <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formKategori.data.nama}
-                                    onChange={(e) => formKategori.setData('nama', e.target.value)}
-                                    placeholder="contoh: Jalan Berlubang, Jembatan Rusak"
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                    required
-                                />
-                                {formKategori.errors.nama && (
-                                    <p className="text-xs text-rose-600">{formKategori.errors.nama}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Radius Deteksi Duplikat (meter) <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    value={formKategori.data.radius_gabung_m}
-                                    onChange={(e) => formKategori.setData('radius_gabung_m', Number(e.target.value))}
-                                    min={5}
-                                    max={500}
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                    required
-                                />
-                                <p className="text-[11px] text-slate-500">
-                                    Radius toleransi GPS untuk mendeteksi laporan serupa yang berdekatan.
-                                </p>
-                                {formKategori.errors.radius_gabung_m && (
-                                    <p className="text-xs text-rose-600">{formKategori.errors.radius_gabung_m}</p>
-                                )}
-                            </div>
-
-                            <div className="flex items-center gap-2 pt-1">
-                                <input
-                                    type="checkbox"
-                                    id="kategori_aktif"
-                                    checked={formKategori.data.aktif}
-                                    onChange={(e) => formKategori.setData('aktif', e.target.checked)}
-                                    className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                                />
-                                <label htmlFor="kategori_aktif" className="text-xs font-semibold text-slate-700">
-                                    Status Kategori Aktif
-                                </label>
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                                <button
-                                    type="button"
-                                    onClick={() => setModalKategoriBuka(false)}
-                                    className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={formKategori.processing}
-                                    className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-700 transition"
-                                >
-                                    Simpan
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal Tambah/Edit Wilayah */}
-            {modalWilayahBuka && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="w-full max-w-md rounded-xl bg-white shadow-xl overflow-hidden border border-slate-200">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <h3 className="font-semibold text-slate-900 text-base">
-                                {editWilayahId ? 'Ubah Data Wilayah Administratif' : 'Tambah Wilayah Baru'}
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setModalWilayahBuka(false)}
-                                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={simpanWilayah} className="p-6 space-y-4">
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Tingkat Wilayah <span className="text-rose-500">*</span>
-                                </label>
-                                <select
-                                    value={formWilayah.data.tingkat}
-                                    onChange={(e) => {
-                                        const t = e.target.value;
-                                        formWilayah.setData('tingkat', t);
-                                        if (t === 'kota') {
-                                            formWilayah.setData('induk_id', '');
-                                        }
-                                    }}
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                >
-                                    <option value="kelurahan">Kelurahan</option>
-                                    <option value="kecamatan">Kecamatan</option>
-                                    <option value="kota">Kota</option>
-                                </select>
-                                {formWilayah.errors.tingkat && (
-                                    <p className="text-xs text-rose-600">{formWilayah.errors.tingkat}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Nama Wilayah <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formWilayah.data.nama}
-                                    onChange={(e) => formWilayah.setData('nama', e.target.value)}
-                                    placeholder="contoh: Beji, Sukamaju Baru"
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                    required
-                                />
-                                {formWilayah.errors.nama && (
-                                    <p className="text-xs text-rose-600">{formWilayah.errors.nama}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Kode BPS (Opsional)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formWilayah.data.kode_bps}
-                                    onChange={(e) => formWilayah.setData('kode_bps', e.target.value)}
-                                    placeholder="contoh: 3276010001"
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                />
-                                {formWilayah.errors.kode_bps && (
-                                    <p className="text-xs text-rose-600">{formWilayah.errors.kode_bps}</p>
-                                )}
-                            </div>
-
-                            {formWilayah.data.tingkat !== 'kota' && (
-                                <div className="space-y-1.5">
-                                    <label className="block text-xs font-semibold text-slate-700">
-                                        Wilayah Induk <span className="text-rose-500">*</span>
-                                    </label>
-                                    <select
-                                        value={formWilayah.data.induk_id}
-                                        onChange={(e) => formWilayah.setData('induk_id', e.target.value)}
-                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                        required
-                                    >
-                                        <option value="">-- Pilih Wilayah Induk --</option>
+                                    <SelectValue placeholder="Pilih Wilayah Induk" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
                                         {masterWilayah
-                                            .filter((w) =>
-                                                formWilayah.data.tingkat === 'kelurahan'
-                                                    ? w.tingkat === 'kecamatan'
-                                                    : w.tingkat === 'kota'
+                                            .filter(
+                                                (w) =>
+                                                    w.tingkat === 'kota' ||
+                                                    w.tingkat === 'provinsi',
                                             )
                                             .map((w) => (
-                                                <option key={w.id} value={w.id}>
+                                                <SelectItem
+                                                    key={w.id}
+                                                    value={String(w.id)}
+                                                >
                                                     {w.nama} ({w.tingkat})
-                                                </option>
+                                                </SelectItem>
                                             ))}
-                                    </select>
-                                    {formWilayah.errors.induk_id && (
-                                        <p className="text-xs text-rose-600">{formWilayah.errors.induk_id}</p>
-                                    )}
-                                </div>
-                            )}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </Field>
 
-                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                                <button
-                                    type="button"
-                                    onClick={() => setModalWilayahBuka(false)}
-                                    className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
+                        <div className="flex items-center gap-2 pt-1">
+                            <input
+                                type="checkbox"
+                                id="instansi_aktif"
+                                checked={formInstansi.data.aktif}
+                                onChange={(e) =>
+                                    formInstansi.setData(
+                                        'aktif',
+                                        e.target.checked,
+                                    )
+                                }
+                                className="size-4 rounded border-border text-primary accent-primary"
+                            />
+                            <label
+                                htmlFor="instansi_aktif"
+                                className="cursor-pointer text-body-sm font-medium text-foreground"
+                            >
+                                Status Instansi Aktif
+                            </label>
+                        </div>
+
+                        <DialogFooter className="pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setModalInstansiBuka(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="default"
+                                disabled={formInstansi.processing}
+                            >
+                                {formInstansi.processing
+                                    ? 'Menyimpan...'
+                                    : 'Simpan'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Tambah/Edit Kategori */}
+            <Dialog
+                open={modalKategoriBuka}
+                onOpenChange={setModalKategoriBuka}
+            >
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editKategoriId
+                                ? 'Ubah Data Kategori Kerusakan'
+                                : 'Tambah Kategori Baru'}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Klasifikasi aduan dan parameter radius toleransi
+                            deduplikasi otomatis.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={simpanKategori} className="space-y-4 pt-1">
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="kat-nama">
+                                Nama Kategori Kerusakan{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Input
+                                id="kat-nama"
+                                type="text"
+                                value={formKategori.data.nama}
+                                onChange={(e) =>
+                                    formKategori.setData('nama', e.target.value)
+                                }
+                                placeholder="Contoh: Jalan Berlubang, Jembatan Rusak"
+                                required
+                            />
+                            {formKategori.errors.nama && (
+                                <FieldError>
+                                    {formKategori.errors.nama}
+                                </FieldError>
+                            )}
+                        </Field>
+
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="kat-radius">
+                                Radius Deteksi Duplikat (meter){' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Input
+                                id="kat-radius"
+                                type="number"
+                                value={formKategori.data.radius_gabung_m}
+                                onChange={(e) =>
+                                    formKategori.setData(
+                                        'radius_gabung_m',
+                                        Number(e.target.value),
+                                    )
+                                }
+                                min={5}
+                                max={500}
+                                required
+                            />
+                            <p className="text-caption-xs text-muted-foreground">
+                                Radius toleransi GPS untuk mendeteksi laporan
+                                serupa yang berdekatan.
+                            </p>
+                            {formKategori.errors.radius_gabung_m && (
+                                <FieldError>
+                                    {formKategori.errors.radius_gabung_m}
+                                </FieldError>
+                            )}
+                        </Field>
+
+                        <div className="flex items-center gap-2 pt-1">
+                            <input
+                                type="checkbox"
+                                id="kategori_aktif"
+                                checked={formKategori.data.aktif}
+                                onChange={(e) =>
+                                    formKategori.setData(
+                                        'aktif',
+                                        e.target.checked,
+                                    )
+                                }
+                                className="size-4 rounded border-border text-primary accent-primary"
+                            />
+                            <label
+                                htmlFor="kategori_aktif"
+                                className="cursor-pointer text-body-sm font-medium text-foreground"
+                            >
+                                Status Kategori Aktif
+                            </label>
+                        </div>
+
+                        <DialogFooter className="pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setModalKategoriBuka(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="default"
+                                disabled={formKategori.processing}
+                            >
+                                {formKategori.processing
+                                    ? 'Menyimpan...'
+                                    : 'Simpan'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Tambah/Edit Wilayah */}
+            <Dialog open={modalWilayahBuka} onOpenChange={setModalWilayahBuka}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editWilayahId
+                                ? 'Ubah Data Wilayah Administratif'
+                                : 'Tambah Wilayah Baru'}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Entitas wilayah kota, kecamatan, dan kelurahan untuk
+                            penugasan dan kuorum.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={simpanWilayah} className="space-y-4 pt-1">
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="wil-tingkat">
+                                Tingkat Wilayah{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Select
+                                value={formWilayah.data.tingkat}
+                                onValueChange={(val) => {
+                                    const t = val ?? 'kelurahan';
+                                    formWilayah.setData('tingkat', t);
+                                    if (t === 'kota') {
+                                        formWilayah.setData('induk_id', '');
+                                    }
+                                }}
+                            >
+                                <SelectTrigger
+                                    id="wil-tingkat"
+                                    className="w-full"
                                 >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={formWilayah.processing}
-                                    className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-700 transition"
+                                    <SelectValue placeholder="Pilih Tingkat" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="kelurahan">
+                                            Kelurahan
+                                        </SelectItem>
+                                        <SelectItem value="kecamatan">
+                                            Kecamatan
+                                        </SelectItem>
+                                        <SelectItem value="kota">
+                                            Kota
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            {formWilayah.errors.tingkat && (
+                                <FieldError>
+                                    {formWilayah.errors.tingkat}
+                                </FieldError>
+                            )}
+                        </Field>
+
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="wil-nama">
+                                Nama Wilayah{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Input
+                                id="wil-nama"
+                                type="text"
+                                value={formWilayah.data.nama}
+                                onChange={(e) =>
+                                    formWilayah.setData('nama', e.target.value)
+                                }
+                                placeholder="Contoh: Beji, Sukamaju Baru"
+                                required
+                            />
+                            {formWilayah.errors.nama && (
+                                <FieldError>
+                                    {formWilayah.errors.nama}
+                                </FieldError>
+                            )}
+                        </Field>
+
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="wil-kode-bps">
+                                Kode BPS (Opsional)
+                            </FieldLabel>
+                            <Input
+                                id="wil-kode-bps"
+                                type="text"
+                                value={formWilayah.data.kode_bps}
+                                onChange={(e) =>
+                                    formWilayah.setData(
+                                        'kode_bps',
+                                        e.target.value,
+                                    )
+                                }
+                                placeholder="Contoh: 3276010001"
+                            />
+                            {formWilayah.errors.kode_bps && (
+                                <FieldError>
+                                    {formWilayah.errors.kode_bps}
+                                </FieldError>
+                            )}
+                        </Field>
+
+                        {formWilayah.data.tingkat !== 'kota' && (
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="wil-induk">
+                                    Wilayah Induk{' '}
+                                    <span className="text-destructive">*</span>
+                                </FieldLabel>
+                                <Select
+                                    value={formWilayah.data.induk_id}
+                                    onValueChange={(val) =>
+                                        formWilayah.setData(
+                                            'induk_id',
+                                            val ?? '',
+                                        )
+                                    }
                                 >
-                                    Simpan
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                                    <SelectTrigger
+                                        id="wil-induk"
+                                        className="w-full"
+                                    >
+                                        <SelectValue placeholder="Pilih Wilayah Induk" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {masterWilayah
+                                                .filter((w) =>
+                                                    formWilayah.data.tingkat ===
+                                                    'kelurahan'
+                                                        ? w.tingkat ===
+                                                          'kecamatan'
+                                                        : w.tingkat === 'kota',
+                                                )
+                                                .map((w) => (
+                                                    <SelectItem
+                                                        key={w.id}
+                                                        value={String(w.id)}
+                                                    >
+                                                        {w.nama} ({w.tingkat})
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {formWilayah.errors.induk_id && (
+                                    <FieldError>
+                                        {formWilayah.errors.induk_id}
+                                    </FieldError>
+                                )}
+                            </Field>
+                        )}
+
+                        <DialogFooter className="pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setModalWilayahBuka(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="default"
+                                disabled={formWilayah.processing}
+                            >
+                                {formWilayah.processing
+                                    ? 'Menyimpan...'
+                                    : 'Simpan'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

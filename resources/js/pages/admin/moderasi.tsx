@@ -1,22 +1,33 @@
-import { ReactNode, useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { type FormEvent, type ReactNode, useState } from 'react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
 import {
-    AlertOctagon,
-    AlertTriangle,
-    Ban,
     CheckCircle2,
-    EyeOff,
     ExternalLink,
-    Filter,
-    HelpCircle,
-    Inbox,
+    EyeOff,
     MessageSquare,
+    Search,
     Shield,
     ShieldAlert,
     User,
     X,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { cn } from '@/lib/utils';
 
 interface PelanggaranItem {
     id: number;
@@ -70,6 +81,7 @@ interface PaginatedData<T> {
 interface ModerasiPageProps {
     antreanModerasi: PaginatedData<PelanggaranItem>;
     statusFilter: string;
+    cariFilter?: string | null;
 }
 
 const LABEL_ALASAN: Record<string, string> = {
@@ -81,22 +93,23 @@ const LABEL_ALASAN: Record<string, string> = {
     lainnya: 'Pelanggaran Lainnya',
 };
 
-const WARNA_ALASAN: Record<string, string> = {
-    sara_ujaran_kebencian: 'bg-rose-100 text-rose-800 border-rose-200',
-    foto_tidak_senonoh: 'bg-purple-100 text-purple-800 border-purple-200',
-    spam_promosi: 'bg-amber-100 text-amber-800 border-amber-200',
-    informasi_palsu: 'bg-blue-100 text-blue-800 border-blue-200',
-    pelanggaran_privasi: 'bg-rose-100 text-rose-800 border-rose-200',
-    lainnya: 'bg-slate-100 text-slate-800 border-slate-200',
-};
+export default function ModerasiPage({
+    antreanModerasi,
+    statusFilter,
+    cariFilter,
+}: ModerasiPageProps) {
+    const [searchTerm, setSearchTerm] = useState(cariFilter || '');
+    const [selectedItem, setSelectedItem] = useState<PelanggaranItem | null>(
+        null,
+    );
 
-export default function ModerasiPage({ antreanModerasi, statusFilter }: ModerasiPageProps) {
-    const [selectedItem, setSelectedItem] = useState<PelanggaranItem | null>(null);
+    const activeTab = statusFilter || 'menunggu';
 
-    const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
-        tindakan: 'diabaikan',
-        catatan: '',
-    });
+    const { data, setData, post, processing, errors, reset, clearErrors } =
+        useForm({
+            tindakan: 'diabaikan',
+            catatan: '',
+        });
 
     const bukaModalTindakan = (item: PelanggaranItem) => {
         setSelectedItem(item);
@@ -113,14 +126,60 @@ export default function ModerasiPage({ antreanModerasi, statusFilter }: Moderasi
         clearErrors();
     };
 
-    const handleKirimTindakan = (e: React.FormEvent) => {
+    const handleKirimTindakan = (e: FormEvent) => {
         e.preventDefault();
-        if (!selectedItem) return;
+        if (!selectedItem) {
+            return;
+        }
 
         post(`/admin/moderasi/${selectedItem.id}/tindak`, {
             onSuccess: () => {
                 tutupModalTindakan();
             },
+        });
+    };
+
+    const handleTabChange = (value: string | null) => {
+        if (!value) {
+            return;
+        }
+        const params: Record<string, string> = {};
+        if (value !== 'semua') {
+            params.status = value;
+        }
+        if (searchTerm.trim()) {
+            params.cari = searchTerm.trim();
+        }
+        router.get('/admin/moderasi', params, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleSearch = (e: FormEvent) => {
+        e.preventDefault();
+        const params: Record<string, string> = {};
+        if (activeTab !== 'semua') {
+            params.status = activeTab;
+        }
+        if (searchTerm.trim()) {
+            params.cari = searchTerm.trim();
+        }
+        router.get('/admin/moderasi', params, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleResetSearch = () => {
+        setSearchTerm('');
+        const params: Record<string, string> = {};
+        if (activeTab !== 'semua') {
+            params.status = activeTab;
+        }
+        router.get('/admin/moderasi', params, {
+            preserveState: true,
+            replace: true,
         });
     };
 
@@ -138,215 +197,297 @@ export default function ModerasiPage({ antreanModerasi, statusFilter }: Moderasi
         <div className="space-y-6">
             <Head title="Panel Moderasi Konten - Jagains Admin" />
 
-            {/* Header */}
+            {/* Header & Status Indicator */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                    <h2 className="text-body-large font-display font-semibold text-foreground">
                         Panel Moderasi Konten
-                    </h1>
-                    <p className="text-sm text-slate-500">
-                        Peninjauan aduan warga atas dugaan pelanggaran panduan komunitas dan sanksi akun (FR-ADM-06).
+                    </h2>
+                    <p className="text-body-sm text-muted-foreground">
+                        Peninjauan aduan warga atas dugaan pelanggaran panduan
+                        komunitas dan sanksi akun pelapor.
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 border border-rose-200 px-3.5 py-1.5 text-xs font-semibold text-rose-800">
-                        <ShieldAlert className="h-4 w-4 text-rose-600" />
-                        <span>{antreanModerasi.total} Aduan Terdata</span>
-                    </span>
+                <div>
+                    <Badge
+                        variant="outline"
+                        className="gap-1.5 border-border bg-muted/40 py-1 text-caption-xs text-foreground"
+                    >
+                        <ShieldAlert
+                            className="size-3.5 text-muted-foreground"
+                            aria-hidden="true"
+                        />
+                        <span className="font-semibold tabular-nums">
+                            {antreanModerasi.total}
+                        </span>
+                        <span>Aduan terdata</span>
+                    </Badge>
                 </div>
             </div>
 
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
-                <a
-                    href="/admin/moderasi?status=menunggu"
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                        statusFilter === 'menunggu'
-                            ? 'bg-slate-900 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                    }`}
+            {/* Filter Tabs & Pencarian */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Tabs
+                    value={activeTab}
+                    onValueChange={handleTabChange}
+                    className="w-full sm:w-auto"
                 >
-                    Menunggu Tindakan
-                </a>
-                <a
-                    href="/admin/moderasi?status=selesai"
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                        statusFilter === 'selesai'
-                            ? 'bg-slate-900 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                    }`}
+                    <div className="w-full scrollbar-none overflow-x-auto pb-1 sm:w-auto">
+                        <TabsList className="inline-flex w-max min-w-full justify-start bg-muted/50 p-1">
+                            <TabsTrigger value="menunggu" className="shrink-0">
+                                Menunggu Tindakan
+                            </TabsTrigger>
+                            <TabsTrigger value="selesai" className="shrink-0">
+                                Riwayat Selesai
+                            </TabsTrigger>
+                            <TabsTrigger value="semua" className="shrink-0">
+                                Semua Aduan
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
+                </Tabs>
+
+                <form
+                    onSubmit={handleSearch}
+                    className="flex w-full items-center gap-2 sm:w-auto"
                 >
-                    Riwayat Selesai
-                </a>
-                <a
-                    href="/admin/moderasi"
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                        !statusFilter || statusFilter === 'semua'
-                            ? 'bg-slate-900 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                    }`}
-                >
-                    Semua
-                </a>
+                    <div className="relative max-w-sm min-w-[220px] flex-1 sm:w-64">
+                        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Cari tiket, alasan, pelapor..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="h-9 pr-8 pl-9 text-xs"
+                        />
+                        {searchTerm && (
+                            <button
+                                type="button"
+                                onClick={handleResetSearch}
+                                className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                aria-label="Hapus pencarian"
+                            >
+                                <X className="size-3.5" />
+                            </button>
+                        )}
+                    </div>
+                    <Button
+                        type="submit"
+                        variant="outline"
+                        size="sm"
+                        className="h-9 text-xs"
+                    >
+                        Cari
+                    </Button>
+                </form>
             </div>
 
-            {/* Card List Moderasi */}
+            {/* List Moderasi */}
             <div className="space-y-4">
                 {antreanModerasi.data.length === 0 ? (
-                    <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
-                            <CheckCircle2 className="h-6 w-6 text-emerald-500" />
-                        </div>
-                        <h3 className="mt-3 text-sm font-semibold text-slate-900">
-                            Antrean Moderasi Bersih
-                        </h3>
-                        <p className="mt-1 text-xs text-slate-500">
-                            Tidak ada aduan pelanggaran konten yang memerlukan penanganan saat ini.
-                        </p>
+                    <div className="rounded-xl border border-border bg-card p-6">
+                        <AdminEmptyState
+                            icon={CheckCircle2}
+                            title="Antrean Moderasi Bersih"
+                            description="Tidak ada aduan pelanggaran konten yang memerlukan penanganan saat ini."
+                        />
                     </div>
                 ) : (
                     antreanModerasi.data.map((item) => (
                         <div
                             key={item.id}
-                            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4"
+                            className="space-y-4 rounded-xl border border-border bg-card p-5 transition-colors"
                         >
                             {/* Baris Atas: Aduan Info */}
-                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                                <div className="flex items-center gap-2">
-                                    <span
-                                        className={`inline-flex items-center rounded border px-2.5 py-0.5 text-xs font-semibold ${
-                                            WARNA_ALASAN[item.alasan] || 'bg-slate-100 text-slate-800'
-                                        }`}
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Badge
+                                        variant="destructive"
+                                        className="text-caption-xs"
                                     >
-                                        {LABEL_ALASAN[item.alasan] || item.alasan}
+                                        {LABEL_ALASAN[item.alasan] ||
+                                            item.alasan}
+                                    </Badge>
+                                    <span className="text-caption-xs text-muted-foreground">
+                                        •
                                     </span>
-                                    <span className="text-xs text-slate-400">•</span>
-                                    <span className="text-xs text-slate-500">
+                                    <span className="text-caption-xs text-muted-foreground">
                                         Dilaporkan oleh warga{' '}
-                                        <strong className="text-slate-700">
-                                            {item.pelapor_pengadu?.username || 'Warga'}
+                                        <strong className="font-medium text-foreground">
+                                            {item.pelapor_pengadu?.username ||
+                                                'Warga'}
                                         </strong>
                                     </span>
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs text-slate-400">
+                                    <span className="text-caption-xs text-muted-foreground">
                                         {formatTanggal(item.created_at)}
                                     </span>
-                                    <span
-                                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                                    <Badge
+                                        variant={
                                             item.status === 'selesai'
-                                                ? 'bg-emerald-100 text-emerald-800'
-                                                : 'bg-amber-100 text-amber-800'
-                                        }`}
+                                                ? 'closed'
+                                                : 'sla-warn'
+                                        }
+                                        className="text-caption-xs"
                                     >
-                                        {item.status === 'selesai' ? 'SELESAI' : 'MENUNGGU TINDAKAN'}
-                                    </span>
+                                        {item.status === 'selesai'
+                                            ? 'Selesai'
+                                            : 'Menunggu tindakan'}
+                                    </Badge>
                                 </div>
                             </div>
 
                             {/* Catatan Pelapor Warga */}
                             {item.catatan && (
-                                <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs text-slate-700">
-                                    <div className="font-semibold text-slate-800 flex items-center gap-1 mb-1">
-                                        <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
+                                <div className="rounded-lg border border-border bg-muted/30 p-3 text-body-sm text-foreground">
+                                    <div className="mb-1 flex items-center gap-1.5 text-caption-xs font-medium text-foreground">
+                                        <MessageSquare
+                                            className="size-3.5 text-muted-foreground"
+                                            aria-hidden="true"
+                                        />
                                         <span>Catatan dari Pelapor:</span>
                                     </div>
-                                    <p className="italic text-slate-600">"{item.catatan}"</p>
+                                    <p className="text-muted-foreground italic">
+                                        "{item.catatan}"
+                                    </p>
                                 </div>
                             )}
 
-                            {/* Kotak Konten Tiket Yang Diadukan */}
-                            <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4 space-y-2">
+                            {/* Konten Tiket Yang Diadukan */}
+                            <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-4">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
-                                        <span className="font-mono text-xs font-bold text-slate-900 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                                        <span className="rounded border border-border bg-background px-2 py-0.5 text-caption-xs font-mono font-semibold text-foreground">
                                             {item.laporan.nomor_tiket}
                                         </span>
                                         {item.laporan.disembunyikan && (
-                                            <span className="inline-flex items-center gap-1 rounded bg-rose-100 text-rose-800 border border-rose-200 px-2 py-0.5 text-[11px] font-medium">
-                                                <EyeOff className="h-3 w-3" />
-                                                Disembunyikan dari Publik
-                                            </span>
+                                            <Badge
+                                                variant="destructive"
+                                                className="gap-1 text-[11px]"
+                                            >
+                                                <EyeOff
+                                                    className="size-3"
+                                                    aria-hidden="true"
+                                                />
+                                                <span>
+                                                    Disembunyikan dari Publik
+                                                </span>
+                                            </Badge>
                                         )}
                                     </div>
-                                    <a
-                                        href={`/tiket/${item.laporan.nomor_tiket}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="inline-flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-700 hover:underline"
+                                    <Button
+                                        variant="link"
+                                        size="sm"
+                                        className="h-auto p-0 text-caption-xs"
+                                        title={`Buka tiket #${item.laporan.nomor_tiket}`}
+                                        aria-label={`Buka tiket #${item.laporan.nomor_tiket}`}
+                                        render={
+                                            <a
+                                                href={`/tiket/${item.laporan.nomor_tiket}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            />
+                                        }
                                     >
-                                        <span>Buka Halaman Tiket</span>
-                                        <ExternalLink className="h-3 w-3" />
-                                    </a>
+                                        <span className="hidden sm:inline">
+                                            Buka Halaman Tiket
+                                        </span>
+                                        <ExternalLink
+                                            className="size-3"
+                                            aria-hidden="true"
+                                        />
+                                    </Button>
                                 </div>
 
                                 <div>
-                                    <h4 className="text-sm font-semibold text-slate-900">
+                                    <h4 className="text-body-medium font-semibold text-foreground">
                                         {item.laporan.judul}
                                     </h4>
-                                    <p className="text-xs text-slate-600 mt-1 whitespace-pre-line">
+                                    <p className="mt-1 text-body-sm whitespace-pre-line text-muted-foreground">
                                         {item.laporan.keterangan}
                                     </p>
                                 </div>
 
                                 {/* Profil Pembuat Tiket */}
-                                <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-slate-200/60 text-xs text-slate-500">
+                                <div className="flex flex-wrap items-center gap-4 border-t border-border/60 pt-2 text-caption-xs text-muted-foreground">
                                     <span className="inline-flex items-center gap-1">
-                                        <User className="h-3 w-3 text-slate-400" />
+                                        <User
+                                            className="size-3 text-muted-foreground"
+                                            aria-hidden="true"
+                                        />
                                         Pembuat:{' '}
-                                        <strong className="text-slate-700">
-                                            {item.laporan.pelapor_tiket?.username || '-'}
+                                        <strong className="font-medium text-foreground">
+                                            {item.laporan.pelapor_tiket
+                                                ?.username || '-'}
                                         </strong>
                                     </span>
                                     <span>
                                         Poin Peringatan:{' '}
                                         <strong
                                             className={
-                                                (item.laporan.pelapor_tiket?.poin_peringatan ?? 0) > 0
-                                                    ? 'text-rose-600'
-                                                    : 'text-slate-700'
+                                                (item.laporan.pelapor_tiket
+                                                    ?.poin_peringatan ?? 0) > 0
+                                                    ? 'font-semibold text-destructive'
+                                                    : 'font-medium text-foreground'
                                             }
                                         >
-                                            {item.laporan.pelapor_tiket?.poin_peringatan ?? 0}
+                                            {item.laporan.pelapor_tiket
+                                                ?.poin_peringatan ?? 0}
                                         </strong>
                                     </span>
                                     <span>
                                         Status Akun:{' '}
-                                        <strong className="text-slate-700">
-                                            {item.laporan.pelapor_tiket?.status_akun || 'aktif'}
+                                        <strong className="font-medium text-foreground capitalize">
+                                            {item.laporan.pelapor_tiket
+                                                ?.status_akun || 'aktif'}
                                         </strong>
                                     </span>
                                 </div>
                             </div>
 
                             {/* Status Penyelesaian atau Tombol Tindakan */}
-                            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                                 {item.status === 'selesai' ? (
-                                    <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-900 w-full">
-                                        <div className="font-semibold flex items-center gap-1.5">
-                                            <Shield className="h-4 w-4 text-emerald-700" />
+                                    <div className="w-full rounded-lg border border-border bg-muted/40 p-3 text-body-sm text-foreground">
+                                        <div className="flex items-center gap-1.5 font-medium">
+                                            <Shield
+                                                className="size-4 text-primary"
+                                                aria-hidden="true"
+                                            />
                                             <span>
                                                 Tindakan Diambil:{' '}
-                                                <strong className="uppercase">{item.tindakan}</strong>
-                                                {item.moderator && ` oleh ${item.moderator.username}`}
+                                                <strong className="text-foreground uppercase">
+                                                    {item.tindakan}
+                                                </strong>
+                                                {item.moderator &&
+                                                    ` oleh ${item.moderator.username}`}
                                             </span>
                                         </div>
                                         {item.catatan_moderator && (
-                                            <p className="mt-1 text-emerald-800">
-                                                Catatan: "{item.catatan_moderator}"
+                                            <p className="text-body-xs mt-1 text-muted-foreground">
+                                                Catatan: "
+                                                {item.catatan_moderator}"
                                             </p>
                                         )}
                                     </div>
                                 ) : (
-                                    <button
-                                        type="button"
+                                    <Button
+                                        variant="default"
+                                        size="sm"
                                         onClick={() => bukaModalTindakan(item)}
-                                        className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition"
+                                        title={`Tentukan tindakan moderasi untuk tiket #${item.laporan.nomor_tiket}`}
+                                        aria-label={`Tentukan tindakan moderasi untuk tiket #${item.laporan.nomor_tiket}`}
                                     >
-                                        <ShieldAlert className="h-3.5 w-3.5" />
-                                        <span>Tentukan Tindakan Moderasi</span>
-                                    </button>
+                                        <ShieldAlert
+                                            className="size-3.5"
+                                            aria-hidden="true"
+                                        />
+                                        <span className="hidden sm:inline">
+                                            Tentukan Tindakan Moderasi
+                                        </span>
+                                    </Button>
                                 )}
                             </div>
                         </div>
@@ -356,216 +497,312 @@ export default function ModerasiPage({ antreanModerasi, statusFilter }: Moderasi
 
             {/* Pagination */}
             {antreanModerasi.last_page > 1 && (
-                <div className="flex items-center justify-center gap-1">
-                    {antreanModerasi.links.map((link, idx) => (
-                        <a
-                            key={idx}
-                            href={link.url || '#'}
-                            dangerouslySetInnerHTML={{ __html: link.label }}
-                            className={`rounded px-3 py-1 text-xs font-medium ${
-                                link.active
-                                    ? 'bg-teal-600 text-white'
-                                    : link.url
-                                    ? 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
-                                    : 'text-slate-300 pointer-events-none'
-                            }`}
-                        />
-                    ))}
+                <div className="flex items-center justify-center gap-1 pt-2">
+                    {antreanModerasi.links.map((link, idx) => {
+                        if (!link.url && !link.active) {
+                            return null;
+                        }
+                        return (
+                            <Button
+                                key={idx}
+                                variant={link.active ? 'default' : 'outline'}
+                                size="sm"
+                                disabled={!link.url}
+                                render={
+                                    link.url ? (
+                                        <Link
+                                            href={link.url}
+                                            preserveScroll
+                                            preserveState
+                                        />
+                                    ) : undefined
+                                }
+                            >
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html: link.label
+                                            .replace('&laquo;', '‹')
+                                            .replace('&raquo;', '›'),
+                                    }}
+                                />
+                            </Button>
+                        );
+                    })}
                 </div>
             )}
 
             {/* Modal Dialog Tindakan Moderasi */}
-            {selectedItem && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-                    <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl overflow-hidden border border-slate-200">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <div className="flex items-center gap-2">
-                                <ShieldAlert className="h-5 w-5 text-rose-600" />
-                                <h3 className="font-semibold text-slate-900 text-base">
-                                    Tindakan Moderasi Konten
-                                </h3>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={tutupModalTindakan}
-                                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
+            <Dialog
+                open={!!selectedItem}
+                onOpenChange={(open) => !open && tutupModalTindakan()}
+            >
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <ShieldAlert
+                                className="size-5 text-destructive"
+                                aria-hidden="true"
+                            />
+                            <span>Tindakan Moderasi Konten</span>
+                        </DialogTitle>
+                        <DialogDescription>
+                            Tinjau pelanggaran dan tetapkan konsekuensi moderasi
+                            terhadap konten tiket atau akun.
+                        </DialogDescription>
+                    </DialogHeader>
 
-                        <form onSubmit={handleKirimTindakan} className="p-6 space-y-4">
+                    {selectedItem && (
+                        <form
+                            onSubmit={handleKirimTindakan}
+                            className="space-y-4 pt-1"
+                        >
                             {/* Ringkasan */}
-                            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 space-y-1 text-xs">
+                            <div className="text-body-xs space-y-1 rounded-lg border border-border bg-muted/40 p-3">
                                 <div>
-                                    Tiket:{' '}
-                                    <strong className="font-mono">
+                                    <span className="text-muted-foreground">
+                                        Tiket:
+                                    </span>{' '}
+                                    <strong className="font-mono font-semibold text-foreground">
                                         {selectedItem.laporan.nomor_tiket}
                                     </strong>{' '}
                                     — {selectedItem.laporan.judul}
                                 </div>
                                 <div>
-                                    Pelanggaran yang diadukan:{' '}
-                                    <strong className="text-rose-700">
-                                        {LABEL_ALASAN[selectedItem.alasan] || selectedItem.alasan}
+                                    <span className="text-muted-foreground">
+                                        Pelanggaran:
+                                    </span>{' '}
+                                    <strong className="font-medium text-destructive">
+                                        {LABEL_ALASAN[selectedItem.alasan] ||
+                                            selectedItem.alasan}
                                     </strong>
                                 </div>
                             </div>
 
                             {/* Pilihan Tindakan */}
-                            <div className="space-y-2">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Pilih Tindakan Moderasi <span className="text-rose-500">*</span>
-                                </label>
+                            <Field className="space-y-2">
+                                <FieldLabel>
+                                    Pilih Tindakan Moderasi{' '}
+                                    <span className="text-destructive">*</span>
+                                </FieldLabel>
 
-                                <div className="space-y-2 text-xs">
+                                <div className="space-y-2">
+                                    {/* Abaikan */}
                                     <label
-                                        className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition ${
+                                        className={cn(
+                                            'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
                                             data.tindakan === 'diabaikan'
-                                                ? 'border-teal-500 bg-teal-50/50'
-                                                : 'border-slate-200 hover:bg-slate-50'
-                                        }`}
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-border hover:bg-muted/40',
+                                        )}
                                     >
                                         <input
                                             type="radio"
                                             name="tindakan"
                                             value="diabaikan"
-                                            checked={data.tindakan === 'diabaikan'}
-                                            onChange={(e) => setData('tindakan', e.target.value)}
-                                            className="mt-0.5 text-teal-600 focus:ring-teal-500"
+                                            checked={
+                                                data.tindakan === 'diabaikan'
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    'tindakan',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="mt-0.5 accent-primary"
                                         />
                                         <div>
-                                            <span className="font-semibold text-slate-900 block">
+                                            <span className="block text-body-sm font-semibold text-foreground">
                                                 Abaikan Laporan
                                             </span>
-                                            <span className="text-slate-500">
-                                                Aduan tidak terbukti melanggar ketentuan. Tiket tetap aktif dan tampil publik.
+                                            <span className="text-caption-xs text-muted-foreground">
+                                                Aduan tidak terbukti melanggar
+                                                ketentuan. Tiket tetap aktif dan
+                                                tampil publik.
                                             </span>
                                         </div>
                                     </label>
 
+                                    {/* Peringatan */}
                                     <label
-                                        className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition ${
+                                        className={cn(
+                                            'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
                                             data.tindakan === 'peringatan'
-                                                ? 'border-amber-500 bg-amber-50/50'
-                                                : 'border-slate-200 hover:bg-slate-50'
-                                        }`}
+                                                ? 'border-sla-warn bg-sla-warn/10'
+                                                : 'border-border hover:bg-muted/40',
+                                        )}
                                     >
                                         <input
                                             type="radio"
                                             name="tindakan"
                                             value="peringatan"
-                                            checked={data.tindakan === 'peringatan'}
-                                            onChange={(e) => setData('tindakan', e.target.value)}
-                                            className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                                            checked={
+                                                data.tindakan === 'peringatan'
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    'tindakan',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="mt-0.5 accent-amber-600"
                                         />
                                         <div>
-                                            <span className="font-semibold text-amber-900 block">
-                                                Beri Peringatan (+1 Poin Peringatan)
+                                            <span className="block text-body-sm font-semibold text-foreground">
+                                                Beri Peringatan (+1 Poin
+                                                Peringatan)
                                             </span>
-                                            <span className="text-slate-500">
-                                                Berikan peringatan pada akun pembuat tiket atas konten yang kurang pantas.
+                                            <span className="text-caption-xs text-muted-foreground">
+                                                Berikan teguran pada akun
+                                                pembuat tiket atas konten yang
+                                                kurang pantas.
                                             </span>
                                         </div>
                                     </label>
 
+                                    {/* Sembunyikan */}
                                     <label
-                                        className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition ${
+                                        className={cn(
+                                            'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
                                             data.tindakan === 'disembunyikan'
-                                                ? 'border-rose-500 bg-rose-50/50'
-                                                : 'border-slate-200 hover:bg-slate-50'
-                                        }`}
+                                                ? 'border-destructive bg-destructive/10'
+                                                : 'border-border hover:bg-muted/40',
+                                        )}
                                     >
                                         <input
                                             type="radio"
                                             name="tindakan"
                                             value="disembunyikan"
-                                            checked={data.tindakan === 'disembunyikan'}
-                                            onChange={(e) => setData('tindakan', e.target.value)}
-                                            className="mt-0.5 text-rose-600 focus:ring-rose-500"
+                                            checked={
+                                                data.tindakan ===
+                                                'disembunyikan'
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    'tindakan',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="mt-0.5 accent-destructive"
                                         />
                                         <div>
-                                            <span className="font-semibold text-rose-900 block">
+                                            <span className="block text-body-sm font-semibold text-destructive">
                                                 Sembunyikan Tiket dari Publik
                                             </span>
-                                            <span className="text-slate-500">
-                                                Tiket ditutup aksesnya dari peta & publik. Proses penanganan operasional instansi tetap berjalan.
+                                            <span className="text-caption-xs text-muted-foreground">
+                                                Tiket ditutup aksesnya dari peta
+                                                & publik. Proses penanganan
+                                                operasional instansi tetap
+                                                berjalan.
                                             </span>
                                         </div>
                                     </label>
 
+                                    {/* Bekukan */}
                                     <label
-                                        className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition ${
+                                        className={cn(
+                                            'flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
                                             data.tindakan === 'dibekukan'
-                                                ? 'border-purple-500 bg-purple-50/50'
-                                                : 'border-slate-200 hover:bg-slate-50'
-                                        }`}
+                                                ? 'border-stage-audit bg-stage-audit/10'
+                                                : 'border-border hover:bg-muted/40',
+                                        )}
                                     >
                                         <input
                                             type="radio"
                                             name="tindakan"
                                             value="dibekukan"
-                                            checked={data.tindakan === 'dibekukan'}
-                                            onChange={(e) => setData('tindakan', e.target.value)}
-                                            className="mt-0.5 text-purple-600 focus:ring-purple-500"
+                                            checked={
+                                                data.tindakan === 'dibekukan'
+                                            }
+                                            onChange={(e) =>
+                                                setData(
+                                                    'tindakan',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className="mt-0.5 accent-purple-600"
                                         />
                                         <div>
-                                            <span className="font-semibold text-purple-900 block">
-                                                Bekukan Akun Pelapor (Sanksi Berat)
+                                            <span className="block text-body-sm font-semibold text-stage-audit">
+                                                Bekukan Akun Pelapor (Sanksi
+                                                Berat)
                                             </span>
-                                            <span className="text-slate-500">
-                                                Akun dinonaktifkan secara permanen karena pelanggaran berat atau penyalahgunaan sistem.
+                                            <span className="text-caption-xs text-muted-foreground">
+                                                Akun dinonaktifkan secara
+                                                permanen karena pelanggaran
+                                                berat atau penyalahgunaan
+                                                sistem.
                                             </span>
                                         </div>
                                     </label>
                                 </div>
-                            </div>
+                            </Field>
 
                             {/* Catatan Keputusan Moderator */}
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Catatan Pertimbangan Moderator <span className="text-rose-500">*</span>
-                                </label>
-                                <textarea
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="catatan-moderator">
+                                    Catatan Pertimbangan Moderator{' '}
+                                    <span className="text-destructive">*</span>
+                                </FieldLabel>
+                                <Textarea
+                                    id="catatan-moderator"
                                     value={data.catatan}
-                                    onChange={(e) => setData('catatan', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('catatan', e.target.value)
+                                    }
                                     rows={3}
-                                    placeholder="Dasar pertimbangan dan bukti temuan moderator (minimal 10 karakter)..."
-                                    className="w-full rounded-lg border border-slate-300 p-3 text-sm text-slate-900 placeholder-slate-400 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                                    placeholder="Dasar pertimbangan dan temuan bukti moderator (minimal 10 karakter)..."
+                                    className="resize-none"
                                 />
-                                <div className="flex justify-between text-[11px] text-slate-400">
-                                    <span>Tercatat permanen di audit log</span>
-                                    <span className={data.catatan.length < 10 ? 'text-amber-600' : 'text-slate-600'}>
-                                        {data.catatan.length} karakter
+                                <div className="flex justify-between text-caption-xs text-muted-foreground">
+                                    <span>
+                                        Tercatat permanen di log audit sistem
+                                    </span>
+                                    <span
+                                        className={
+                                            data.catatan.trim().length < 10
+                                                ? 'font-medium text-sla-warn'
+                                                : 'text-muted-foreground'
+                                        }
+                                    >
+                                        {data.catatan.trim().length} karakter
                                     </span>
                                 </div>
                                 {errors.catatan && (
-                                    <p className="text-xs text-rose-600">{errors.catatan}</p>
+                                    <FieldError>{errors.catatan}</FieldError>
                                 )}
-                            </div>
+                            </Field>
 
                             {/* Tombol Aksi */}
-                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                                <button
+                            <DialogFooter className="pt-2">
+                                <Button
                                     type="button"
+                                    variant="outline"
                                     onClick={tutupModalTindakan}
                                     disabled={processing}
-                                    className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
                                 >
                                     Batal
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     type="submit"
-                                    disabled={processing || data.catatan.length < 10}
-                                    className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition disabled:opacity-50"
+                                    variant={
+                                        data.tindakan === 'diabaikan'
+                                            ? 'default'
+                                            : 'destructive'
+                                    }
+                                    disabled={
+                                        processing ||
+                                        data.catatan.trim().length < 10
+                                    }
                                 >
-                                    {processing ? 'Menerapkan...' : 'Terapkan Keputusan'}
-                                </button>
-                            </div>
+                                    {processing
+                                        ? 'Menerapkan...'
+                                        : 'Terapkan Keputusan'}
+                                </Button>
+                            </DialogFooter>
                         </form>
-                    </div>
-                </div>
-            )}
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

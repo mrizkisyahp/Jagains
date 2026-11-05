@@ -24,6 +24,7 @@ class PetugasManagementController extends Controller
     public function index(Request $request): Response
     {
         $peranFilter = $request->query('peran');
+        $cari = $request->query('cari');
 
         $query = User::with(['instansi:id,nama,singkatan'])
             ->whereIn('peran', ['instansi', 'auditor'])
@@ -31,6 +32,16 @@ class PetugasManagementController extends Controller
 
         if ($peranFilter && in_array($peranFilter, ['instansi', 'auditor'])) {
             $query->where('peran', $peranFilter);
+        }
+
+        if ($cari) {
+            $query->where(function ($q) use ($cari) {
+                $q->where('username', 'like', "%{$cari}%")
+                    ->orWhereHas('instansi', function ($iq) use ($cari) {
+                        $iq->where('nama', 'like', "%{$cari}%")
+                            ->orWhere('singkatan', 'like', "%{$cari}%");
+                    });
+            });
         }
 
         $daftarPetugas = $query->paginate(15)
@@ -57,6 +68,7 @@ class PetugasManagementController extends Controller
             'daftarPetugas' => $daftarPetugas,
             'daftarInstansi' => $daftarInstansi,
             'peranFilter' => $peranFilter,
+            'cariFilter' => $cari,
             'sandiBaru' => session('sandi_baru'),
             'petugasBaru' => session('petugas_baru'),
         ]);

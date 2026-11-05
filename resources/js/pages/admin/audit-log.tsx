@@ -1,10 +1,15 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Head } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
 import AuditLogFilterBar from '@/components/admin/AuditLogFilterBar';
 import AuditLogTable from '@/components/admin/AuditLogTable';
-import { AuditLogItem, AuditLogFilterState, PaginatedData } from '@/types/audit';
+import {
+    AuditLogFilterState,
+    AuditLogItem,
+    PaginatedData,
+} from '@/types/audit';
 import { ShieldCheck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface AuditLogPageProps {
     logs: PaginatedData<AuditLogItem>;
@@ -12,24 +17,40 @@ interface AuditLogPageProps {
     daftarAksi: string[];
 }
 
-export default function AuditLogPage({ logs, filters, daftarAksi }: AuditLogPageProps) {
+export default function AuditLogPage({
+    logs,
+    filters,
+    daftarAksi,
+}: AuditLogPageProps) {
     return (
-        <div className="space-y-6 w-full min-w-0">
+        <div className="w-full min-w-0 space-y-6">
             <Head title="Log Audit Sistem - Jagains Admin" />
 
-            {/* Header */}
+            {/* Header & Immutability Indicator */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                        Log Audit Sistem
-                    </h1>
-                    <p className="text-sm text-slate-500">
-                        Pencatatan riwayat append-only terlindungi pemicu basis data. Operasi manipulasi (UPDATE, DELETE, TRUNCATE) ditolak mutlak (FR-ADM-07).
+                    <h2 className="text-body-large font-display font-semibold text-foreground">
+                        Log Audit Forensik Sistem
+                    </h2>
+                    <p className="text-body-sm text-muted-foreground">
+                        Pencatatan riwayat append-only terlindungi pemicu basis
+                        data untuk transparansi dan akuntabilitas tindakan.
                     </p>
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 text-xs font-semibold text-emerald-800">
-                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                    <span>Append-Only Immutability Terproteksi</span>
+                <div>
+                    <Badge
+                        variant="outline"
+                        className="gap-1.5 border-border bg-muted/40 py-1 text-caption-xs text-foreground"
+                    >
+                        <ShieldCheck
+                            className="size-3.5 text-primary"
+                            aria-hidden="true"
+                        />
+                        <span className="hidden sm:inline">
+                            Append-Only Immutability Terproteksi
+                        </span>
+                        <span className="sm:hidden">Append-Only</span>
+                    </Badge>
                 </div>
             </div>
 
@@ -47,7 +68,7 @@ export default function AuditLogPage({ logs, filters, daftarAksi }: AuditLogPage
 }
 
 AuditLogPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Log Audit Sistem" breadcrumb="Admin > Sistem > Log Audit">
+    <InternalLayout title="Log Audit" breadcrumb="Admin > Sistem > Log Audit">
         {page}
     </InternalLayout>
 );
