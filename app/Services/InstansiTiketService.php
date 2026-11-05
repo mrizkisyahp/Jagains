@@ -56,6 +56,10 @@ class InstansiTiketService
             $status = strtoupper($filters['status']);
             if ($status === 'PERLU_RESPONS') {
                 $query->where('status', 'DITERUSKAN');
+            } elseif ($status === 'LEWAT_SLA') {
+                $query->whereNotNull('sla_jatuh_tempo')
+                    ->where('sla_jatuh_tempo', '<', now()->startOfDay())
+                    ->whereNotIn('status', ['DITOLAK', 'TERTUTUP_WARGA', 'TERTUTUP_AUDITOR']);
             } elseif ($status === 'SURVEI_ANGGARAN') {
                 $query->whereIn('status', ['DITERIMA', 'DISURVEI']);
             } elseif ($status === 'PENGERJAAN') {

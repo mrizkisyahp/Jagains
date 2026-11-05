@@ -1,23 +1,28 @@
 import { useState } from 'react';
-import { Link, router } from '@inertiajs/react';
 import {
-    MapPin,
-    Calendar,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
+import { Link } from '@inertiajs/react';
+import {
     ArrowRightLeft,
-    CheckCircle2,
-    Clock,
-    FileText,
+    CalendarClock,
     Camera,
-    Hammer,
-    Coins,
+    CheckCircle2,
     ClipboardCheck,
+    Coins,
+    ExternalLink,
+    Eye,
+    FileText,
+    Hammer,
     MessageSquareText,
     MoreHorizontal,
-    ExternalLink,
-    ShieldX,
-    CalendarClock,
-    Undo2,
     Scale,
+    ShieldX,
+    Undo2,
 } from 'lucide-react';
 import {
     Table,
@@ -27,17 +32,21 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import BadgeSlaCountdown from '@/components/instansi/BadgeSlaCountdown';
+import InstansiStatusBadge from '@/components/instansi/InstansiStatusBadge';
+import InstansiEmptyState from '@/components/instansi/InstansiEmptyState';
+import { detail } from '@/routes/tiket';
 
 export interface LaporanItem {
     id: number;
@@ -86,318 +95,443 @@ export interface LaporanItem {
     created_at_format: string;
 }
 
+const SUMBER_DANA: Record<string, string> = {
+    APBD_KOTA: 'Anggaran pemerintah kota (APBD)',
+    APBD_PROVINSI: 'Anggaran pemerintah provinsi (APBD)',
+    APBN: 'Anggaran pemerintah pusat (APBN)',
+    LAINNYA: 'Sumber dana lainnya',
+};
+
 interface AntreanTiketTableProps {
     items: LaporanItem[];
     onAksi: (aksi: string, laporan: LaporanItem) => void;
+    hasFilters?: boolean;
+    onReset?: () => void;
 }
 
-export default function AntreanTiketTable({ items, onAksi }: AntreanTiketTableProps) {
+const PRIMARY_ACTIONS = {
+    DITERUSKAN: {
+        action: 'terima',
+        label: 'Terima tiket',
+        icon: CheckCircle2,
+        className: 'bg-emerald-600 text-white focus:bg-emerald-700',
+    },
+    DITERIMA: {
+        action: 'survei',
+        label: 'Survei selesai',
+        icon: ClipboardCheck,
+        className: 'bg-emerald-600 text-white focus:bg-emerald-700',
+    },
+    DISURVEI: {
+        action: 'anggaran',
+        label: 'Jadwal anggaran',
+        icon: Coins,
+        className: 'bg-blue-600 text-white focus:bg-blue-700',
+    },
+    TERJADWAL_ANGGARAN: {
+        action: 'mulai',
+        label: 'Mulai kerjakan',
+        icon: Hammer,
+        className: 'bg-blue-600 text-white focus:bg-blue-700',
+    },
+    DIKERJAKAN: {
+        action: 'selesai',
+        label: 'Ajukan selesai',
+        icon: Camera,
+        className: 'bg-emerald-600 text-white focus:bg-emerald-700',
+    },
+    DISENGKETAKAN: {
+        action: 'respons_sengketa',
+        label: 'Respons sengketa',
+        icon: Scale,
+        className: 'bg-violet-600 text-white focus:bg-violet-700',
+    },
+};
+
+export default function AntreanTiketTable({
+    items,
+    onAksi,
+    hasFilters = false,
+    onReset,
+}: AntreanTiketTableProps) {
+    const [inspectedItem, setInspectedItem] = useState<LaporanItem | null>(
+        null,
+    );
+    const sla = (item: LaporanItem, compact = true) => (
+        <BadgeSlaCountdown
+            tahap={item.sla_tahap}
+            jatuhTempo={item.sla_jatuh_tempo_format}
+            sisaHari={item.sisa_hari_sla}
+            persenSla={item.persen_sla}
+            status={item.status}
+            compact={compact}
+        />
+    );
+    const actions = (item: LaporanItem) => {
+        const primary =
+            PRIMARY_ACTIONS[item.status as keyof typeof PRIMARY_ACTIONS];
+        return (
+            <div className="flex items-center gap-1 xl:justify-end">
+                <DropdownMenu>
+                    <DropdownMenuTrigger
+                        render={
+                            <Button
+                                variant="outline"
+                                className="size-11 shadow-none md:size-9"
+                                aria-label={`Aksi lainnya untuk ${item.nomor_tiket}`}
+                            />
+                        }
+                    >
+                        <MoreHorizontal />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64">
+                        <DropdownMenuGroup>
+                            <DropdownMenuLabel>Aksi tiket</DropdownMenuLabel>
+                            {primary && (
+                                <>
+                                    <DropdownMenuItem
+                                        className={`mb-1 font-semibold ${primary.className}`}
+                                        onClick={() =>
+                                            onAksi(primary.action, item)
+                                        }
+                                    >
+                                        <primary.icon />
+                                        {primary.label}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                </>
+                            )}
+                            <DropdownMenuItem
+                                onClick={() => setInspectedItem(item)}
+                            >
+                                <Eye />
+                                Ringkasan tiket
+                            </DropdownMenuItem>
+                            {item.status === 'DITERUSKAN' && (
+                                <>
+                                    <DropdownMenuItem
+                                        onClick={() => onAksi('alihkan', item)}
+                                    >
+                                        <ArrowRightLeft />
+                                        Alihkan ke dinas lain
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            onAksi('kembalikan', item)
+                                        }
+                                    >
+                                        <Undo2 />
+                                        Kembalikan ke Admin
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            onAksi('usul_tolak', item)
+                                        }
+                                    >
+                                        <ShieldX />
+                                        Usulkan penolakan
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                            {(item.status === 'DIKERJAKAN' ||
+                                item.status === 'DISENGKETAKAN' ||
+                                item.total_berita_acara > 0) && (
+                                <DropdownMenuItem
+                                    onClick={() => onAksi('berita_acara', item)}
+                                >
+                                    <FileText />
+                                    Kelola berita acara (
+                                    {item.total_berita_acara})
+                                </DropdownMenuItem>
+                            )}
+                            {(item.status === 'TERJADWAL_ANGGARAN' ||
+                                item.status === 'DIKERJAKAN') && (
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        onAksi('revisi_target', item)
+                                    }
+                                >
+                                    <CalendarClock />
+                                    Revisi janji target
+                                </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                                onClick={() => onAksi('tanggapan', item)}
+                            >
+                                <MessageSquareText />
+                                Beri tanggapan resmi
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem
+                                render={
+                                    <Link href={detail(item.nomor_tiket)} />
+                                }
+                            >
+                                <ExternalLink />
+                                Lihat detail tiket
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        );
+    };
+
     if (items.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-center bg-card border border-border rounded-2xl">
-                <div className="size-12 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
-                    <CheckCircle2 className="size-6 text-emerald-600" />
-                </div>
-                <h3 className="font-display text-body-medium font-bold text-foreground">
-                    Tidak Ada Tiket dalam Antrean Ini
-                </h3>
-                <p className="text-body-sm text-muted-foreground max-w-sm mt-1">
-                    Seluruh laporan masyarakat pada kategori filter ini telah tertangani dengan baik atau belum ada tiket baru yang dialirkan.
-                </p>
+            <div className="px-5 [&>div]:rounded-none [&>div]:border-0">
+                <InstansiEmptyState
+                    title={
+                        hasFilters
+                            ? 'Tidak ada tiket yang cocok.'
+                            : 'Belum ada tiket untuk instansi ini.'
+                    }
+                    description={
+                        hasFilters
+                            ? 'Coba kata kunci, kategori, atau status lain.'
+                            : 'Laporan yang ditugaskan ke instansi Anda akan muncul di sini.'
+                    }
+                    action={
+                        hasFilters && onReset ? (
+                            <Button
+                                variant="outline"
+                                onClick={onReset}
+                                className="h-11 shadow-none md:h-9"
+                            >
+                                Reset filter
+                            </Button>
+                        ) : undefined
+                    }
+                />
             </div>
         );
     }
 
-    const renderStatusBadge = (status: string) => {
-        switch (status) {
-            case 'DITERUSKAN':
-                return <Badge variant="secondary" className="font-mono text-caption-xs bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20">DITERUSKAN</Badge>;
-            case 'DITERIMA':
-                return <Badge variant="secondary" className="font-mono text-caption-xs bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20">DITERIMA</Badge>;
-            case 'DISURVEI':
-                return <Badge variant="secondary" className="font-mono text-caption-xs bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/20">DISURVEI</Badge>;
-            case 'TERJADWAL_ANGGARAN':
-                return <Badge variant="secondary" className="font-mono text-caption-xs bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20">TERJADWAL ANGGARAN</Badge>;
-            case 'DIKERJAKAN':
-                return <Badge variant="secondary" className="font-mono text-caption-xs bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20">DIKERJAKAN</Badge>;
-            case 'MENUNGGU_VERIFIKASI':
-                return <Badge variant="secondary" className="font-mono text-caption-xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20">MENUNGGU VERIFIKASI</Badge>;
-            case 'DISENGKETAKAN':
-                return <Badge variant="destructive" className="font-mono text-caption-xs">DISENGKETAKAN</Badge>;
-            case 'USULAN_TOLAK':
-                return <Badge variant="outline" className="font-mono text-caption-xs text-rose-600 border-rose-300">USULAN TOLAK</Badge>;
-            case 'PERLU_ROUTING':
-                return <Badge variant="outline" className="font-mono text-caption-xs text-muted-foreground">PERLU ROUTING</Badge>;
-            default:
-                return <Badge variant="outline" className="font-mono text-caption-xs">{status}</Badge>;
-        }
-    };
-
     return (
-        <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
-            <Table>
-                <TableHeader>
-                    <TableRow className="bg-muted/30 hover:bg-muted/30">
-                        <TableHead className="w-[140px] font-semibold text-caption-xs">Nomor Tiket</TableHead>
-                        <TableHead className="min-w-[220px] font-semibold text-caption-xs">Fasilitas & Lokasi</TableHead>
-                        <TableHead className="w-[140px] font-semibold text-caption-xs">Status Alur</TableHead>
-                        <TableHead className="w-[150px] font-semibold text-caption-xs">Sisa Waktu SLA</TableHead>
-                        <TableHead className="w-[160px] font-semibold text-caption-xs">Komitmen Target</TableHead>
-                        <TableHead className="w-[120px] text-right font-semibold text-caption-xs">Aksi Operasional</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {items.map((item) => (
-                        <TableRow key={item.id} className="transition-colors hover:bg-muted/20">
-                            {/* Kolom Nomor Tiket */}
-                            <TableCell className="align-top py-4">
-                                <div className="space-y-1">
-                                    <Link
-                                        href={`/tiket/${item.nomor_tiket}`}
-                                        className="font-mono text-body-sm font-bold text-primary hover:underline inline-flex items-center gap-1"
-                                    >
-                                        {item.nomor_tiket}
-                                        <ExternalLink className="size-3 text-muted-foreground opacity-60" />
-                                    </Link>
-                                    <p className="text-caption-xs text-muted-foreground">{item.created_at_human}</p>
-                                    {item.jumlah_pengalihan > 0 && (
-                                        <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 text-amber-600 border-amber-300">
-                                            Dialihkan {item.jumlah_pengalihan}x
-                                        </Badge>
-                                    )}
-                                </div>
-                            </TableCell>
-
-                            {/* Kolom Fasilitas & Lokasi */}
-                            <TableCell className="align-top py-4">
-                                <div className="space-y-1">
-                                    <p className="text-body-sm font-semibold text-foreground line-clamp-1">{item.judul}</p>
-                                    <div className="flex items-center gap-1.5 text-caption-xs text-muted-foreground">
-                                        <MapPin className="size-3 shrink-0 text-primary" />
-                                        <span className="truncate">{item.wilayah_nama || 'Lokasi Terdaftar'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 pt-1">
-                                        <Badge variant="outline" className="text-caption-xs py-0">
-                                            {item.kategori_nama || 'Fasilitas'}
-                                        </Badge>
-                                        <span className={`text-[11px] font-semibold capitalize ${
-                                            item.keparahan === 'berat' ? 'text-destructive' : item.keparahan === 'sedang' ? 'text-amber-600' : 'text-muted-foreground'
-                                        }`}>
-                                            Keparahan: {item.keparahan}
+        <>
+            <div className="hidden xl:block">
+                <Table className="min-w-[1120px] table-fixed">
+                    <TableHeader>
+                        <TableRow className="bg-muted/30 hover:bg-muted/30">
+                            <TableHead className="w-[26%] px-5 text-body-sm">
+                                Tiket
+                            </TableHead>
+                            <TableHead className="w-[13%] text-body-sm">
+                                Lokasi & kategori
+                            </TableHead>
+                            <TableHead className="w-[17%] text-body-sm">
+                                Status
+                            </TableHead>
+                            <TableHead className="w-[17%] text-body-sm">
+                                Batas waktu
+                            </TableHead>
+                            <TableHead className="w-[10%] text-body-sm">
+                                Target selesai
+                            </TableHead>
+                            <TableHead className="w-[17%] px-3 text-right text-body-sm">
+                                Tindakan
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {items.map((item) => (
+                            <TableRow
+                                key={item.id}
+                                className="hover:bg-muted/25"
+                            >
+                                <TableCell className="px-5 py-3">
+                                    <div className="flex min-w-0 flex-col gap-1">
+                                        <Link
+                                            href={detail(item.nomor_tiket)}
+                                            title={item.judul}
+                                            className="block truncate text-body-base font-medium text-foreground underline-offset-4 hover:underline"
+                                        >
+                                            {item.judul}
+                                        </Link>
+                                        <span className="text-body-sm text-muted-foreground">
+                                            {item.nomor_tiket}
                                         </span>
                                     </div>
-                                </div>
-                            </TableCell>
-
-                            {/* Kolom Status Alur */}
-                            <TableCell className="align-top py-4">
-                                <div className="space-y-1.5">
-                                    {renderStatusBadge(item.status)}
-                                    {item.total_berita_acara > 0 && (
-                                        <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                                            <FileText className="size-3 text-primary" />
-                                            BA: {item.total_berita_acara} Versi
-                                        </p>
-                                    )}
-                                </div>
-                            </TableCell>
-
-                            {/* Kolom Sisa Waktu SLA */}
-                            <TableCell className="align-top py-4">
-                                <BadgeSlaCountdown
-                                    tahap={item.sla_tahap}
-                                    jatuhTempo={item.sla_jatuh_tempo_format}
-                                    sisaHari={item.sisa_hari_sla}
-                                    persenSla={item.persen_sla}
-                                />
-                            </TableCell>
-
-                            {/* Kolom Komitmen Target */}
-                            <TableCell className="align-top py-4">
-                                {item.tanggal_target ? (
-                                    <div className="space-y-1 text-body-sm">
-                                        <div className="flex items-center gap-1 font-semibold text-foreground text-caption-xs">
-                                            <Calendar className="size-3.5 text-violet-600" />
-                                            <span>{item.tanggal_target_format}</span>
-                                        </div>
-                                        {item.jenis_pendanaan && (
-                                            <p className="text-[11px] font-mono text-muted-foreground">
-                                                Sumber: {item.jenis_pendanaan}
-                                            </p>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <span className="text-caption-xs text-muted-foreground italic">
-                                        Belum dijadwalkan
-                                    </span>
-                                )}
-                            </TableCell>
-
-                            {/* Kolom Aksi Operasional Kontekstual */}
-                            <TableCell className="align-top py-4 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                    {/* Aksi Utama Langsung Sesuai Status */}
-                                    {item.status === 'DITERUSKAN' && (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => onAksi('terima', item)}
-                                            className="h-8 text-caption-xs font-semibold gap-1"
-                                        >
-                                            <CheckCircle2 className="size-3.5" />
-                                            Terima
-                                        </Button>
-                                    )}
-
-                                    {item.status === 'DITERIMA' && (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => onAksi('survei', item)}
-                                            className="h-8 text-caption-xs font-semibold gap-1 bg-blue-600 hover:bg-blue-700 text-white"
-                                        >
-                                            <ClipboardCheck className="size-3.5" />
-                                            Survei Selesai
-                                        </Button>
-                                    )}
-
-                                    {item.status === 'DISURVEI' && (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => onAksi('anggaran', item)}
-                                            className="h-8 text-caption-xs font-semibold gap-1 bg-violet-600 hover:bg-violet-700 text-white"
-                                        >
-                                            <Coins className="size-3.5" />
-                                            Jadwal Anggaran
-                                        </Button>
-                                    )}
-
-                                    {item.status === 'TERJADWAL_ANGGARAN' && (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => onAksi('mulai', item)}
-                                            className="h-8 text-caption-xs font-semibold gap-1 bg-amber-600 hover:bg-amber-700 text-white"
-                                        >
-                                            <Hammer className="size-3.5" />
-                                            Mulai Kerjakan
-                                        </Button>
-                                    )}
-
-                                    {item.status === 'DIKERJAKAN' && (
-                                        <div className="flex items-center gap-1.5">
-                                            <Button
-                                                size="sm"
-                                                onClick={() => onAksi('berita_acara', item)}
-                                                variant={item.total_berita_acara === 0 ? 'default' : 'outline'}
-                                                className={`h-8 text-caption-xs font-semibold gap-1 ${
-                                                    item.total_berita_acara === 0
-                                                        ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                                                        : 'border-border text-foreground hover:bg-muted'
-                                                }`}
-                                                title="Terbitkan / Kelola Berita Acara Pelaksanaan"
-                                            >
-                                                <FileText className="size-3.5" />
-                                                {item.total_berita_acara === 0 ? '+ Berita Acara' : `BA (${item.total_berita_acara})`}
-                                            </Button>
-
-                                            <Button
-                                                size="sm"
-                                                onClick={() => onAksi('selesai', item)}
-                                                className="h-8 text-caption-xs font-semibold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
-                                            >
-                                                <Camera className="size-3.5" />
-                                                Ajukan Selesai
-                                            </Button>
-                                        </div>
-                                    )}
-
-                                    {item.status === 'DISENGKETAKAN' && (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => onAksi('respons_sengketa', item)}
-                                            className="h-8 text-caption-xs font-semibold gap-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                        >
-                                            <Scale className="size-3.5" />
-                                            Respons Sengketa
-                                        </Button>
-                                    )}
-
-                                    {/* Dropdown Menu untuk Aksi Tambahan */}
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger
-                                            render={
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="size-8 rounded-lg hover:bg-muted/80 text-foreground cursor-pointer"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <MoreHorizontal className="size-4" />
-                                                    <span className="sr-only">Menu Opsi</span>
-                                                </Button>
+                                </TableCell>
+                                <TableCell className="py-3">
+                                    <div className="flex flex-col gap-1">
+                                        <span
+                                            className="block truncate text-body-sm"
+                                            title={
+                                                item.wilayah_nama ?? undefined
                                             }
-                                        />
-                                        <DropdownMenuContent align="end" className="w-52">
-                                            <DropdownMenuLabel className="text-caption-xs font-semibold text-muted-foreground">
-                                                Aksi Operasional
-                                            </DropdownMenuLabel>
-                                            <DropdownMenuSeparator />
-
-                                            {/* Opsi Status DITERUSKAN */}
-                                            {item.status === 'DITERUSKAN' && (
-                                                <>
-                                                    <DropdownMenuItem onClick={() => onAksi('alihkan', item)} className="gap-2 text-caption-xs">
-                                                        <ArrowRightLeft className="size-3.5 text-amber-600" />
-                                                        Alihkan ke Dinas Lain
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => onAksi('kembalikan', item)} className="gap-2 text-caption-xs">
-                                                        <Undo2 className="size-3.5 text-rose-600" />
-                                                        Kembalikan ke Admin
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => onAksi('usul_tolak', item)} className="gap-2 text-caption-xs text-destructive">
-                                                        <ShieldX className="size-3.5" />
-                                                        Usulkan Penolakan
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                </>
-                                            )}
-
-                                            {/* Opsi Berita Acara & Revisi Target */}
-                                            {(item.status === 'DIKERJAKAN' || item.status === 'DISENGKETAKAN' || item.total_berita_acara > 0) && (
-                                                <DropdownMenuItem onClick={() => onAksi('berita_acara', item)} className="gap-2 text-caption-xs">
-                                                    <FileText className="size-3.5 text-primary" />
-                                                    Kelola Berita Acara ({item.total_berita_acara})
-                                                </DropdownMenuItem>
-                                            )}
-
-                                            {(item.status === 'TERJADWAL_ANGGARAN' || item.status === 'DIKERJAKAN') && (
-                                                <DropdownMenuItem onClick={() => onAksi('revisi_target', item)} className="gap-2 text-caption-xs">
-                                                    <CalendarClock className="size-3.5 text-amber-600" />
-                                                    Revisi Janji Target
-                                                </DropdownMenuItem>
-                                            )}
-
-                                            {/* Tanggapan Resmi Linimasa */}
-                                            <DropdownMenuItem onClick={() => onAksi('tanggapan', item)} className="gap-2 text-caption-xs">
-                                                <MessageSquareText className="size-3.5 text-blue-600" />
-                                                Beri Tanggapan Resmi
-                                            </DropdownMenuItem>
-
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem
-                                                onClick={() => router.visit(`/tiket/${item.nomor_tiket}`)}
-                                                className="gap-2 text-caption-xs cursor-pointer"
-                                            >
-                                                <ExternalLink className="size-3.5 text-muted-foreground" />
-                                                Lihat Detail Publik
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </div>
+                                        >
+                                            {item.wilayah_nama ??
+                                                'Lokasi belum tersedia'}
+                                        </span>
+                                        <span
+                                            className="block truncate text-body-sm text-muted-foreground"
+                                            title={
+                                                item.kategori_nama ?? undefined
+                                            }
+                                        >
+                                            {item.kategori_nama ??
+                                                'Kategori belum tersedia'}
+                                        </span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="py-3 whitespace-normal">
+                                    <InstansiStatusBadge status={item.status} />
+                                </TableCell>
+                                <TableCell className="py-3 whitespace-normal">
+                                    {sla(item)}
+                                </TableCell>
+                                <TableCell className="py-3 text-body-sm tabular-nums">
+                                    {item.tanggal_target_format ??
+                                        'Belum ditetapkan'}
+                                </TableCell>
+                                <TableCell className="px-3 py-3">
+                                    {actions(item)}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+            <ul className="divide-y divide-border px-4 xl:hidden">
+                {items.map((item) => (
+                    <li
+                        key={item.id}
+                        className="flex min-w-0 flex-col gap-3 py-4"
+                    >
+                        <div className="flex flex-col gap-1">
+                            <Link
+                                href={detail(item.nomor_tiket)}
+                                className="line-clamp-2 text-body-base font-medium text-foreground"
+                            >
+                                {item.judul}
+                            </Link>
+                            <span className="text-body-sm text-muted-foreground">
+                                {item.nomor_tiket}
+                            </span>
+                        </div>
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                            <InstansiStatusBadge status={item.status} />
+                            {sla(item)}
+                        </div>
+                        <p className="truncate text-body-sm text-muted-foreground">
+                            {item.wilayah_nama ?? 'Lokasi belum tersedia'}
+                        </p>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="text-body-sm text-muted-foreground">
+                                Target:{' '}
+                                {item.tanggal_target_format ??
+                                    'Belum ditetapkan'}
+                            </span>
+                            {actions(item)}
+                        </div>
+                    </li>
+                ))}
+            </ul>
+            <Dialog
+                open={Boolean(inspectedItem)}
+                onOpenChange={(open) => {
+                    if (!open) setInspectedItem(null);
+                }}
+            >
+                <DialogContent className="max-h-[90dvh] overflow-y-auto p-6 sm:max-w-2xl sm:p-8">
+                    <DialogHeader>
+                        <DialogTitle className="pr-6 text-display-sm font-display">
+                            Ringkasan tiket
+                        </DialogTitle>
+                        <DialogDescription>
+                            {inspectedItem?.nomor_tiket}
+                        </DialogDescription>
+                    </DialogHeader>
+                    {inspectedItem && (
+                        <div className="flex flex-col gap-6">
+                            <div className="flex flex-col gap-3">
+                                <h3 className="text-body-base font-semibold">
+                                    {inspectedItem.judul}
+                                </h3>
+                                <InstansiStatusBadge
+                                    status={inspectedItem.status}
+                                />
+                                <p className="text-body-base whitespace-pre-wrap text-muted-foreground">
+                                    {inspectedItem.keterangan}
+                                </p>
+                            </div>
+                            <dl className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                                {[
+                                    [
+                                        'Lokasi',
+                                        inspectedItem.wilayah_nama ??
+                                            'Belum tersedia',
+                                    ],
+                                    [
+                                        'Kategori',
+                                        inspectedItem.kategori_nama ??
+                                            'Belum tersedia',
+                                    ],
+                                    ['Keparahan', inspectedItem.keparahan],
+                                    [
+                                        'Tanggal masuk',
+                                        inspectedItem.created_at_format,
+                                    ],
+                                    [
+                                        'Target selesai',
+                                        inspectedItem.tanggal_target_format ??
+                                            'Belum ditetapkan',
+                                    ],
+                                    [
+                                        'Sumber dana',
+                                        inspectedItem.jenis_pendanaan
+                                            ? (SUMBER_DANA[
+                                                  inspectedItem.jenis_pendanaan
+                                              ] ?? 'Belum dikenali')
+                                            : 'Belum ditetapkan',
+                                    ],
+                                    [
+                                        'Pengalihan',
+                                        `${inspectedItem.jumlah_pengalihan} kali`,
+                                    ],
+                                    [
+                                        'Berita acara',
+                                        `${inspectedItem.total_berita_acara} versi`,
+                                    ],
+                                ].map(([label, value]) => (
+                                    <div
+                                        key={label}
+                                        className="flex flex-col gap-1"
+                                    >
+                                        <dt className="text-body-sm text-muted-foreground">
+                                            {label}
+                                        </dt>
+                                        <dd className="text-body-base capitalize">
+                                            {value}
+                                        </dd>
+                                    </div>
+                                ))}
+                            </dl>
+                            <div className="flex flex-col gap-2 border-t border-border pt-5">
+                                <h4 className="text-body-medium font-semibold">
+                                    Batas waktu tindak lanjut
+                                </h4>
+                                {sla(inspectedItem, false)}
+                            </div>
+                            <Button
+                                render={
+                                    <Link
+                                        href={detail(inspectedItem.nomor_tiket)}
+                                    />
+                                }
+                                variant="outline"
+                                className="h-11 w-fit shadow-none"
+                            >
+                                Lihat detail lengkap
+                                <ExternalLink data-icon="inline-end" />
+                            </Button>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

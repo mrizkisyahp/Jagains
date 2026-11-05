@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import InstansiTiketDetail from '@/components/instansi/InstansiTiketDetail';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import {
     MapPin,
@@ -456,6 +457,10 @@ export default function DetailTiketPage({ tiket: initialTiket }: DetailTiketProp
 
     // KONDISI 1: Pengguna Terautentikasi (Warga, Instansi, Auditor, Admin)
     // Menyesuaikan dengan InternalLayout (Sidebar Navigasi & Header Breadcrumb sesuai Peran)
+    if (currentUser?.peran === 'instansi') {
+        return <InstansiTiketDetail key={initialTiket.id} tiket={initialTiket} />;
+    }
+
     if (currentUser) {
         return (
             <InternalLayout

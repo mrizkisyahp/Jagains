@@ -8,6 +8,7 @@ use App\Models\Laporan;
 use App\Models\Pengaturan;
 use App\Models\Wilayah;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 class DashboardKinerjaService
@@ -40,7 +41,7 @@ class DashboardKinerjaService
     /**
      * Menghitung selisih hari kerja (HK) antara dua tanggal dengan mengecualikan akhir pekan & libur nasional.
      */
-    public function hitungHariKerja(Carbon $mulai, Carbon $selesai): int
+    public function hitungHariKerja(CarbonInterface $mulai, CarbonInterface $selesai): int
     {
         if ($mulai->greaterThan($selesai)) {
             return 0;
@@ -65,7 +66,7 @@ class DashboardKinerjaService
                     $hariKerja++;
                 }
             }
-            $current->addDay();
+            $current = $current->addDay();
         }
 
         return $hariKerja;
@@ -124,6 +125,21 @@ class DashboardKinerjaService
         }
 
         return $hasil;
+    }
+
+    /**
+     * Mengambil indikator BR-IND untuk satu Instansi pada periode aktif.
+     *
+     * @return array<string, mixed>
+     */
+    public function ambilMetrikInstansi(Instansi $instansi, string $periode = 'semua'): array
+    {
+        $laporanInstansi = $this->bangunQueryLaporan($periode)
+            ->whereBelongsTo($instansi)
+            ->with('riwayatStatus')
+            ->get();
+
+        return $this->kalkulasiMetrikBaris($instansi->id, $instansi->nama, $laporanInstansi);
     }
 
     /**

@@ -3,9 +3,11 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\HariLibur;
+use App\Models\Instansi;
 use App\Models\Laporan;
 use App\Models\ParameterKuorum;
 use App\Models\Pengaturan;
+use App\Models\RiwayatStatus;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -39,10 +41,47 @@ class SeederKomprehensifTest extends TestCase
         $this->assertDatabaseHas('users', ['peran' => 'instansi']);
         $this->assertGreaterThanOrEqual(5, User::where('peran', 'warga')->count());
 
-        // 5. Verifikasi Tiket Sampel Siklus Hidup
-        $this->assertGreaterThanOrEqual(10, Laporan::count());
-        $this->assertDatabaseHas('laporan', ['status' => 'PERLU_ROUTING']);
-        $this->assertDatabaseHas('laporan', ['status' => 'DITERUSKAN']);
-        $this->assertDatabaseHas('laporan', ['status' => 'TERTUTUP_WARGA']);
+        // 5. Verifikasi 255 tiket demo dan kepemilikan lima instansi penerima
+        $laporanDemo = Laporan::query()
+            ->where('nomor_tiket', 'like', 'JAG-2026-DEP-%');
+
+        $this->assertSame(255, (clone $laporanDemo)->count());
+        $this->assertSame(5, (clone $laporanDemo)->where('status', 'PERLU_ROUTING')->count());
+
+        foreach (['DPUPR', 'DISHUB', 'DLHK', 'DPKP', 'DISRUMKIM'] as $singkatan) {
+            $instansi = Instansi::where('singkatan', $singkatan)->firstOrFail();
+            $this->assertSame(50, (clone $laporanDemo)->whereBelongsTo($instansi)->count());
+        }
+
+        $this->assertGreaterThanOrEqual(
+            200,
+            (clone $laporanDemo)->selectRaw('lintang, bujur')->distinct()->count(),
+            'Koordinat laporan demo harus tersebar, bukan bertumpuk pada satu titik.',
+        );
+
+        // 6. Setiap tiket memiliki linimasa yang mencatat transisi awal hingga status saat ini
+        $jumlahRiwayatMinimum = [
+            'PERLU_ROUTING' => 1,
+            'DITERUSKAN' => 1,
+            'USULAN_TOLAK' => 2,
+            'DITOLAK' => 3,
+            'DITERIMA' => 2,
+            'DISURVEI' => 3,
+            'TERJADWAL_ANGGARAN' => 4,
+            'DIKERJAKAN' => 5,
+            'MENUNGGU_VERIFIKASI' => 6,
+            'DISENGKETAKAN' => 7,
+            'MENUNGGU_KEPUTUSAN_AUDITOR' => 7,
+            'TERTUTUP_WARGA' => 7,
+            'TERTUTUP_AUDITOR' => 8,
+        ];
+
+        $laporanDemo->each(function (Laporan $laporan) use ($jumlahRiwayatMinimum): void {
+            $this->assertGreaterThanOrEqual(
+                $jumlahRiwayatMinimum[$laporan->status],
+                RiwayatStatus::whereBelongsTo($laporan)->count(),
+                "Linimasa {$laporan->nomor_tiket} tidak lengkap.",
+            );
+        });
     }
 }

@@ -1,14 +1,16 @@
+import { formatInstansiMessage } from '@/components/instansi/InstansiStatusBadge';
+import InstansiTicketContext from '@/components/instansi/InstansiTicketContext';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { selesai } from '@/routes/instansi/tiket';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { router } from '@inertiajs/react';
 import {
     Camera,
     RefreshCw,
-    MapPin,
     AlertCircle,
     CheckCircle2,
     Loader2,
-    ShieldCheck,
-    Navigation,
     FileText,
 } from 'lucide-react';
 import {
@@ -21,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+
 import { toast } from '@/components/ui/toast';
 
 interface ModalAjukanSelesaiProps {
@@ -50,6 +52,7 @@ export default function ModalAjukanSelesai({
 
     const [hasActiveStream, setHasActiveStream] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
+    const [gpsError, setGpsError] = useState<string | null>(null);
     const [capturedFoto, setCapturedFoto] = useState<string | null>(null);
 
     // Koordinat GPS Petugas & Validasi Jarak Geofence 50m
@@ -59,9 +62,18 @@ export default function ModalAjukanSelesai({
     const [jarakMeter, setJarakMeter] = useState<number | null>(null);
     const [isLocating, setIsLocating] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submissionError, setSubmissionError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>(
+        {},
+    );
 
     // Rumus Haversine Distance (Meter)
-    const hitungJarakHaversine = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const hitungJarakHaversine = (
+        lat1: number,
+        lon1: number,
+        lat2: number,
+        lon2: number,
+    ): number => {
         const R = 6371000; // meter
         const dLat = ((lat2 - lat1) * Math.PI) / 180;
         const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -77,7 +89,14 @@ export default function ModalAjukanSelesai({
 
     // Ambil Posisi GPS Petugas
     const ambilPosisiPetugas = useCallback(() => {
-        if (!navigator.geolocation || !laporan) return;
+        if (!laporan) return;
+        if (!navigator.geolocation) {
+            setGpsError(
+                'Peramban ini tidak dapat membaca lokasi Anda. Gunakan perangkat yang mendukung layanan lokasi untuk mengajukan selesai.',
+            );
+            return;
+        }
+        setGpsError(null);
 
         setIsLocating(true);
         navigator.geolocation.getCurrentPosition(
@@ -90,15 +109,24 @@ export default function ModalAjukanSelesai({
                 setPetugasLng(lng);
                 setGpsAkurasi(akurasi);
 
-                const d = hitungJarakHaversine(laporan.lintang, laporan.bujur, lat, lng);
+                const d = hitungJarakHaversine(
+                    laporan.lintang,
+                    laporan.bujur,
+                    lat,
+                    lng,
+                );
                 setJarakMeter(d);
                 setIsLocating(false);
             },
             (err) => {
-                console.warn('GPS Error:', err);
+                setGpsError(
+                    err.code === 1
+                        ? 'Izin lokasi ditolak. Aktifkan izin lokasi pada peramban, lalu perbarui lokasi.'
+                        : 'Lokasi perangkat belum dapat diperoleh. Pastikan lokasi perangkat aktif, lalu perbarui lokasi.',
+                );
                 setIsLocating(false);
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 },
         );
     }, [laporan]);
 
@@ -127,7 +155,7 @@ export default function ModalAjukanSelesai({
             }
         } catch {
             setCameraError(
-                'Izin kamera tidak aktif atau perangkat kamera tidak terdeteksi. Sesuai ketentuan anti-manipulasi aduan (FR-TIK-08 & ST-16), foto hasil perbaikan wajib diambil langsung dari kamera di lokasi fisik.'
+                'Izin kamera tidak aktif atau perangkat kamera tidak terdeteksi. Aktifkan izin kamera pada pengaturan peramban, lalu coba lagi. Foto hasil perbaikan wajib diambil langsung di lokasi laporan.',
             );
         }
     }, []);
@@ -145,7 +173,7 @@ export default function ModalAjukanSelesai({
 
     useEffect(() => {
         if (open && !capturedFoto) {
-            startCamera();
+            void startCamera();
             ambilPosisiPetugas();
         } else {
             stopCamera();
@@ -179,7 +207,7 @@ export default function ModalAjukanSelesai({
 
     const handleRetake = () => {
         setCapturedFoto(null);
-        startCamera();
+        void startCamera();
         ambilPosisiPetugas();
     };
 
@@ -187,21 +215,32 @@ export default function ModalAjukanSelesai({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!capturedFoto || !petugasLat || !petugasLng || !isGeofenceValid) return;
+        if (!capturedFoto || !petugasLat || !petugasLng || !isGeofenceValid)
+            return;
 
         if (laporan && laporan.total_berita_acara === 0) {
-            toast.error('Berita Acara Diperlukan', 'Harap terbitkan minimal satu Berita Acara pengerjaan sebelum mengajukan penyelesaian fisik.');
+            toast.error(
+                'Berita Acara Diperlukan',
+                'Harap terbitkan minimal satu Berita Acara pengerjaan sebelum mengajukan penyelesaian fisik.',
+            );
             return;
         }
 
+        setSubmissionError(null);
+        setFieldErrors({});
         setIsSubmitting(true);
         try {
-            const res = await fetch(`/instansi/tiket/${laporan.id}/selesai`, {
+            const res = await fetch(selesai.url(laporan.id), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN':
+                        (
+                            document.querySelector(
+                                'meta[name="csrf-token"]',
+                            ) as HTMLMetaElement
+                        )?.content || '',
                 },
                 body: JSON.stringify({
                     foto: capturedFoto,
@@ -211,16 +250,46 @@ export default function ModalAjukanSelesai({
                 }),
             });
 
-            const data = await res.json();
+            const data = (await res.json()) as {
+                sukses?: boolean;
+                pesan?: string;
+                message?: string;
+                errors?: Record<string, string[]>;
+            };
             if (res.ok && data.sukses) {
-                toast.success('Pengajuan Selesai Berhasil', data.pesan);
+                toast.success(
+                    'Pengajuan Selesai Berhasil',
+                    formatInstansiMessage(data.pesan),
+                );
                 onClose();
                 setCapturedFoto(null);
                 router.reload({ only: ['antrean', 'ringkasan'] });
             } else {
-                toast.error('Gagal Mengajukan Selesai', data.message || 'Terjadi kesalahan validasi.');
+                setFieldErrors(
+                    Object.fromEntries(
+                        Object.entries(data.errors ?? {}).map(
+                            ([name, messages]) => [
+                                name,
+                                messages.map(formatInstansiMessage),
+                            ],
+                        ),
+                    ),
+                );
+                setSubmissionError(
+                    formatInstansiMessage(data.message) ||
+                        'Permintaan belum berhasil. Periksa isian dan coba lagi.',
+                );
+                if (!data.errors)
+                    toast.error(
+                        'Gagal Mengajukan Selesai',
+                        formatInstansiMessage(data.message) ||
+                            'Terjadi kesalahan validasi.',
+                    );
             }
         } catch {
+            setSubmissionError(
+                'Gagal menghubungi server. Periksa koneksi lalu kirim kembali; isian Anda tetap tersedia.',
+            );
             toast.error('Terjadi Kesalahan', 'Gagal menghubungi server.');
         } finally {
             setIsSubmitting(false);
@@ -228,116 +297,168 @@ export default function ModalAjukanSelesai({
     };
 
     return (
-        <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className="sm:max-w-lg max-h-[95vh] flex flex-col p-6">
-                <form onSubmit={handleSubmit} className="space-y-4 flex flex-col min-h-0">
-                    <DialogHeader className="shrink-0">
-                        <div className="size-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-2">
-                            <ShieldCheck className="size-5" />
-                        </div>
-                        <DialogTitle className="text-body-large font-bold">Ajukan Selesai Fisik (FR-TIK-08)</DialogTitle>
-                        <DialogDescription className="text-body-sm text-muted-foreground">
-                            Wajib foto kamera langsung di lokasi fisik dengan verifikasi geofence GPS radius <span className="font-semibold text-foreground">&le; 50 meter</span> dari titik kerusakan awal (Parameter P-12).
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="flex-1 overflow-y-auto pr-1 space-y-4">
-                        {/* Peringatan jika belum ada Berita Acara */}
-                        {laporan.total_berita_acara === 0 && (
-                            <div className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-950 dark:text-amber-200 text-body-sm space-y-2">
-                                <div className="flex items-start gap-2.5">
-                                    <AlertCircle className="size-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
-                                    <div className="space-y-0.5">
-                                        <p className="font-semibold text-caption-sm text-amber-900 dark:text-amber-300">
-                                            Berita Acara Belum Diterbitkan
-                                        </p>
-                                        <p className="text-caption-xs text-muted-foreground leading-relaxed">
-                                            Instansi wajib menerbitkan minimal satu Berita Acara pelaksanaan kerja sebelum mengajukan penyelesaian fisik (FR-TIK-07).
-                                        </p>
-                                    </div>
-                                </div>
+        <Dialog
+            open={open}
+            onOpenChange={(value) => {
+                if (!value) onClose();
+            }}
+        >
+            <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-4xl sm:p-8">
+                <DialogHeader>
+                    <DialogTitle className="pr-6 text-display-sm font-display font-semibold">
+                        Ajukan selesai fisik
+                    </DialogTitle>
+                    <DialogDescription className="text-body-base">
+                        Ambil foto hasil perbaikan melalui kamera di lokasi
+                        laporan. Pengajuan diteruskan untuk verifikasi warga.
+                    </DialogDescription>
+                </DialogHeader>
+                <InstansiTicketContext
+                    nomorTiket={laporan.nomor_tiket}
+                    judul={laporan.judul}
+                />
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    {submissionError && (
+                        <Alert variant="destructive">
+                            <AlertDescription className="text-body-base">
+                                {submissionError}
+                                {Object.entries(fieldErrors).flatMap(
+                                    ([name, messages]) =>
+                                        messages.map((message, index) => (
+                                            <p key={`${name}-${index}`}>
+                                                {message}
+                                            </p>
+                                        )),
+                                )}
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                    {laporan.total_berita_acara === 0 && (
+                        <Alert className="border-sla-warn/30">
+                            <AlertCircle />
+                            <AlertTitle>
+                                Berita acara belum diterbitkan
+                            </AlertTitle>
+                            <AlertDescription className="text-body-base">
+                                Terbitkan berita acara pelaksanaan sebelum
+                                mengajukan selesai.
                                 {onOpenBeritaAcara && (
                                     <Button
                                         type="button"
-                                        size="sm"
+                                        variant="outline"
                                         onClick={() => {
                                             onClose();
                                             onOpenBeritaAcara();
                                         }}
-                                        className="w-full h-8 text-caption-xs font-semibold gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
+                                        className="mt-3 h-11 text-body-medium shadow-none md:h-10"
                                     >
-                                        <FileText className="size-3.5" />
-                                        Buat Berita Acara Sekarang
+                                        <FileText data-icon="inline-start" />
+                                        Buat berita acara
                                     </Button>
                                 )}
-                            </div>
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                    <section
+                        aria-label="Posisi petugas"
+                        className="flex flex-col gap-3"
+                    >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h3 className="text-body-medium font-semibold">
+                                Lokasi pengambilan foto
+                            </h3>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={ambilPosisiPetugas}
+                                disabled={isLocating}
+                                className="h-11 text-body-medium md:h-10"
+                            >
+                                <RefreshCw data-icon="inline-start" />
+                                Perbarui lokasi
+                            </Button>
+                        </div>
+                        <p className="text-body-sm text-muted-foreground">
+                            Titik laporan: {laporan.lintang.toFixed(6)},{' '}
+                            {laporan.bujur.toFixed(6)}. Batas jarak pengambilan
+                            foto 50 meter.
+                        </p>
+                        {gpsError ? (
+                            <Alert variant="destructive">
+                                <AlertCircle />
+                                <AlertDescription className="text-body-base">
+                                    {gpsError}
+                                </AlertDescription>
+                            </Alert>
+                        ) : isLocating ? (
+                            <p
+                                role="status"
+                                className="flex items-center gap-2 text-body-sm text-muted-foreground"
+                            >
+                                <Loader2 className="size-4 animate-spin" />
+                                Mencari lokasi perangkat…
+                            </p>
+                        ) : jarakMeter === null ? (
+                            <p className="text-body-sm text-muted-foreground">
+                                Posisi belum tersedia. Perbarui lokasi untuk
+                                memeriksa jarak.
+                            </p>
+                        ) : (
+                            <Alert
+                                variant={
+                                    isGeofenceValid ? 'default' : 'destructive'
+                                }
+                            >
+                                {isGeofenceValid ? (
+                                    <CheckCircle2 />
+                                ) : (
+                                    <AlertCircle />
+                                )}
+                                <AlertTitle>
+                                    {isGeofenceValid
+                                        ? 'Posisi dalam batas jarak'
+                                        : 'Posisi di luar batas jarak'}
+                                </AlertTitle>
+                                <AlertDescription className="text-body-base">
+                                    Jarak dari laporan: {jarakMeter} meter.
+                                    {!isGeofenceValid &&
+                                        ' Dekati titik laporan, lalu perbarui lokasi.'}
+                                </AlertDescription>
+                            </Alert>
                         )}
-
-                        {/* Ringkasan Metadata Lokasi Awal */}
-                        <div className="p-3 bg-muted/40 rounded-xl border border-border text-body-sm space-y-1">
-                            <div className="flex justify-between items-center">
-                                <span className="text-caption-xs text-muted-foreground">Nomor Tiket:</span>
-                                <span className="font-mono font-bold text-foreground">{laporan.nomor_tiket}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-caption-xs text-muted-foreground">Koordinat Awal:</span>
-                                <span className="font-mono text-caption-xs text-foreground">
-                                    {laporan.lintang.toFixed(6)}, {laporan.bujur.toFixed(6)}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Indikator Validasi Geofence GPS Lapangan */}
-                        <div className="p-3 rounded-xl border space-y-2 transition-colors bg-card">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5 text-body-sm font-semibold">
-                                    <Navigation className="size-4 text-primary" />
-                                    <span>Status Geofence Lokasi (Maks 50m)</span>
-                                </div>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={ambilPosisiPetugas}
-                                    disabled={isLocating}
-                                    className="h-7 px-2 text-caption-xs gap-1"
-                                >
-                                    <RefreshCw className={`size-3 ${isLocating ? 'animate-spin' : ''}`} />
-                                    Perbarui GPS
-                                </Button>
-                            </div>
-
-                            {jarakMeter === null ? (
-                                <p className="text-caption-xs text-muted-foreground flex items-center gap-1">
-                                    <Loader2 className="size-3 animate-spin" />
-                                    Sedang menyinkronkan koordinat GPS Anda dengan titik laporan...
-                                </p>
-                            ) : isGeofenceValid ? (
-                                <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 flex items-start gap-2 text-caption-xs">
-                                    <CheckCircle2 className="size-4 shrink-0 mt-0.5" />
-                                    <div>
-                                        <p className="font-semibold">Lokasi Terverifikasi ({jarakMeter} meter)</p>
-                                        <p>Posisi Anda memenuhi syarat geofence (&le; 50m). Bukti foto sah diambil di lokasi fisik.</p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-2 text-caption-xs">
-                                    <AlertCircle className="size-4 shrink-0 mt-0.5" />
-                                    <div>
-                                        <p className="font-semibold">Di Luar Radius Toleransi ({jarakMeter} meter)</p>
-                                        <p>
-                                            Jarak Anda terlalu jauh dari titik laporan ({jarakMeter}m &gt; 50m). Silakan dekati lokasi fisik kerusakan untuk mengajukan selesai.
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Jendela Kamera Langsung / Tampilan Foto Bukti */}
-                        <div className="space-y-2">
-                            <div className="relative aspect-video bg-neutral-900 rounded-xl overflow-hidden flex items-center justify-center border border-border">
+                    </section>
+                    <section
+                        aria-label="Foto hasil perbaikan"
+                        className="flex flex-col gap-3"
+                    >
+                        {cameraError ? (
+                            <Alert variant="destructive">
+                                <AlertCircle />
+                                <AlertTitle>
+                                    Kamera belum dapat digunakan
+                                </AlertTitle>
+                                <AlertDescription className="text-body-base">
+                                    {cameraError}
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => {
+                                            void startCamera();
+                                        }}
+                                        className="mt-3 h-11 text-body-medium shadow-none md:h-10"
+                                    >
+                                        Coba kamera lagi
+                                    </Button>
+                                </AlertDescription>
+                            </Alert>
+                        ) : (
+                            <div className="relative aspect-video overflow-hidden rounded-lg border border-border bg-muted">
                                 {capturedFoto ? (
-                                    <img src={capturedFoto} alt="Bukti Sesudah Perbaikan" className="w-full h-full object-cover" />
+                                    <img
+                                        src={capturedFoto}
+                                        alt="Bukti sesudah perbaikan"
+                                        className="size-full object-cover"
+                                    />
                                 ) : (
                                     <>
                                         <video
@@ -345,67 +466,80 @@ export default function ModalAjukanSelesai({
                                             autoPlay
                                             playsInline
                                             muted
-                                            className={`w-full h-full object-cover ${hasActiveStream ? 'block' : 'hidden'}`}
+                                            className={cn(
+                                                'size-full object-cover',
+                                                !hasActiveStream && 'hidden',
+                                            )}
                                         />
-                                        {!hasActiveStream && !cameraError && (
-                                            <div className="text-center text-neutral-400 text-body-sm space-y-2">
-                                                <Loader2 className="size-6 animate-spin mx-auto text-primary" />
-                                                <p>Menghubungkan ke kamera gawai...</p>
-                                            </div>
-                                        )}
-                                        {cameraError && (
-                                            <div className="p-4 text-center text-destructive text-body-sm space-y-2 max-w-xs">
-                                                <AlertCircle className="size-6 mx-auto" />
-                                                <p className="text-caption-xs">{cameraError}</p>
+                                        {!hasActiveStream && (
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <Skeleton className="absolute inset-0 size-full motion-reduce:animate-none" />
+                                                <p
+                                                    role="status"
+                                                    className="relative text-body-sm text-foreground"
+                                                >
+                                                    Menghubungkan kamera…
+                                                </p>
                                             </div>
                                         )}
                                     </>
                                 )}
-                                <canvas ref={canvasRef} className="hidden" />
                             </div>
-
-                            <div className="flex justify-center">
-                                {capturedFoto ? (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleRetake} className="gap-1.5">
-                                        <RefreshCw className="size-3.5" />
-                                        Ambil Ulang Foto
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        onClick={handleSnap}
-                                        disabled={!hasActiveStream || isLocating}
-                                        className="gap-1.5 font-semibold"
-                                    >
-                                        <Camera className="size-4" />
-                                        Jepret Foto Bukti Sesudah
-                                    </Button>
-                                )}
-                            </div>
+                        )}
+                        <canvas ref={canvasRef} className="hidden" />
+                        <div className="flex flex-wrap gap-2">
+                            {capturedFoto ? (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleRetake}
+                                    className="h-11 text-body-medium shadow-none md:h-10"
+                                >
+                                    <RefreshCw data-icon="inline-start" />
+                                    Ambil ulang foto
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleSnap}
+                                    disabled={!hasActiveStream || isLocating}
+                                    className="h-11 text-body-medium shadow-none md:h-10"
+                                >
+                                    <Camera data-icon="inline-start" />
+                                    Ambil foto hasil perbaikan
+                                </Button>
+                            )}
                         </div>
-                    </div>
-
-                    <DialogFooter className="gap-2 sm:gap-0 pt-3 border-t border-border shrink-0">
-                        <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+                    </section>
+                    <DialogFooter className="gap-3 border-t border-border pt-6">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={onClose}
+                            disabled={isSubmitting}
+                            className="h-11 text-body-medium shadow-none md:h-10"
+                        >
                             Batal
                         </Button>
                         <Button
                             type="submit"
-                            disabled={isSubmitting || !capturedFoto || !isGeofenceValid}
-                            className="gap-2 font-semibold"
+                            disabled={
+                                isSubmitting ||
+                                !capturedFoto ||
+                                !isGeofenceValid
+                            }
+                            className="h-11 text-body-medium shadow-none md:h-10"
                         >
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="size-4 animate-spin" />
-                                    Mengajukan...
-                                </>
-                            ) : (
-                                <>
-                                    Ajukan Selesai Fisik
-                                    <ShieldCheck className="size-4" />
-                                </>
+                            {isSubmitting && (
+                                <Loader2
+                                    data-icon="inline-start"
+                                    className="animate-spin"
+                                />
                             )}
+                            {isSubmitting
+                                ? 'Mengajukan…'
+                                : 'Ajukan selesai fisik'}
                         </Button>
                     </DialogFooter>
                 </form>

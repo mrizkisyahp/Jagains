@@ -1,105 +1,203 @@
 import { useState } from 'react';
-import { Search, RotateCcw, Filter } from 'lucide-react';
+import { Loader2, RotateCcw, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Field, FieldLabel } from '@/components/ui/field';
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-interface KategoriItem {
-    id: number;
-    nama: string;
-}
+import { INSTANSI_STATUS } from '@/components/instansi/InstansiStatusBadge';
 
 interface AntreanFilterBarProps {
-    filters: {
+    filters: { q?: string; kategori_id?: string | number; status?: string };
+    kategoriList: Array<{ id: number; nama: string }>;
+    onFilterChange: (filters: {
         q?: string;
-        kategori_id?: string | number;
-    };
-    kategoriList: KategoriItem[];
-    onFilterChange: (newFilters: { q?: string; kategori_id?: string }) => void;
+        kategori_id?: string;
+        status?: string;
+    }) => void;
     onReset: () => void;
+    isLoading?: boolean;
 }
+
+const GROUP_FILTERS: Record<string, string> = {
+    perlu_respons: 'Perlu respons awal',
+    survei_anggaran: 'Survei & penjadwalan anggaran',
+    pengerjaan: 'Penjadwalan & pengerjaan',
+    sengketa: 'Sengketa & peninjauan Auditor',
+    selesai_verifikasi: 'Verifikasi & tiket selesai',
+};
 
 export default function AntreanFilterBar({
     filters,
     kategoriList,
     onFilterChange,
     onReset,
+    isLoading = false,
 }: AntreanFilterBarProps) {
     const [searchQuery, setSearchQuery] = useState(filters.q || '');
-
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onFilterChange({
-            q: searchQuery.trim(),
-            kategori_id: filters.kategori_id ? String(filters.kategori_id) : undefined,
-        });
-    };
-
-    const handleKategoriSelect = (val: string | null) => {
-        const kategoriVal = !val || val === 'semua' ? undefined : val;
-        onFilterChange({
-            q: searchQuery.trim() || undefined,
-            kategori_id: kategoriVal,
-        });
-    };
-
-    const handleReset = () => {
-        setSearchQuery('');
-        onReset();
-    };
-
+    const selectedStatus =
+        filters.status === 'verifikasi'
+            ? 'MENUNGGU_VERIFIKASI'
+            : filters.status || 'semua';
+    const hasFilters = Boolean(
+        filters.q || filters.kategori_id || filters.status,
+    );
     return (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-card border border-border rounded-xl">
-            {/* Form Pencarian Teks */}
-            <form onSubmit={handleSearchSubmit} className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                    type="search"
-                    placeholder="Cari nomor tiket (JAG-xxxx) atau uraian kerusakan..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-9 text-body-sm w-full"
-                />
-            </form>
-
-            <div className="flex items-center gap-2">
-                {/* Dropdown Kategori Kerusakan */}
-                <Select
-                    value={filters.kategori_id ? String(filters.kategori_id) : 'semua'}
-                    onValueChange={handleKategoriSelect}
+        <div className="flex flex-wrap items-center gap-2">
+            <form
+                className="flex min-w-0 flex-1 basis-72 items-center gap-2"
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    onFilterChange({ q: searchQuery.trim() || undefined });
+                }}
+            >
+                <Field className="relative min-w-0 flex-1 gap-0">
+                    <FieldLabel htmlFor="cari-tiket" className="sr-only">
+                        Cari nomor atau judul tiket
+                    </FieldLabel>
+                    <div className="relative">
+                        <Input
+                            id="cari-tiket"
+                            type="search"
+                            placeholder="Cari nomor atau judul tiket…"
+                            value={searchQuery}
+                            onChange={(event) =>
+                                setSearchQuery(event.target.value)
+                            }
+                            className="h-11 pl-9 text-body-base shadow-none md:h-9 md:text-body-sm"
+                        />
+                        <Search
+                            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                            aria-hidden="true"
+                        />
+                    </div>
+                </Field>
+                <Button
+                    type="submit"
+                    variant="outline"
+                    className="h-11 shadow-none md:h-9"
                 >
-                    <SelectTrigger className="h-9 w-[190px] text-body-sm">
-                        <Filter className="size-3.5 text-muted-foreground mr-1.5" />
-                        <SelectValue placeholder="Semua Kategori" />
+                    {isLoading && (
+                        <Loader2
+                            className="animate-spin"
+                            data-icon="inline-start"
+                        />
+                    )}
+                    Cari
+                </Button>
+            </form>
+            <Field className="w-full gap-0 sm:w-52">
+                <FieldLabel htmlFor="status-tiket" className="sr-only">
+                    Filter status tiket
+                </FieldLabel>
+                <Select
+                    value={selectedStatus}
+                    onValueChange={(value) =>
+                        onFilterChange({
+                            status:
+                                !value || value === 'semua' ? undefined : value,
+                        })
+                    }
+                >
+                    <SelectTrigger
+                        id="status-tiket"
+                        className="w-full text-body-base shadow-none data-[size=default]:h-11 md:text-body-sm md:data-[size=default]:h-9"
+                    >
+                        <SelectValue>
+                            {(value: string | null) =>
+                                value === 'semua'
+                                    ? 'Semua status'
+                                    : (INSTANSI_STATUS[value ?? '']?.label ??
+                                      GROUP_FILTERS[value ?? ''] ??
+                                      'Pilih status')
+                            }
+                        </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="semua">Semua Kategori</SelectItem>
-                        {kategoriList.map((kat) => (
-                            <SelectItem key={kat.id} value={String(kat.id)}>
-                                {kat.nama}
-                            </SelectItem>
-                        ))}
+                        <SelectGroup>
+                            <SelectItem value="semua">Semua status</SelectItem>
+                            {Object.entries(INSTANSI_STATUS).map(
+                                ([value, status]) => (
+                                    <SelectItem key={value} value={value}>
+                                        {status.label}
+                                    </SelectItem>
+                                ),
+                            )}
+                            {GROUP_FILTERS[selectedStatus] && (
+                                <SelectItem value={selectedStatus}>
+                                    {GROUP_FILTERS[selectedStatus]}
+                                </SelectItem>
+                            )}
+                        </SelectGroup>
                     </SelectContent>
                 </Select>
-
-                {/* Tombol Terapkan / Reset */}
+            </Field>
+            <Field className="min-w-0 flex-1 basis-40 gap-0 sm:max-w-56">
+                <FieldLabel htmlFor="kategori-tiket" className="sr-only">
+                    Filter kategori laporan
+                </FieldLabel>
+                <Select
+                    value={
+                        filters.kategori_id
+                            ? String(filters.kategori_id)
+                            : 'semua'
+                    }
+                    onValueChange={(value) =>
+                        onFilterChange({
+                            kategori_id:
+                                !value || value === 'semua' ? undefined : value,
+                        })
+                    }
+                >
+                    <SelectTrigger
+                        id="kategori-tiket"
+                        className="w-full text-body-base shadow-none data-[size=default]:h-11 md:text-body-sm md:data-[size=default]:h-9"
+                    >
+                        <SelectValue>
+                            {(value: string | null) =>
+                                kategoriList.find(
+                                    (kategori) => String(kategori.id) === value,
+                                )?.nama ?? 'Semua kategori'
+                            }
+                        </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectItem value="semua">
+                                Semua kategori
+                            </SelectItem>
+                            {kategoriList.map((kategori) => (
+                                <SelectItem
+                                    key={kategori.id}
+                                    value={String(kategori.id)}
+                                >
+                                    {kategori.nama}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </Field>
+            {hasFilters && (
                 <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleReset}
-                    className="h-9 gap-1.5 text-caption-xs font-medium text-muted-foreground hover:text-foreground"
+                    variant="ghost"
+                    onClick={() => {
+                        setSearchQuery('');
+                        onReset();
+                    }}
+                    className="h-11 md:h-9"
                 >
-                    <RotateCcw className="size-3.5" />
-                    <span className="hidden sm:inline">Reset</span>
+                    <RotateCcw data-icon="inline-start" />
+                    Reset
                 </Button>
-            </div>
+            )}
         </div>
     );
 }
