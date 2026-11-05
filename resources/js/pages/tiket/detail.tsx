@@ -504,6 +504,18 @@ export default function DetailTiketPage({
                         <Share2 className="size-4" />
                         <span className="hidden sm:inline">Bagikan</span>
                     </Button>
+
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="h-11 shadow-none md:h-9 text-muted-foreground hover:text-destructive hover:border-destructive/40"
+                        onClick={handleOpenLaporKonten}
+                        title="Laporkan Pelanggaran Konten"
+                        aria-label="Laporkan Pelanggaran Konten"
+                    >
+                        <Flag className="size-4 text-destructive" />
+                        <span className="hidden sm:inline">Laporkan</span>
+                    </Button>
                 </div>
             </div>
 
@@ -1111,21 +1123,6 @@ export default function DetailTiketPage({
                                         </div>
                                     ))}
                                 </section>
-                            )}
-
-                            {/* Aksi Laporkan Konten (FR-INT-03) untuk Warga / Publik */}
-                            {(!currentUser ||
-                                currentUser.peran === 'warga') && (
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleOpenLaporKonten}
-                                    className="w-full gap-1.5 text-caption-xs text-muted-foreground hover:text-destructive"
-                                >
-                                    <Flag className="size-3" />
-                                    <span>Laporkan Pelanggaran Konten</span>
-                                </Button>
                             )}
 
                             {/* Kartu Jaminan Privasi Zero-Knowledge (BR-AKN-01) */}
