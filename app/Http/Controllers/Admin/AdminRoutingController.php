@@ -23,10 +23,21 @@ class AdminRoutingController extends Controller
      */
     public function index(Request $request): Response
     {
-        $antrean = Laporan::with(['kategori:id,nama', 'kelurahan:id,nama,induk_id', 'lampiran'])
+        $cari = $request->query('cari');
+
+        $query = Laporan::with(['kategori:id,nama', 'kelurahan:id,nama,induk_id', 'lampiran'])
             ->where('status', 'PERLU_ROUTING')
-            ->orderBy('created_at', 'asc')
-            ->paginate(15)
+            ->orderBy('created_at', 'asc');
+
+        if ($cari) {
+            $query->where(function ($q) use ($cari) {
+                $q->where('nomor_tiket', 'like', "%{$cari}%")
+                    ->orWhere('judul', 'like', "%{$cari}%")
+                    ->orWhere('keterangan', 'like', "%{$cari}%");
+            });
+        }
+
+        $antrean = $query->paginate(15)
             ->withQueryString()
             ->through(fn (Laporan $l) => [
                 'id' => $l->id,
@@ -50,6 +61,7 @@ class AdminRoutingController extends Controller
         return Inertia::render('admin/antrean-routing', [
             'antrean' => $antrean,
             'daftarInstansi' => $daftarInstansi,
+            'cariFilter' => $cari,
         ]);
     }
 

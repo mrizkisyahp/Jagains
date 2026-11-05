@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Laporan;
+use App\Models\LaporanPelanggaran;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -40,6 +42,14 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user()?->loadMissing('kelurahan:id,nama,tingkat', 'instansi:id,nama,singkatan'),
+            ],
+            'counts' => [
+                'moderasi' => fn () => $request->user()?->peran === 'admin'
+                    ? LaporanPelanggaran::where('status', 'menunggu')->count()
+                    : null,
+                'antrean_routing' => fn () => $request->user()?->peran === 'admin'
+                    ? Laporan::where('status', 'PERLU_ROUTING')->count()
+                    : null,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success') ?? $request->session()->get('flash.success'),

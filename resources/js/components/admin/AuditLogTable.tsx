@@ -1,8 +1,19 @@
 import { useState } from 'react';
 import { AuditLogItem, PaginatedData } from '@/types/audit';
-import { Eye } from 'lucide-react';
+import { Eye, ShieldCheck } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import ModalDetailAuditLog from './ModalDetailAuditLog';
+import AdminEmptyState from './AdminEmptyState';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface AuditLogTableProps {
     logs: PaginatedData<AuditLogItem>;
@@ -27,161 +38,226 @@ export default function AuditLogTable({ logs }: AuditLogTableProps) {
         });
     };
 
-    const formatAksiBadge = (aksi: string) => {
+    const getAksiBadgeVariant = (aksi: string) => {
         if (aksi.includes('BUKA_IDENTITAS')) {
-            return 'bg-amber-100 text-amber-800 border-amber-200';
+            return 'sla-warn' as const;
         }
         if (aksi.includes('MODERASI') || aksi.includes('SEMBUNYIKAN')) {
-            return 'bg-rose-100 text-rose-800 border-rose-200';
+            return 'destructive' as const;
         }
         if (aksi.includes('ROUTING') || aksi.includes('DISPOSISI')) {
-            return 'bg-blue-100 text-blue-800 border-blue-200';
+            return 'stage-verify' as const;
         }
         if (aksi.includes('GANTI_SANDI') || aksi.includes('BUAT_AKUN')) {
-            return 'bg-teal-100 text-teal-800 border-teal-200';
+            return 'secondary' as const;
         }
-        return 'bg-slate-100 text-slate-700 border-slate-200';
+        return 'outline' as const;
     };
 
     return (
-        <div className="space-y-4 w-full min-w-0">
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden w-full min-w-0">
-                <div className="overflow-x-auto w-full max-w-full">
-                    <table className="w-full text-left text-xs min-w-[760px]">
-                        <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
-                            <tr>
-                                <th className="p-3.5 pl-4 font-semibold">Waktu (WIB)</th>
-                                <th className="p-3.5 font-semibold">Pelaku</th>
-                                <th className="p-3.5 font-semibold">Jenis Aksi</th>
-                                <th className="p-3.5 font-semibold">Objek / Entitas</th>
-                                <th className="p-3.5 font-semibold">Tiket Terkait</th>
-                                <th className="p-3.5 font-semibold">Alasan Tindakan</th>
-                                <th className="p-3.5 pr-4 text-right font-semibold">Rincian</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-slate-700">
-                            {logs.data.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="py-12 text-center text-slate-400">
-                                        Tidak ada catatan log audit yang cocok dengan filter.
-                                    </td>
-                                </tr>
-                            ) : (
-                                logs.data.map((log) => (
-                                    <tr key={log.id} className="hover:bg-slate-50/70 transition">
-                                        <td className="p-3.5 pl-4 whitespace-nowrap">
-                                            <div className="font-mono font-bold text-slate-900">
-                                                {formatTanggal(log.waktu)}
-                                            </div>
-                                            <div className="font-mono text-[11px] text-slate-500">
-                                                {formatJam(log.waktu)} WIB
-                                            </div>
-                                        </td>
-                                        <td className="p-3.5">
-                                            <div className="font-bold text-slate-900">
-                                                {log.pelaku?.username ?? 'Sistem'}
-                                            </div>
-                                            {log.pelaku?.peran && (
-                                                <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                                    {log.pelaku.peran}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="p-3.5">
-                                            <span
-                                                className={`inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-mono font-medium ${formatAksiBadge(
-                                                    log.aksi
-                                                )}`}
-                                            >
-                                                {log.aksi}
+        <div className="w-full min-w-0 space-y-4">
+            <div className="w-full min-w-0 overflow-hidden rounded-xl border border-border bg-card">
+                <Table className="min-w-[760px]">
+                    <TableHeader className="bg-muted/40">
+                        <TableRow>
+                            <TableHead className="font-semibold text-foreground">
+                                Waktu (WIB)
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Pelaku
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Jenis Aksi
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Objek / Entitas
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Tiket Terkait
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Alasan Tindakan
+                            </TableHead>
+                            <TableHead className="text-right font-semibold text-foreground">
+                                Rincian
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {logs.data.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={7}
+                                    className="h-40 text-center"
+                                >
+                                    <AdminEmptyState
+                                        icon={ShieldCheck}
+                                        title="Log Audit Kosong"
+                                        description="Tidak ada catatan log audit forensik yang cocok dengan kriteria pencarian ini."
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            logs.data.map((log) => (
+                                <TableRow
+                                    key={log.id}
+                                    className="transition-colors hover:bg-muted/30"
+                                >
+                                    <TableCell className="font-mono whitespace-nowrap">
+                                        <div className="text-body-sm font-semibold text-foreground tabular-nums">
+                                            {formatTanggal(log.waktu)}
+                                        </div>
+                                        <div className="text-caption-xs text-muted-foreground tabular-nums">
+                                            {formatJam(log.waktu)} WIB
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="text-body-sm font-semibold text-foreground">
+                                            {log.pelaku?.username ?? 'Sistem'}
+                                        </div>
+                                        {log.pelaku?.peran && (
+                                            <span className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+                                                {log.pelaku.peran}
                                             </span>
-                                        </td>
-                                        <td className="p-3.5 font-mono text-slate-700">
-                                            {log.objek_tipe ? (
-                                                <span>
-                                                    <strong className="text-slate-800 font-semibold">
-                                                        {log.objek_tipe}
-                                                    </strong>
-                                                    {log.objek_id && (
-                                                        <span className="text-slate-400 ml-1">
-                                                            #{log.objek_id}
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-400">-</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={getAksiBadgeVariant(
+                                                log.aksi,
                                             )}
-                                        </td>
-                                        <td className="p-3.5 font-mono">
-                                            {log.laporan ? (
-                                                <a
-                                                    href={`/laporan/${log.laporan.nomor_tiket}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="font-bold text-teal-600 hover:text-teal-700 hover:underline"
-                                                >
-                                                    {log.laporan.nomor_tiket}
-                                                </a>
-                                            ) : (
-                                                <span className="text-slate-400">-</span>
-                                            )}
-                                        </td>
-                                        <td
-                                            className="p-3.5 max-w-xs truncate text-slate-600"
-                                            title={log.alasan ?? '-'}
+                                            className="font-mono text-[11px]"
                                         >
-                                            {log.alasan || <span className="text-slate-400">-</span>}
-                                        </td>
-                                        <td className="p-3.5 pr-4 text-right">
-                                            <button
-                                                type="button"
-                                                onClick={() => setSelectedLog(log)}
-                                                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50 hover:text-teal-600 transition shadow-sm font-medium"
+                                            {log.aksi}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs font-mono text-foreground">
+                                        {log.objek_tipe ? (
+                                            <span>
+                                                <strong className="font-semibold text-foreground">
+                                                    {log.objek_tipe}
+                                                </strong>
+                                                {log.objek_id && (
+                                                    <span className="ml-1 text-muted-foreground">
+                                                        #{log.objek_id}
+                                                    </span>
+                                                )}
+                                            </span>
+                                        ) : (
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs font-mono">
+                                        {log.laporan ? (
+                                            <a
+                                                href={`/tiket/${log.laporan.nomor_tiket}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="font-semibold text-primary hover:underline"
                                             >
-                                                <Eye className="h-3.5 w-3.5" />
-                                                <span>Lihat</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                                {log.laporan.nomor_tiket}
+                                            </a>
+                                        ) : (
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell
+                                        className="max-w-xs truncate text-body-sm text-muted-foreground"
+                                        title={log.alasan ?? '-'}
+                                    >
+                                        {log.alasan || (
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => setSelectedLog(log)}
+                                            title={`Lihat rincian log #${log.id}`}
+                                            aria-label={`Lihat rincian log #${log.id}`}
+                                        >
+                                            <Eye
+                                                className="size-3 text-muted-foreground"
+                                                aria-hidden="true"
+                                            />
+                                            <span className="hidden sm:inline">
+                                                Lihat
+                                            </span>
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
 
                 {/* Pagination */}
                 {logs.total > 0 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-slate-200 bg-slate-50/50 text-xs text-slate-500">
+                    <div className="flex flex-col gap-3 border-t border-border bg-muted/20 p-4 text-caption-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            Menampilkan <strong className="text-slate-700">{logs.from ?? 0}</strong> -{' '}
-                            <strong className="text-slate-700">{logs.to ?? 0}</strong> dari total{' '}
-                            <strong className="text-slate-700">{logs.total}</strong> rekaman
+                            Menampilkan{' '}
+                            <strong className="font-medium text-foreground">
+                                {logs.from ?? 0}
+                            </strong>{' '}
+                            -{' '}
+                            <strong className="font-medium text-foreground">
+                                {logs.to ?? 0}
+                            </strong>{' '}
+                            dari total{' '}
+                            <strong className="font-medium text-foreground">
+                                {logs.total}
+                            </strong>{' '}
+                            rekaman
                         </div>
                         {logs.links && logs.links.length > 3 && (
                             <div className="flex items-center gap-1">
-                                {logs.links.map((link, idx) => (
-                                    <button
-                                        key={idx}
-                                        type="button"
-                                        disabled={!link.url || link.active}
-                                        onClick={() =>
-                                            link.url &&
-                                            router.get(
-                                                link.url,
-                                                {},
-                                                { preserveState: true, replace: true }
-                                            )
-                                        }
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                        className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-                                            link.active
-                                                ? 'bg-teal-600 text-white font-semibold shadow-sm'
-                                                : link.url
-                                                ? 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 shadow-sm'
-                                                : 'text-slate-300 border border-transparent cursor-not-allowed'
-                                        }`}
-                                    />
-                                ))}
+                                {logs.links.map((link, idx) => {
+                                    if (!link.url && !link.active) {
+                                        return null;
+                                    }
+                                    return (
+                                        <Button
+                                            key={idx}
+                                            variant={
+                                                link.active
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
+                                            size="sm"
+                                            disabled={!link.url}
+                                            onClick={() =>
+                                                link.url &&
+                                                router.get(
+                                                    link.url,
+                                                    {},
+                                                    {
+                                                        preserveState: true,
+                                                        replace: true,
+                                                    },
+                                                )
+                                            }
+                                        >
+                                            <span
+                                                dangerouslySetInnerHTML={{
+                                                    __html: link.label
+                                                        .replace('&laquo;', '‹')
+                                                        .replace(
+                                                            '&raquo;',
+                                                            '›',
+                                                        ),
+                                                }}
+                                            />
+                                        </Button>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>

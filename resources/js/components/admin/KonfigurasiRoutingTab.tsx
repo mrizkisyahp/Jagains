@@ -1,7 +1,50 @@
-import { useState } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
-import { GitBranch, Plus, X, AlertTriangle, Edit2, Trash2, Info } from 'lucide-react';
-import { InstansiRow, KategoriRow, WilayahRow } from './KonfigurasiMasterDataTab';
+import {
+    AlertTriangle,
+    Edit2,
+    GitBranch,
+    Info,
+    Plus,
+    Search,
+    Trash2,
+    X,
+} from 'lucide-react';
+import {
+    InstansiRow,
+    KategoriRow,
+    WilayahRow,
+} from './KonfigurasiMasterDataTab';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import AdminTablePagination from '@/components/admin/AdminTablePagination';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 
 export interface AturanRoutingRow {
     id: number;
@@ -40,13 +83,45 @@ export default function KonfigurasiRoutingTab({
 }: KonfigurasiRoutingTabProps) {
     const [modalBuka, setModalBuka] = useState(false);
     const [editRoutingId, setEditRoutingId] = useState<number | null>(null);
+    const [searchRouting, setSearchRouting] = useState('');
+    const [pageRouting, setPageRouting] = useState(1);
+    const PAGE_SIZE = 10;
+    const [confirmHapusModal, setConfirmHapusModal] = useState<{
+        open: boolean;
+        aturan: AturanRoutingRow | null;
+    }>({ open: false, aturan: null });
 
-    const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
-        kategori_id: masterKategori[0]?.id || 1,
-        wilayah_id: masterWilayah[0]?.id || 1,
-        instansi_id: masterInstansi[0]?.id || 1,
-        prioritas: 100,
-    });
+    const routingTersaring = useMemo(() => {
+        return aturanRouting.filter((r) => {
+            if (!searchRouting.trim()) {
+                return true;
+            }
+            const s = searchRouting.trim().toLowerCase();
+            const katNama = r.kategori?.nama?.toLowerCase() || '';
+            const wilNama = r.wilayah?.nama?.toLowerCase() || '';
+            const insNama = r.instansi?.nama?.toLowerCase() || '';
+            const insSing = r.instansi?.singkatan?.toLowerCase() || '';
+            return (
+                katNama.includes(s) ||
+                wilNama.includes(s) ||
+                insNama.includes(s) ||
+                insSing.includes(s)
+            );
+        });
+    }, [aturanRouting, searchRouting]);
+
+    const paginatedRouting = useMemo(() => {
+        const start = (pageRouting - 1) * PAGE_SIZE;
+        return routingTersaring.slice(start, start + PAGE_SIZE);
+    }, [routingTersaring, pageRouting]);
+
+    const { data, setData, post, put, processing, errors, reset, clearErrors } =
+        useForm({
+            kategori_id: masterKategori[0]?.id || 1,
+            wilayah_id: masterWilayah[0]?.id || 1,
+            instansi_id: masterInstansi[0]?.id || 1,
+            prioritas: 100,
+        });
 
     const bukaModalTambah = () => {
         setEditRoutingId(null);
@@ -67,14 +142,24 @@ export default function KonfigurasiRoutingTab({
         setModalBuka(true);
     };
 
-    const handleHapus = (r: AturanRoutingRow) => {
-        const pesan = `Hapus aturan routing untuk "${r.kategori?.nama || 'Kategori'}" di "${r.wilayah?.nama || 'Wilayah'}"?\n\nFallback: Tiket berikutnya akan otomatis fallback ke aturan tingkat wilayah di atasnya (Kecamatan/Kota Depok) atau masuk antrean disposisi manual (FR-ADM-05).`;
-        if (confirm(pesan)) {
-            router.delete(`/admin/konfigurasi/routing/${r.id}`);
-        }
+    const konfirmasiHapus = (r: AturanRoutingRow) => {
+        setConfirmHapusModal({ open: true, aturan: r });
     };
 
-    const simpanAturan = (e: React.FormEvent) => {
+    const eksekusiHapus = () => {
+        if (!confirmHapusModal.aturan) {
+            return;
+        }
+        router.delete(
+            `/admin/konfigurasi/routing/${confirmHapusModal.aturan.id}`,
+            {
+                onFinish: () =>
+                    setConfirmHapusModal({ open: false, aturan: null }),
+            },
+        );
+    };
+
+    const simpanAturan = (e: FormEvent) => {
         e.preventDefault();
         if (editRoutingId) {
             put(`/admin/konfigurasi/routing/${editRoutingId}`, {
@@ -95,275 +180,437 @@ export default function KonfigurasiRoutingTab({
         }
     };
 
-    // Deteksi bentrok prioritas (BR-STS-05 & FR-ADM-02)
+    // Deteksi bentrok prioritas
     const deteksiBentrok = (r: AturanRoutingRow) => {
         return aturanRouting.some(
             (other) =>
                 other.id !== r.id &&
                 other.kategori_id === r.kategori_id &&
                 other.wilayah_id === r.wilayah_id &&
-                other.prioritas === r.prioritas
+                other.prioritas === r.prioritas,
         );
     };
 
-    // Deteksi aturan yang sama persis (untuk indikator fallback update)
-    const isExactDuplicate = aturanRouting.some(
-        (other) =>
-            other.id !== editRoutingId &&
-            other.kategori_id === data.kategori_id &&
-            other.wilayah_id === data.wilayah_id &&
-            other.instansi_id === data.instansi_id
-    );
-
     return (
         <div className="space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h4 className="font-semibold text-slate-900 text-sm flex items-center gap-2">
-                            <GitBranch className="h-4 w-4 text-teal-600" />
-                            <span>Aturan Disposisi Routing Tiket (FR-ADM-02)</span>
+                        <h4 className="flex items-center gap-2 text-body-medium font-semibold text-foreground">
+                            <GitBranch
+                                className="size-4 text-primary"
+                                aria-hidden="true"
+                            />
+                            <span>Aturan Disposisi Routing Tiket</span>
                         </h4>
-                        <p className="text-xs text-slate-500">
-                            Pemetaan otomatis kategori kerusakan dan wilayah ke OPD penanggung jawab berdasarkan urutan prioritas.
+                        <p className="text-caption-xs text-muted-foreground">
+                            Pemetaan otomatis kategori kerusakan dan wilayah ke
+                            OPD penanggung jawab berdasarkan urutan prioritas.
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={bukaModalTambah}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition"
-                    >
-                        <Plus className="h-3.5 w-3.5" />
-                        <span>Tambah Aturan Routing</span>
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="relative min-w-[200px] flex-1 sm:w-60">
+                            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Cari kategori, wilayah, instansi..."
+                                value={searchRouting}
+                                onChange={(e) => {
+                                    setSearchRouting(e.target.value);
+                                    setPageRouting(1);
+                                }}
+                                className="h-9 pr-8 pl-9 text-xs"
+                            />
+                            {searchRouting && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSearchRouting('');
+                                        setPageRouting(1);
+                                    }}
+                                    className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    aria-label="Hapus filter pencarian"
+                                >
+                                    <X className="size-3.5" />
+                                </button>
+                            )}
+                        </div>
+
+                        <Button
+                            size="sm"
+                            variant="default"
+                            onClick={bukaModalTambah}
+                            title="Tambah Aturan Routing"
+                            aria-label="Tambah Aturan Routing"
+                        >
+                            <Plus className="size-3.5" aria-hidden="true" />
+                            <span className="hidden sm:inline">
+                                Tambah Aturan Routing
+                            </span>
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Banner Fallback Info */}
-                <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 text-[11px] text-slate-600 flex items-center gap-2">
-                    <Info className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-2.5 text-caption-xs text-muted-foreground">
+                    <Info
+                        className="size-3.5 shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                    />
                     <span>
-                        <strong>Hierarki Fallback Evaluasi (BR-STS-05):</strong> Kelurahan &gt; Kecamatan &gt; Kota Depok. Bila tidak ada aturan cocok atau instansi dinonaktifkan, tiket otomatis masuk ke <strong>Antrean Routing Manual (FR-ADM-05)</strong>.
+                        <strong className="text-foreground">
+                            Hierarki Fallback Evaluasi:
+                        </strong>{' '}
+                        Kelurahan &gt; Kecamatan &gt; Kota Depok. Bila tidak ada
+                        aturan cocok atau instansi dinonaktifkan, tiket otomatis
+                        masuk ke Antrean Routing Manual.
                     </span>
                 </div>
 
-                <div className="overflow-x-auto w-full">
-                    <table className="w-full text-left text-xs min-w-[700px]">
-                        <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
-                            <tr>
-                                <th className="p-3.5 pl-4 font-semibold">Prioritas</th>
-                                <th className="p-3.5 font-semibold">Kategori Kerusakan</th>
-                                <th className="p-3.5 font-semibold">Cakupan Wilayah</th>
-                                <th className="p-3.5 font-semibold">Instansi Penanggung Jawab</th>
-                                <th className="p-3.5 pr-4 text-right font-semibold">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-slate-700">
-                            {aturanRouting.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="py-8 text-center text-slate-400">
-                                        Belum ada aturan routing disposisi yang dikonfigurasi.
-                                    </td>
-                                </tr>
-                            ) : (
-                                aturanRouting.map((r) => {
-                                    const bentrok = deteksiBentrok(r);
-                                    return (
-                                        <tr key={r.id} className="hover:bg-slate-50/70 transition">
-                                            <td className="p-3.5 pl-4 font-mono font-bold text-slate-900">
-                                                <div className="flex items-center gap-1.5 flex-wrap">
-                                                    <span className="rounded bg-teal-50 text-teal-800 border border-teal-200 px-2 py-0.5 font-semibold">
-                                                        #{r.prioritas}
+                <Table>
+                    <TableHeader className="bg-muted/40">
+                        <TableRow>
+                            <TableHead className="font-semibold text-foreground">
+                                Prioritas
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Kategori Kerusakan
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Cakupan Wilayah
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Instansi Penanggung Jawab
+                            </TableHead>
+                            <TableHead className="text-right font-semibold text-foreground">
+                                Aksi
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {paginatedRouting.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={5}
+                                    className="h-32 text-center"
+                                >
+                                    <AdminEmptyState
+                                        icon={GitBranch}
+                                        title="Aturan Routing Tidak Ditemukan"
+                                        description="Tidak ada aturan routing yang cocok dengan kata kunci pencarian."
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            paginatedRouting.map((r) => {
+                                const bentrok = deteksiBentrok(r);
+                                return (
+                                    <TableRow
+                                        key={r.id}
+                                        className="transition-colors hover:bg-muted/30"
+                                    >
+                                        <TableCell className="text-body-sm font-mono font-semibold text-foreground">
+                                            <div className="flex flex-wrap items-center gap-1.5">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-caption-xs font-mono font-semibold"
+                                                >
+                                                    #{r.prioritas}
+                                                </Badge>
+                                                {bentrok && (
+                                                    <Badge
+                                                        variant="sla-warn"
+                                                        className="gap-1 text-[10px]"
+                                                    >
+                                                        <AlertTriangle
+                                                            className="size-2.5"
+                                                            aria-hidden="true"
+                                                        />
+                                                        <span>Bentrok</span>
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-body-sm font-medium text-foreground">
+                                            {r.kategori?.nama ||
+                                                `Kategori #${r.kategori_id}`}
+                                        </TableCell>
+                                        <TableCell className="text-body-sm text-foreground">
+                                            <span>
+                                                {r.wilayah?.nama ||
+                                                    `Wilayah #${r.wilayah_id}`}
+                                            </span>
+                                            {r.wilayah?.tingkat && (
+                                                <span className="ml-1 text-caption-xs text-muted-foreground capitalize">
+                                                    ({r.wilayah.tingkat})
+                                                </span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-body-sm text-foreground">
+                                            <span className="font-semibold">
+                                                {r.instansi?.singkatan}
+                                            </span>
+                                            <span className="block text-caption-xs text-muted-foreground">
+                                                {r.instansi?.nama}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        bukaModalEdit(r)
+                                                    }
+                                                    title={`Ubah aturan routing #${r.id}`}
+                                                    aria-label={`Ubah aturan routing #${r.id}`}
+                                                >
+                                                    <Edit2
+                                                        className="size-3 text-muted-foreground"
+                                                        aria-hidden="true"
+                                                    />
+                                                    <span className="hidden sm:inline">
+                                                        Ubah
                                                     </span>
-                                                    {bentrok && (
-                                                        <span
-                                                            className="inline-flex items-center gap-1 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5"
-                                                            title="Potensi bentrok prioritas dengan aturan lain pada kategori dan wilayah yang sama"
-                                                        >
-                                                            <AlertTriangle className="h-3 w-3 text-amber-600" />
-                                                            <span>Bentrok</span>
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="p-3.5 font-medium text-slate-900">
-                                                {r.kategori?.nama || `Kategori #${r.kategori_id}`}
-                                            </td>
-                                            <td className="p-3.5">
-                                                <span className="text-slate-700 font-medium">
-                                                    {r.wilayah?.nama || `Wilayah #${r.wilayah_id}`}
-                                                </span>
-                                                <span className="block text-[10px] text-slate-400 capitalize">
-                                                    {r.wilayah?.tingkat}
-                                                </span>
-                                            </td>
-                                            <td className="p-3.5">
-                                                <span className="font-semibold text-slate-800">
-                                                    {r.instansi?.singkatan}
-                                                </span>
-                                                <span className="block text-[11px] text-slate-500">
-                                                    {r.instansi?.nama}
-                                                </span>
-                                            </td>
-                                            <td className="p-3.5 pr-4 text-right">
-                                                <div className="flex items-center justify-end gap-1.5">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => bukaModalEdit(r)}
-                                                        className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50 hover:text-teal-600 transition shadow-sm font-medium"
-                                                        title="Ubah Aturan Routing"
-                                                    >
-                                                        <Edit2 className="h-3 w-3" />
-                                                        <span>Ubah</span>
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleHapus(r)}
-                                                        className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2.5 py-1 text-rose-700 hover:bg-rose-100 transition shadow-sm font-medium"
-                                                        title="Hapus Aturan Routing"
-                                                    >
-                                                        <Trash2 className="h-3 w-3" />
-                                                        <span>Hapus</span>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    size="icon-sm"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        konfirmasiHapus(r)
+                                                    }
+                                                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                    title="Hapus Aturan"
+                                                >
+                                                    <Trash2
+                                                        className="size-3.5"
+                                                        aria-hidden="true"
+                                                    />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
+                        )}
+                    </TableBody>
+                </Table>
+
+                <AdminTablePagination
+                    currentPage={pageRouting}
+                    totalItems={routingTersaring.length}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={setPageRouting}
+                    itemName="aturan"
+                />
             </div>
 
-            {/* Modal Tambah/Edit Routing */}
-            {modalBuka && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="w-full max-w-md rounded-xl bg-white shadow-xl overflow-hidden border border-slate-200">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <h3 className="font-semibold text-slate-900 text-base">
-                                {editRoutingId ? 'Ubah Aturan Disposisi Routing' : 'Tambah Aturan Disposisi Routing'}
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setModalBuka(false)}
-                                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            {/* Modal Tambah/Edit Aturan Routing */}
+            <Dialog open={modalBuka} onOpenChange={setModalBuka}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editRoutingId
+                                ? 'Ubah Aturan Routing Disposisi'
+                                : 'Tambah Aturan Routing Baru'}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Tentukan kombinasi kategori, wilayah, OPD penanggung
+                            jawab, dan prioritas evaluasi.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={simpanAturan} className="space-y-4 pt-1">
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="routing-kategori">
+                                Kategori Kerusakan{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Select
+                                value={String(data.kategori_id)}
+                                onValueChange={(val) =>
+                                    setData('kategori_id', Number(val))
+                                }
                             >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={simpanAturan} className="p-6 space-y-4">
-                            {/* Fallback Duplicate Notice */}
-                            {isExactDuplicate && (
-                                <div className="rounded-lg bg-teal-50 border border-teal-200 p-3 text-xs text-teal-800 flex items-start gap-2">
-                                    <Info className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                                    <div>
-                                        <strong>Aturan Serupa Ditemukan:</strong> Kombinasi Kategori, Wilayah, dan Instansi ini sudah terdaftar. Menyimpan form ini akan melakukan <em>fallback update</em> pada prioritas aturan yang ada tanpa menimbulkan duplikasi.
-                                    </div>
-                                </div>
+                                <SelectTrigger
+                                    id="routing-kategori"
+                                    className="w-full"
+                                >
+                                    <SelectValue placeholder="Pilih Kategori" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {masterKategori.map((k) => (
+                                            <SelectItem
+                                                key={k.id}
+                                                value={String(k.id)}
+                                            >
+                                                {k.nama}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            {errors.kategori_id && (
+                                <FieldError>{errors.kategori_id}</FieldError>
                             )}
+                        </Field>
 
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Kategori Kerusakan <span className="text-rose-500">*</span>
-                                </label>
-                                <select
-                                    value={data.kategori_id}
-                                    onChange={(e) => setData('kategori_id', Number(e.target.value))}
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="routing-wilayah">
+                                Cakupan Wilayah{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Select
+                                value={String(data.wilayah_id)}
+                                onValueChange={(val) =>
+                                    setData('wilayah_id', Number(val))
+                                }
+                            >
+                                <SelectTrigger
+                                    id="routing-wilayah"
+                                    className="w-full"
                                 >
-                                    {masterKategori.map((k) => (
-                                        <option key={k.id} value={k.id}>
-                                            {k.nama}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.kategori_id && (
-                                    <p className="text-xs text-rose-600">{errors.kategori_id}</p>
-                                )}
-                            </div>
+                                    <SelectValue placeholder="Pilih Wilayah" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {masterWilayah.map((w) => (
+                                            <SelectItem
+                                                key={w.id}
+                                                value={String(w.id)}
+                                            >
+                                                {w.nama} ({w.tingkat})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            {errors.wilayah_id && (
+                                <FieldError>{errors.wilayah_id}</FieldError>
+                            )}
+                        </Field>
 
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Cakupan Wilayah <span className="text-rose-500">*</span>
-                                </label>
-                                <select
-                                    value={data.wilayah_id}
-                                    onChange={(e) => setData('wilayah_id', Number(e.target.value))}
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="routing-instansi">
+                                Instansi Penanggung Jawab{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Select
+                                value={String(data.instansi_id)}
+                                onValueChange={(val) =>
+                                    setData('instansi_id', Number(val))
+                                }
+                            >
+                                <SelectTrigger
+                                    id="routing-instansi"
+                                    className="w-full"
                                 >
-                                    {masterWilayah.slice(0, 50).map((w) => (
-                                        <option key={w.id} value={w.id}>
-                                            {w.nama} ({w.tingkat})
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.wilayah_id && (
-                                    <p className="text-xs text-rose-600">{errors.wilayah_id}</p>
-                                )}
-                            </div>
+                                    <SelectValue placeholder="Pilih OPD / Instansi" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {masterInstansi.map((ins) => (
+                                            <SelectItem
+                                                key={ins.id}
+                                                value={String(ins.id)}
+                                            >
+                                                {ins.singkatan} - {ins.nama}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            {errors.instansi_id && (
+                                <FieldError>{errors.instansi_id}</FieldError>
+                            )}
+                        </Field>
 
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Instansi Penanggung Jawab <span className="text-rose-500">*</span>
-                                </label>
-                                <select
-                                    value={data.instansi_id}
-                                    onChange={(e) => setData('instansi_id', Number(e.target.value))}
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                >
-                                    {masterInstansi.map((i) => (
-                                        <option key={i.id} value={i.id}>
-                                            {i.singkatan} - {i.nama}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.instansi_id && (
-                                    <p className="text-xs text-rose-600">{errors.instansi_id}</p>
-                                )}
-                            </div>
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="routing-prioritas">
+                                Nilai Prioritas (Angka Rendah = Prioritas Lebih
+                                Tinggi){' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Input
+                                id="routing-prioritas"
+                                type="number"
+                                value={data.prioritas}
+                                onChange={(e) =>
+                                    setData('prioritas', Number(e.target.value))
+                                }
+                                min={1}
+                                max={9999}
+                                required
+                            />
+                            {errors.prioritas && (
+                                <FieldError>{errors.prioritas}</FieldError>
+                            )}
+                        </Field>
 
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Nilai Prioritas (1 - 1000) <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="1000"
-                                    value={data.prioritas}
-                                    onChange={(e) => setData('prioritas', Number(e.target.value))}
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                    required
-                                />
-                                <p className="text-[11px] text-slate-400">
-                                    Angka lebih kecil diprioritaskan lebih dulu ketika ada aturan yang beririsan.
-                                </p>
-                                {errors.prioritas && (
-                                    <p className="text-xs text-rose-600">{errors.prioritas}</p>
-                                )}
-                            </div>
+                        <DialogFooter className="pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setModalBuka(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="default"
+                                disabled={processing}
+                            >
+                                {processing ? 'Menyimpan...' : 'Simpan Aturan'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
 
-                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                                <button
-                                    type="button"
-                                    onClick={() => setModalBuka(false)}
-                                    className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-700 transition"
-                                >
-                                    {editRoutingId ? 'Simpan Perubahan' : 'Simpan Aturan'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {/* Modal Dialog Konfirmasi Hapus Aturan */}
+            <Dialog
+                open={confirmHapusModal.open}
+                onOpenChange={(open) =>
+                    !open && setConfirmHapusModal({ open: false, aturan: null })
+                }
+            >
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Hapus Aturan Routing?</DialogTitle>
+                        <DialogDescription>
+                            {confirmHapusModal.aturan && (
+                                <span>
+                                    Hapus aturan routing untuk "
+                                    {confirmHapusModal.aturan.kategori?.nama}"
+                                    di "{confirmHapusModal.aturan.wilayah?.nama}
+                                    "? Tiket aduan baru berikutnya akan otomatis
+                                    fallback ke tingkat wilayah di atasnya atau
+                                    masuk antrean disposisi manual.
+                                </span>
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                setConfirmHapusModal({
+                                    open: false,
+                                    aturan: null,
+                                })
+                            }
+                        >
+                            Batal
+                        </Button>
+                        <Button variant="destructive" onClick={eksekusiHapus}>
+                            Hapus Aturan
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

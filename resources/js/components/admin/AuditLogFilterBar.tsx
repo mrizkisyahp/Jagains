@@ -1,7 +1,17 @@
-import { useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { AuditLogFilterState } from '@/types/audit';
-import { Search, RotateCcw, Filter } from 'lucide-react';
+import { RotateCcw, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 interface AuditLogFilterBarProps {
     filters: AuditLogFilterState;
@@ -17,9 +27,15 @@ export default function AuditLogFilterBar({
     const [search, setSearch] = useState(filters.search ?? '');
     const [aksi, setAksi] = useState(filters.aksi ?? '');
     const [waktuMulai, setWaktuMulai] = useState(filters.waktu_mulai ?? '');
-    const [waktuSelesai, setWaktuSelesai] = useState(filters.waktu_selesai ?? '');
+    const [waktuSelesai, setWaktuSelesai] = useState(
+        filters.waktu_selesai ?? '',
+    );
 
-    const handleFilter = (e: React.FormEvent) => {
+    const hasActiveFilter = Boolean(
+        search || aksi || waktuMulai || waktuSelesai,
+    );
+
+    const handleFilter = (e: FormEvent) => {
         e.preventDefault();
         router.get(
             routeUrl,
@@ -32,7 +48,7 @@ export default function AuditLogFilterBar({
             {
                 preserveState: true,
                 replace: true,
-            }
+            },
         );
     };
 
@@ -45,75 +61,102 @@ export default function AuditLogFilterBar({
     };
 
     return (
-        <form onSubmit={handleFilter} className="w-full min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <form onSubmit={handleFilter} className="w-full min-w-0 space-y-2">
+            <div className="flex flex-wrap items-center gap-2.5">
                 {/* Search Input */}
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <input
+                <div className="relative min-w-[220px] flex-1">
+                    <Search
+                        className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                        aria-hidden="true"
+                    />
+                    <Input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Cari pelaku, nomor tiket, alasan..."
-                        className="w-full h-9 pl-9 pr-3 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                        placeholder="Cari pelaku, nomor tiket, objek, alasan..."
+                        className="h-9 pl-9 text-xs"
                     />
                 </div>
 
                 {/* Filter Jenis Aksi */}
-                <div>
-                    <select
-                        value={aksi}
-                        onChange={(e) => setAksi(e.target.value)}
-                        className="w-full h-9 px-3 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                <div className="w-[180px]">
+                    <Select
+                        value={aksi || 'semua'}
+                        onValueChange={(val) =>
+                            setAksi(val === 'semua' ? '' : (val ?? ''))
+                        }
                     >
-                        <option value="">Semua Jenis Aksi</option>
-                        {daftarAksi.map((item) => (
-                            <option key={item} value={item}>
-                                {item}
-                            </option>
-                        ))}
-                    </select>
+                        <SelectTrigger className="h-9 w-full text-xs">
+                            <SelectValue placeholder="Semua Jenis Aksi" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem value="semua">
+                                    Semua Jenis Aksi
+                                </SelectItem>
+                                {daftarAksi.map((item) => (
+                                    <SelectItem key={item} value={item}>
+                                        {item}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                 </div>
 
-                {/* Waktu Mulai */}
-                <div>
-                    <input
+                {/* Tanggal Mulai */}
+                <div className="w-[145px]">
+                    <Input
                         type="date"
                         value={waktuMulai}
                         onChange={(e) => setWaktuMulai(e.target.value)}
-                        className="w-full h-9 px-3 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                        className="h-9 text-xs"
                         title="Dari Tanggal"
                     />
                 </div>
 
-                {/* Waktu Selesai */}
-                <div>
-                    <input
+                {/* Tanggal Selesai */}
+                <div className="w-[145px]">
+                    <Input
                         type="date"
                         value={waktuSelesai}
                         onChange={(e) => setWaktuSelesai(e.target.value)}
-                        className="w-full h-9 px-3 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                        className="h-9 text-xs"
                         title="Sampai Tanggal"
                     />
                 </div>
-            </div>
 
-            <div className="flex items-center justify-end gap-2 pt-1">
-                <button
-                    type="button"
-                    onClick={handleReset}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
-                >
-                    <RotateCcw className="h-3.5 w-3.5 text-slate-500" />
-                    <span>Reset</span>
-                </button>
-                <button
+                {/* Tombol Terapkan */}
+                <Button
                     type="submit"
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-teal-700 transition"
+                    size="sm"
+                    variant="default"
+                    className="h-9 gap-1"
+                    title="Terapkan Filter Log"
+                    aria-label="Terapkan Filter Log"
                 >
-                    <Filter className="h-3.5 w-3.5" />
-                    <span>Terapkan Filter</span>
-                </button>
+                    <Search className="size-3.5 sm:hidden" aria-hidden="true" />
+                    <span className="hidden sm:inline">Terapkan</span>
+                </Button>
+
+                {/* Tombol Reset (hanya jika ada filter aktif) */}
+                {hasActiveFilter && (
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={handleReset}
+                        className="h-9 gap-1"
+                        title="Reset Filter Log"
+                        aria-label="Reset Filter Log"
+                    >
+                        <RotateCcw
+                            className="size-3 text-muted-foreground"
+                            aria-hidden="true"
+                        />
+                        <span className="hidden sm:inline">Reset</span>
+                    </Button>
+                )}
             </div>
         </form>
     );

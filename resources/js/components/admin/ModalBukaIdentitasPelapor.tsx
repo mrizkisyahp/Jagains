@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { type FormEvent, useState } from 'react';
+import { AlertTriangle, Eye, Lock, User } from 'lucide-react';
 import {
-    AlertTriangle,
-    Eye,
-    Lock,
-    Shield,
-    User,
-    X,
-    Calendar,
-    MapPin,
-    FileText,
-} from 'lucide-react';
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Badge } from '@/components/ui/badge';
 
 interface PelaporInfo {
     id: number;
@@ -37,8 +40,6 @@ export default function ModalBukaIdentitasPelapor({
     const [error, setError] = useState<string | null>(null);
     const [pelaporData, setPelaporData] = useState<PelaporInfo | null>(null);
 
-    if (!isOpen) return null;
-
     const handleTutup = () => {
         setAlasan('');
         setError(null);
@@ -46,23 +47,30 @@ export default function ModalBukaIdentitasPelapor({
         onClose();
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError(null);
         setLoading(true);
 
         try {
-            const token = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
+            const token = (
+                document.querySelector(
+                    'meta[name="csrf-token"]',
+                ) as HTMLMetaElement
+            )?.content;
 
-            const response = await fetch(`/api/tiket/${nomorTiket}/buka-identitas`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': token || '',
+            const response = await fetch(
+                `/api/tiket/${nomorTiket}/buka-identitas`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': token || '',
+                    },
+                    body: JSON.stringify({ alasan }),
                 },
-                body: JSON.stringify({ alasan }),
-            });
+            );
 
             const resData = await response.json();
 
@@ -70,7 +78,11 @@ export default function ModalBukaIdentitasPelapor({
                 if (resData.errors?.alasan) {
                     setError(resData.errors.alasan[0]);
                 } else {
-                    setError(resData.message || resData.pesan || 'Gagal membuka identitas.');
+                    setError(
+                        resData.message ||
+                            resData.pesan ||
+                            'Gagal membuka identitas.',
+                    );
                 }
                 setLoading(false);
                 return;
@@ -93,147 +105,203 @@ export default function ModalBukaIdentitasPelapor({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-            <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl overflow-hidden border border-slate-200">
-                {/* Header */}
-                <div className="bg-rose-600 px-6 py-4 text-white flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Lock className="h-5 w-5" />
-                        <h3 className="font-bold text-base">
-                            Pembukaan Identitas Pelapor (Khusus Investigasi)
-                        </h3>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={handleTutup}
-                        className="rounded-lg p-1 text-white/80 hover:text-white hover:bg-rose-700 transition"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
-                </div>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && handleTutup()}>
+            <DialogContent className="max-w-lg">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Lock
+                            className="size-5 text-destructive"
+                            aria-hidden="true"
+                        />
+                        <span>Pembukaan Identitas Pelapor (Investigasi)</span>
+                    </DialogTitle>
+                    <DialogDescription>
+                        Akses khusus pembukaan data identitas pelapor tiket
+                        nomor{' '}
+                        <strong className="font-mono text-foreground">
+                            {nomorTiket}
+                        </strong>
+                        .
+                    </DialogDescription>
+                </DialogHeader>
 
-                <div className="p-6 space-y-4">
+                <div className="space-y-4 pt-1">
                     {/* Hasil Tampil Data Pelapor */}
                     {pelaporData ? (
                         <div className="space-y-4">
-                            <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800">
-                                Identitas pelapor berhasil dibuka dan dicatat secara permanen di Audit Log Anti-Tamper.
-                            </div>
+                            <Alert
+                                variant="default"
+                                className="border-sla-safe/30 bg-sla-safe/10 text-sla-safe"
+                            >
+                                <AlertDescription className="text-caption-xs font-medium">
+                                    Identitas pelapor berhasil dibuka dan
+                                    tindakan ini telah dicatat permanen pada Log
+                                    Audit Sistem.
+                                </AlertDescription>
+                            </Alert>
 
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                            <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="rounded-full bg-slate-200 p-2.5 text-slate-600">
-                                        <User className="h-6 w-6" />
+                                    <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                        <User
+                                            className="size-5"
+                                            aria-hidden="true"
+                                        />
                                     </div>
                                     <div>
-                                        <div className="text-sm font-bold text-slate-900">
+                                        <div className="text-body-medium font-bold text-foreground">
                                             {pelaporData.username}
                                         </div>
-                                        <div className="text-xs text-slate-500">
+                                        <div className="text-caption-xs font-mono text-muted-foreground">
                                             ID Pengguna: #{pelaporData.id}
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 text-xs">
+                                <div className="grid grid-cols-2 gap-3 border-t border-border pt-3 text-caption-xs">
                                     <div>
-                                        <span className="text-slate-500">Status Akun:</span>
-                                        <span className="font-semibold text-slate-800 block capitalize">
+                                        <span className="text-muted-foreground">
+                                            Status Akun:
+                                        </span>
+                                        <Badge
+                                            variant="outline"
+                                            className="mt-0.5 block w-fit capitalize"
+                                        >
                                             {pelaporData.status_akun}
+                                        </Badge>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted-foreground">
+                                            Poin Peringatan:
+                                        </span>
+                                        <span className="mt-0.5 block font-semibold text-foreground">
+                                            {pelaporData.poin_peringatan} poin
                                         </span>
                                     </div>
                                     <div>
-                                        <span className="text-slate-500">Poin Peringatan:</span>
-                                        <span className="font-semibold text-slate-800 block">
-                                            {pelaporData.poin_peringatan}
+                                        <span className="text-muted-foreground">
+                                            Wilayah Domisili:
+                                        </span>
+                                        <span className="mt-0.5 block font-medium text-foreground">
+                                            {pelaporData.kelurahan
+                                                ? `Kel. ${pelaporData.kelurahan}`
+                                                : '—'}
                                         </span>
                                     </div>
                                     <div>
-                                        <span className="text-slate-500">Wilayah Domisili:</span>
-                                        <span className="font-semibold text-slate-800 block">
-                                            {pelaporData.kelurahan || '-'}
+                                        <span className="text-muted-foreground">
+                                            Total Aduan Dikirim:
                                         </span>
-                                    </div>
-                                    <div>
-                                        <span className="text-slate-500">Total Aduan Dikirim:</span>
-                                        <span className="font-semibold text-slate-800 block">
+                                        <span className="mt-0.5 block font-medium text-foreground">
                                             {pelaporData.jumlah_laporan} tiket
                                         </span>
                                     </div>
                                     <div className="col-span-2">
-                                        <span className="text-slate-500">Terdaftar Sejak:</span>
-                                        <span className="font-semibold text-slate-800 block">
-                                            {formatTanggal(pelaporData.terdaftar_pada)}
+                                        <span className="text-muted-foreground">
+                                            Terdaftar Sejak:
+                                        </span>
+                                        <span className="mt-0.5 block font-medium text-foreground">
+                                            {formatTanggal(
+                                                pelaporData.terdaftar_pada,
+                                            )}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={handleTutup}
-                                className="w-full rounded-lg bg-slate-900 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 transition"
-                            >
-                                Selesai
-                            </button>
+                            <DialogFooter>
+                                <Button
+                                    type="button"
+                                    variant="default"
+                                    onClick={handleTutup}
+                                    className="w-full"
+                                >
+                                    Selesai
+                                </Button>
+                            </DialogFooter>
                         </div>
                     ) : (
                         /* Form Alasan Investigasi */
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800 flex gap-2">
-                                <AlertTriangle className="h-5 w-5 shrink-0 text-rose-600" />
-                                <div>
-                                    <strong className="block font-semibold">
-                                        PERINGATAN HUKUM & PRIVASI ZERO-KNOWLEDGE
-                                    </strong>
+                            <Alert variant="destructive" className="space-y-1">
+                                <AlertTitle className="flex items-center gap-1.5 text-caption-xs font-semibold">
+                                    <AlertTriangle
+                                        className="size-4 shrink-0"
+                                        aria-hidden="true"
+                                    />
                                     <span>
-                                        Sistem Jagains melindungi identitas pelapor. Tindakan ini hanya boleh dilakukan untuk keperluan investigasi hukum atau audit resmi. Aksi ini, identitas Anda, dan alasan tertulis akan dicatat secara permanen di Audit Log Anti-Tamper.
+                                        Peringatan Privasi & Kepatuhan Hukum
                                     </span>
-                                </div>
-                            </div>
+                                </AlertTitle>
+                                <AlertDescription className="text-caption-xs leading-relaxed">
+                                    Sistem Jagains melindungi kerahasiaan
+                                    identitas pelapor. Tindakan ini hanya boleh
+                                    dilakukan untuk keperluan investigasi hukum
+                                    atau audit resmi. Aksi ini, identitas Anda,
+                                    dan alasan tertulis akan dicatat secara
+                                    permanen di Log Audit Anti-Tamper.
+                                </AlertDescription>
+                            </Alert>
 
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Alasan Investigasi Hukum / Audit <span className="text-rose-500">*</span>
-                                </label>
-                                <textarea
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="alasan-investigasi">
+                                    Alasan Investigasi Hukum / Audit{' '}
+                                    <span className="text-destructive">*</span>
+                                </FieldLabel>
+                                <Textarea
+                                    id="alasan-investigasi"
                                     value={alasan}
                                     onChange={(e) => setAlasan(e.target.value)}
                                     rows={3}
                                     placeholder="Tuliskan nomor surat tugas, dasar hukum, atau alasan audit resmi (minimal 10 karakter)..."
-                                    className="w-full rounded-lg border border-slate-300 p-3 text-sm text-slate-900 placeholder-slate-400 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                                    className="resize-none"
                                 />
-                                <div className="flex justify-between text-[11px] text-slate-400">
+                                <div className="flex justify-between text-caption-xs text-muted-foreground">
                                     <span>Minimal 10 karakter</span>
-                                    <span className={alasan.length < 10 ? 'text-amber-600' : 'text-slate-600'}>
-                                        {alasan.length} karakter
+                                    <span
+                                        className={
+                                            alasan.trim().length < 10
+                                                ? 'font-medium text-sla-warn'
+                                                : 'text-muted-foreground'
+                                        }
+                                    >
+                                        {alasan.trim().length} karakter
                                     </span>
                                 </div>
-                                {error && <p className="text-xs text-rose-600">{error}</p>}
-                            </div>
+                                {error && <FieldError>{error}</FieldError>}
+                            </Field>
 
-                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                                <button
+                            <DialogFooter className="pt-2">
+                                <Button
                                     type="button"
+                                    variant="outline"
                                     onClick={handleTutup}
                                     disabled={loading}
-                                    className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
                                 >
                                     Batal
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     type="submit"
-                                    disabled={loading || alasan.length < 10}
-                                    className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition disabled:opacity-50"
+                                    variant="destructive"
+                                    disabled={
+                                        loading || alasan.trim().length < 10
+                                    }
                                 >
-                                    <Eye className="h-3.5 w-3.5" />
-                                    <span>{loading ? 'Membuka...' : 'Buka Identitas & Catat Audit'}</span>
-                                </button>
-                            </div>
+                                    <Eye
+                                        className="size-3.5"
+                                        aria-hidden="true"
+                                    />
+                                    <span>
+                                        {loading
+                                            ? 'Membuka...'
+                                            : 'Buka Identitas & Catat Audit'}
+                                    </span>
+                                </Button>
+                            </DialogFooter>
                         </form>
                     )}
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 }

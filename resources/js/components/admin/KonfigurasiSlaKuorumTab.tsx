@@ -1,7 +1,37 @@
-import { useState } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 import { useForm } from '@inertiajs/react';
-import { Clock, Users, Edit2, X, Save } from 'lucide-react';
+import { Clock, Edit2, Search, Sliders, Users, X } from 'lucide-react';
 import { KategoriRow, WilayahRow } from './KonfigurasiMasterDataTab';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Field, FieldLabel } from '@/components/ui/field';
+import AdminTablePagination from '@/components/admin/AdminTablePagination';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
 
 export interface AturanSlaRow {
     id: number;
@@ -45,7 +75,45 @@ export default function KonfigurasiSlaKuorumTab({
 }: KonfigurasiSlaKuorumTabProps) {
     const [modalSlaBuka, setModalSlaBuka] = useState(false);
     const [modalKuorumBuka, setModalKuorumBuka] = useState(false);
-    const [selectedWilayahNama, setSelectedWilayahNama] = useState<string | null>(null);
+    const [selectedWilayahNama, setSelectedWilayahNama] = useState<
+        string | null
+    >(null);
+
+    const [searchSla, setSearchSla] = useState('');
+    const [pageSla, setPageSla] = useState(1);
+    const [searchKuorum, setSearchKuorum] = useState('');
+    const [pageKuorum, setPageKuorum] = useState(1);
+    const PAGE_SIZE = 10;
+
+    const slaTersaring = useMemo(() => {
+        return aturanSla.filter((sla) => {
+            if (!searchSla.trim()) {
+                return true;
+            }
+            const katNama = sla.kategori?.nama?.toLowerCase() || '';
+            return katNama.includes(searchSla.trim().toLowerCase());
+        });
+    }, [aturanSla, searchSla]);
+
+    const paginatedSla = useMemo(() => {
+        const start = (pageSla - 1) * PAGE_SIZE;
+        return slaTersaring.slice(start, start + PAGE_SIZE);
+    }, [slaTersaring, pageSla]);
+
+    const kuorumTersaring = useMemo(() => {
+        return parameterKuorum.filter((q) => {
+            if (!searchKuorum.trim()) {
+                return true;
+            }
+            const wilNama = q.wilayah?.nama?.toLowerCase() || '';
+            return wilNama.includes(searchKuorum.trim().toLowerCase());
+        });
+    }, [parameterKuorum, searchKuorum]);
+
+    const paginatedKuorum = useMemo(() => {
+        const start = (pageKuorum - 1) * PAGE_SIZE;
+        return kuorumTersaring.slice(start, start + PAGE_SIZE);
+    }, [kuorumTersaring, pageKuorum]);
 
     const formSla = useForm({
         kategori_id: masterKategori[0]?.id || 1,
@@ -113,14 +181,14 @@ export default function KonfigurasiSlaKuorumTab({
         setModalKuorumBuka(true);
     };
 
-    const simpanSla = (e: React.FormEvent) => {
+    const simpanSla = (e: FormEvent) => {
         e.preventDefault();
         formSla.post('/admin/konfigurasi/sla', {
             onSuccess: () => setModalSlaBuka(false),
         });
     };
 
-    const simpanKuorum = (e: React.FormEvent) => {
+    const simpanKuorum = (e: FormEvent) => {
         e.preventDefault();
         formKuorum.post('/admin/konfigurasi/kuorum', {
             onSuccess: () => setModalKuorumBuka(false),
@@ -130,364 +198,630 @@ export default function KonfigurasiSlaKuorumTab({
     return (
         <div className="space-y-6">
             {/* Bagian 1: Standar SLA Hari Kerja */}
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h4 className="font-semibold text-slate-900 text-sm flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-teal-600" />
-                            <span>Standar Batas Waktu Pelayanan (SLA Hari Kerja)</span>
+                        <h4 className="flex items-center gap-2 text-body-medium font-semibold text-foreground">
+                            <Clock
+                                className="size-4 text-primary"
+                                aria-hidden="true"
+                            />
+                            <span>
+                                Standar Batas Waktu Pelayanan (SLA Hari Kerja)
+                            </span>
                         </h4>
-                        <p className="text-xs text-slate-500">
-                            Batas waktu operasional instansi berdasarkan kategori kerusakan fasilitas (BR-SLA-01).
+                        <p className="text-caption-xs text-muted-foreground">
+                            Batas waktu operasional instansi berdasarkan
+                            kategori kerusakan fasilitas publik.
                         </p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={bukaTambahSla}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition"
-                    >
-                        <span>Ubah Standar SLA</span>
-                    </button>
-                </div>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs min-w-[700px]">
-                        <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
-                            <tr>
-                                <th className="p-3.5 pl-4 font-semibold">Kategori</th>
-                                <th className="p-3.5 font-semibold">Respons Awal</th>
-                                <th className="p-3.5 font-semibold">Survei Lapangan</th>
-                                <th className="p-3.5 font-semibold">Penjadwalan Anggaran</th>
-                                <th className="p-3.5 font-semibold">Jawab Sengketa</th>
-                                <th className="p-3.5 font-semibold">Jendela Verifikasi</th>
-                                <th className="p-3.5 pr-4 text-right font-semibold">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-slate-700">
-                            {aturanSla.map((sla) => (
-                                <tr key={sla.id} className="hover:bg-slate-50/70 transition">
-                                    <td className="p-3.5 pl-4 font-semibold text-slate-900">
-                                        {sla.kategori?.nama || `Kategori #${sla.kategori_id}`}
-                                    </td>
-                                    <td className="p-3.5 font-mono text-teal-700">
-                                        {sla.batas_respons_hk} hari kerja
-                                    </td>
-                                    <td className="p-3.5 font-mono text-slate-700">
-                                        {sla.batas_survei_hk} hari kerja
-                                    </td>
-                                    <td className="p-3.5 font-mono text-slate-700">
-                                        {sla.batas_anggaran_hk} hari kerja
-                                    </td>
-                                    <td className="p-3.5 font-mono text-amber-700">
-                                        {sla.batas_jawab_sengketa_hk} hari kerja
-                                    </td>
-                                    <td className="p-3.5 font-mono text-slate-700">
-                                        {sla.batas_verifikasi_hari} hari kalender
-                                    </td>
-                                    <td className="p-3.5 pr-4 text-right">
-                                        <button
-                                            type="button"
-                                            onClick={() => bukaEditSla(sla)}
-                                            className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50 hover:text-teal-600 transition shadow-sm font-medium"
-                                        >
-                                            <Edit2 className="h-3 w-3" />
-                                            <span>Ubah</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* Bagian 2: Parameter Formula Kuorum Warga */}
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                    <div>
-                        <h4 className="font-semibold text-slate-900 text-sm flex items-center gap-2">
-                            <Users className="h-4 w-4 text-teal-600" />
-                            <span>Formula Kuorum Verifikasi Warga (BR-QRM-01 s/d BR-QRM-03)</span>
-                        </h4>
-                        <p className="text-xs text-slate-500">
-                            Parameter rumus dinamis kuorum K = clamp(k × N, Kmin, Kmax). Pembaruan tidak mengubah tiket aktif.
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={bukaTambahKuorum}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition"
-                    >
-                        <span>Ubah Parameter Kuorum</span>
-                    </button>
-                </div>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs min-w-[700px]">
-                        <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
-                            <tr>
-                                <th className="p-3.5 pl-4 font-semibold">Wilayah Cakupan</th>
-                                <th className="p-3.5 font-semibold">Persentase Pemilih (k)</th>
-                                <th className="p-3.5 font-semibold">Batas Minimum (Kmin)</th>
-                                <th className="p-3.5 font-semibold">Batas Maksimum (Kmax)</th>
-                                <th className="p-3.5 pr-4 text-right font-semibold">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-slate-700">
-                            {parameterKuorum.map((q) => (
-                                <tr key={q.id} className="hover:bg-slate-50/70 transition">
-                                    <td className="p-3.5 pl-4 font-semibold text-slate-900">
-                                        {q.wilayah?.nama || `Wilayah #${q.wilayah_id}`}
-                                        <span className="block text-[10px] text-slate-400 font-normal capitalize">
-                                            {q.wilayah?.tingkat}
-                                        </span>
-                                    </td>
-                                    <td className="p-3.5 font-mono text-teal-700">
-                                        {(q.k_bp / 100).toFixed(2)}% ({q.k_bp} bp)
-                                    </td>
-                                    <td className="p-3.5 font-mono text-slate-700">
-                                        {Number(q.kmin).toFixed(1)} suara
-                                    </td>
-                                    <td className="p-3.5 font-mono text-slate-700">
-                                        {Number(q.kmax).toFixed(1)} suara
-                                    </td>
-                                    <td className="p-3.5 pr-4 text-right">
-                                        <button
-                                            type="button"
-                                            onClick={() => bukaEditKuorum(q)}
-                                            className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50 hover:text-teal-600 transition shadow-sm font-medium"
-                                        >
-                                            <Edit2 className="h-3 w-3" />
-                                            <span>Ubah</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* Modal SLA */}
-            {modalSlaBuka && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="w-full max-w-md rounded-xl bg-white shadow-xl overflow-hidden border border-slate-200">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <h3 className="font-semibold text-slate-900 text-base">
-                                {masterKategori.find((k) => k.id === formSla.data.kategori_id)
-                                    ? `Atur Standar SLA (${masterKategori.find((k) => k.id === formSla.data.kategori_id)?.nama})`
-                                    : 'Atur Standar SLA Kategori'}
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setModalSlaBuka(false)}
-                                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={simpanSla} className="p-6 space-y-3">
-                            <div className="space-y-1">
-                                <label className="block text-xs font-semibold text-slate-700">Kategori</label>
-                                <select
-                                    value={formSla.data.kategori_id}
-                                    onChange={(e) => formSla.setData('kategori_id', Number(e.target.value))}
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
-                                >
-                                    {masterKategori.map((k) => (
-                                        <option key={k.id} value={k.id}>
-                                            {k.nama}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="space-y-1">
-                                    <label className="block text-xs font-semibold text-slate-700">Respons (HK)</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={formSla.data.batas_respons_hk}
-                                        onChange={(e) => formSla.setData('batas_respons_hk', Number(e.target.value))}
-                                        className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="block text-xs font-semibold text-slate-700">Survei (HK)</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={formSla.data.batas_survei_hk}
-                                        onChange={(e) => formSla.setData('batas_survei_hk', Number(e.target.value))}
-                                        className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="space-y-1">
-                                    <label className="block text-xs font-semibold text-slate-700">Anggaran (HK)</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={formSla.data.batas_anggaran_hk}
-                                        onChange={(e) => formSla.setData('batas_anggaran_hk', Number(e.target.value))}
-                                        className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="block text-xs font-semibold text-slate-700">Sengketa (HK)</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={formSla.data.batas_jawab_sengketa_hk}
-                                        onChange={(e) => formSla.setData('batas_jawab_sengketa_hk', Number(e.target.value))}
-                                        className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="block text-xs font-semibold text-slate-700">Verifikasi Warga (Hari Kalender)</label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={formSla.data.batas_verifikasi_hari}
-                                    onChange={(e) => formSla.setData('batas_verifikasi_hari', Number(e.target.value))}
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="relative min-w-[200px] flex-1 sm:w-56">
+                            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Cari kategori SLA..."
+                                value={searchSla}
+                                onChange={(e) => {
+                                    setSearchSla(e.target.value);
+                                    setPageSla(1);
+                                }}
+                                className="h-9 pr-8 pl-9 text-xs"
+                            />
+                            {searchSla && (
                                 <button
                                     type="button"
-                                    onClick={() => setModalSlaBuka(false)}
-                                    className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={formSla.processing}
-                                    className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-700 transition"
-                                >
-                                    Simpan SLA
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal Kuorum */}
-            {modalKuorumBuka && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="w-full max-w-md rounded-xl bg-white shadow-xl overflow-hidden border border-slate-200">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <h3 className="font-semibold text-slate-900 text-base">
-                                {selectedWilayahNama
-                                    ? `Ubah Parameter Kuorum (${selectedWilayahNama})`
-                                    : 'Atur Parameter Kuorum Wilayah'}
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setModalKuorumBuka(false)}
-                                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={simpanKuorum} className="p-6 space-y-3">
-                            <div className="space-y-1">
-                                <label className="block text-xs font-semibold text-slate-700">Wilayah Cakupan</label>
-                                <select
-                                    value={formKuorum.data.wilayah_id}
-                                    onChange={(e) => {
-                                        const id = Number(e.target.value);
-                                        formKuorum.setData('wilayah_id', id);
-                                        const w = masterWilayah.find((x) => x.id === id);
-                                        setSelectedWilayahNama(w ? w.nama : null);
+                                    onClick={() => {
+                                        setSearchSla('');
+                                        setPageSla(1);
                                     }}
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none"
+                                    className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    aria-label="Hapus filter pencarian"
                                 >
-                                    {masterWilayah.map((w) => (
-                                        <option key={w.id} value={w.id}>
-                                            {w.nama} ({w.tingkat})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="space-y-1">
-                                <div className="flex items-center justify-between">
-                                    <label className="block text-xs font-semibold text-slate-700">
-                                        Persentase Pemilih k (Basis Points)
-                                    </label>
-                                    <span className="font-mono text-xs font-semibold text-teal-600">
-                                        {(formKuorum.data.k_bp / 100).toFixed(2)}%
-                                    </span>
-                                </div>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max="10000"
-                                    value={formKuorum.data.k_bp}
-                                    onChange={(e) => formKuorum.setData('k_bp', Number(e.target.value))}
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                />
-                                <p className="text-[11px] text-slate-500">
-                                    200 bp setara dengan 2.00% dari jumlah pemilih (N) wilayah kelurahan.
-                                </p>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="space-y-1">
-                                    <label className="block text-xs font-semibold text-slate-700">Kmin (Batas Bawah)</label>
-                                    <input
-                                        type="number"
-                                        step="0.1"
-                                        min="0.1"
-                                        value={formKuorum.data.kmin}
-                                        onChange={(e) => formKuorum.setData('kmin', Number(e.target.value))}
-                                        className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="block text-xs font-semibold text-slate-700">Kmax (Batas Atas)</label>
-                                    <input
-                                        type="number"
-                                        step="0.1"
-                                        min="0.1"
-                                        value={formKuorum.data.kmax}
-                                        onChange={(e) => formKuorum.setData('kmax', Number(e.target.value))}
-                                        className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                                <button
-                                    type="button"
-                                    onClick={() => setModalKuorumBuka(false)}
-                                    className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
-                                >
-                                    Batal
+                                    <X className="size-3.5" />
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={formKuorum.processing}
-                                    className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-700 transition"
-                                >
-                                    Simpan Kuorum
-                                </button>
-                            </div>
-                        </form>
+                            )}
+                        </div>
+                        <Button
+                            size="sm"
+                            variant="default"
+                            onClick={bukaTambahSla}
+                            title="Ubah Standar SLA"
+                            aria-label="Ubah Standar SLA"
+                        >
+                            <Clock className="size-3.5" aria-hidden="true" />
+                            <span className="hidden sm:inline">
+                                Ubah Standar SLA
+                            </span>
+                        </Button>
                     </div>
                 </div>
-            )}
+
+                <Table>
+                    <TableHeader className="bg-muted/40">
+                        <TableRow>
+                            <TableHead className="font-semibold text-foreground">
+                                Kategori
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Respons Awal
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Survei Lapangan
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Penjadwalan Anggaran
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Jawab Sengketa
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Jendela Verifikasi
+                            </TableHead>
+                            <TableHead className="text-right font-semibold text-foreground">
+                                Aksi
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {paginatedSla.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={7}
+                                    className="h-32 text-center"
+                                >
+                                    <AdminEmptyState
+                                        icon={Clock}
+                                        title="Standar SLA Tidak Ditemukan"
+                                        description="Tidak ada aturan SLA yang cocok dengan kata kunci pencarian."
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            paginatedSla.map((sla) => (
+                                <TableRow
+                                    key={sla.id}
+                                    className="transition-colors hover:bg-muted/30"
+                                >
+                                    <TableCell className="text-body-sm font-semibold text-foreground">
+                                        {sla.kategori?.nama ||
+                                            `Kategori #${sla.kategori_id}`}
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs font-mono font-semibold text-foreground">
+                                        {sla.batas_respons_hk} hari kerja
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs font-mono text-muted-foreground">
+                                        {sla.batas_survei_hk} hari kerja
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs font-mono text-muted-foreground">
+                                        {sla.batas_anggaran_hk} hari kerja
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs font-mono text-muted-foreground">
+                                        {sla.batas_jawab_sengketa_hk} hari kerja
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs font-mono text-muted-foreground">
+                                        {sla.batas_verifikasi_hari} hari
+                                        kalender
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => bukaEditSla(sla)}
+                                            title={`Ubah SLA ${sla.kategori?.nama || ''}`}
+                                            aria-label={`Ubah SLA ${sla.kategori?.nama || ''}`}
+                                        >
+                                            <Edit2
+                                                className="size-3 text-muted-foreground"
+                                                aria-hidden="true"
+                                            />
+                                            <span className="hidden sm:inline">
+                                                Ubah
+                                            </span>
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+
+                <AdminTablePagination
+                    currentPage={pageSla}
+                    totalItems={slaTersaring.length}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={setPageSla}
+                    itemName="standar SLA"
+                />
+            </div>
+
+            {/* Bagian 2: Parameter Kuorum Wilayah */}
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h4 className="flex items-center gap-2 text-body-medium font-semibold text-foreground">
+                            <Users
+                                className="size-4 text-primary"
+                                aria-hidden="true"
+                            />
+                            <span>Parameter Kuorum Verifikasi Dinamis</span>
+                        </h4>
+                        <p className="text-caption-xs text-muted-foreground">
+                            Formula kuorum berbasis DPT dan kepadatan
+                            partisipasi warga tiap kelurahan/kecamatan.
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="relative min-w-[200px] flex-1 sm:w-56">
+                            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Cari wilayah kuorum..."
+                                value={searchKuorum}
+                                onChange={(e) => {
+                                    setSearchKuorum(e.target.value);
+                                    setPageKuorum(1);
+                                }}
+                                className="h-9 pr-8 pl-9 text-xs"
+                            />
+                            {searchKuorum && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSearchKuorum('');
+                                        setPageKuorum(1);
+                                    }}
+                                    className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    aria-label="Hapus filter pencarian"
+                                >
+                                    <X className="size-3.5" />
+                                </button>
+                            )}
+                        </div>
+                        <Button
+                            size="sm"
+                            variant="default"
+                            onClick={bukaTambahKuorum}
+                            title="Atur Parameter Kuorum"
+                            aria-label="Atur Parameter Kuorum"
+                        >
+                            <Sliders className="size-3.5" aria-hidden="true" />
+                            <span className="hidden sm:inline">
+                                Atur Parameter Kuorum
+                            </span>
+                        </Button>
+                    </div>
+                </div>
+
+                <Table>
+                    <TableHeader className="bg-muted/40">
+                        <TableRow>
+                            <TableHead className="font-semibold text-foreground">
+                                Wilayah
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Tingkat
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Bobot Basis (K_BP)
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Kuorum Minimal (Kmin)
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Kuorum Maksimal (Kmax)
+                            </TableHead>
+                            <TableHead className="text-right font-semibold text-foreground">
+                                Aksi
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {paginatedKuorum.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={6}
+                                    className="h-32 text-center"
+                                >
+                                    <AdminEmptyState
+                                        icon={Users}
+                                        title="Parameter Kuorum Tidak Ditemukan"
+                                        description="Tidak ada parameter kuorum yang cocok dengan kata kunci pencarian."
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            paginatedKuorum.map((q) => (
+                                <TableRow
+                                    key={q.id}
+                                    className="transition-colors hover:bg-muted/30"
+                                >
+                                    <TableCell className="text-body-sm font-semibold text-foreground">
+                                        {q.wilayah?.nama ||
+                                            `Wilayah #${q.wilayah_id}`}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant="outline"
+                                            className="text-caption-xs capitalize"
+                                        >
+                                            {q.wilayah?.tingkat || '-'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs font-mono text-muted-foreground">
+                                        {q.k_bp}
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs font-mono font-semibold text-foreground">
+                                        {Number(q.kmin).toFixed(1)} suara
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs font-mono font-semibold text-foreground">
+                                        {Number(q.kmax).toFixed(1)} suara
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => bukaEditKuorum(q)}
+                                            title={`Ubah kuorum ${q.wilayah?.nama || ''}`}
+                                            aria-label={`Ubah kuorum ${q.wilayah?.nama || ''}`}
+                                        >
+                                            <Edit2
+                                                className="size-3 text-muted-foreground"
+                                                aria-hidden="true"
+                                            />
+                                            <span className="hidden sm:inline">
+                                                Ubah
+                                            </span>
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+
+                <AdminTablePagination
+                    currentPage={pageKuorum}
+                    totalItems={kuorumTersaring.length}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={setPageKuorum}
+                    itemName="parameter kuorum"
+                />
+            </div>
+
+            {/* Modal Dialog Atur SLA */}
+            <Dialog open={modalSlaBuka} onOpenChange={setModalSlaBuka}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Clock
+                                className="size-5 text-primary"
+                                aria-hidden="true"
+                            />
+                            <span>Atur Standar Batas Waktu SLA</span>
+                        </DialogTitle>
+                        <DialogDescription>
+                            Tentukan batas waktu tahapan penanganan untuk
+                            kategori kerusakan terpilih.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={simpanSla} className="space-y-4 pt-1">
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="sla-kategori">
+                                Kategori Kerusakan{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Select
+                                value={String(formSla.data.kategori_id)}
+                                onValueChange={(val) =>
+                                    formSla.setData('kategori_id', Number(val))
+                                }
+                            >
+                                <SelectTrigger
+                                    id="sla-kategori"
+                                    className="w-full"
+                                >
+                                    <SelectValue placeholder="Pilih Kategori" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {masterKategori.map((k) => (
+                                            <SelectItem
+                                                key={k.id}
+                                                value={String(k.id)}
+                                            >
+                                                {k.nama}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </Field>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="sla-respons">
+                                    Respons Awal (HK) *
+                                </FieldLabel>
+                                <Input
+                                    id="sla-respons"
+                                    type="number"
+                                    value={formSla.data.batas_respons_hk}
+                                    onChange={(e) =>
+                                        formSla.setData(
+                                            'batas_respons_hk',
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    min={1}
+                                    required
+                                />
+                            </Field>
+
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="sla-survei">
+                                    Survei Lapangan (HK) *
+                                </FieldLabel>
+                                <Input
+                                    id="sla-survei"
+                                    type="number"
+                                    value={formSla.data.batas_survei_hk}
+                                    onChange={(e) =>
+                                        formSla.setData(
+                                            'batas_survei_hk',
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    min={1}
+                                    required
+                                />
+                            </Field>
+
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="sla-anggaran">
+                                    Jadwal Anggaran (HK) *
+                                </FieldLabel>
+                                <Input
+                                    id="sla-anggaran"
+                                    type="number"
+                                    value={formSla.data.batas_anggaran_hk}
+                                    onChange={(e) =>
+                                        formSla.setData(
+                                            'batas_anggaran_hk',
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    min={1}
+                                    required
+                                />
+                            </Field>
+
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="sla-sengketa">
+                                    Jawab Sengketa (HK) *
+                                </FieldLabel>
+                                <Input
+                                    id="sla-sengketa"
+                                    type="number"
+                                    value={formSla.data.batas_jawab_sengketa_hk}
+                                    onChange={(e) =>
+                                        formSla.setData(
+                                            'batas_jawab_sengketa_hk',
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    min={1}
+                                    required
+                                />
+                            </Field>
+                        </div>
+
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="sla-verifikasi">
+                                Jendela Verifikasi Warga (Hari Kalender) *
+                            </FieldLabel>
+                            <Input
+                                id="sla-verifikasi"
+                                type="number"
+                                value={formSla.data.batas_verifikasi_hari}
+                                onChange={(e) =>
+                                    formSla.setData(
+                                        'batas_verifikasi_hari',
+                                        Number(e.target.value),
+                                    )
+                                }
+                                min={1}
+                                required
+                            />
+                        </Field>
+
+                        <DialogFooter className="pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setModalSlaBuka(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="default"
+                                disabled={formSla.processing}
+                            >
+                                {formSla.processing
+                                    ? 'Menyimpan...'
+                                    : 'Simpan SLA'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Dialog Atur Kuorum */}
+            <Dialog open={modalKuorumBuka} onOpenChange={setModalKuorumBuka}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Sliders
+                                className="size-5 text-primary"
+                                aria-hidden="true"
+                            />
+                            <span>
+                                {selectedWilayahNama
+                                    ? `Atur Kuorum: ${selectedWilayahNama}`
+                                    : 'Atur Parameter Kuorum'}
+                            </span>
+                        </DialogTitle>
+                        <DialogDescription>
+                            Kalibrasi ambang batas minimal dan maksimal dukungan
+                            verifikasi warga per wilayah.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={simpanKuorum} className="space-y-4 pt-1">
+                        {!selectedWilayahNama && (
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="kuorum-wilayah">
+                                    Wilayah{' '}
+                                    <span className="text-destructive">*</span>
+                                </FieldLabel>
+                                <Select
+                                    value={String(formKuorum.data.wilayah_id)}
+                                    onValueChange={(val) =>
+                                        formKuorum.setData(
+                                            'wilayah_id',
+                                            Number(val),
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="kuorum-wilayah"
+                                        className="w-full"
+                                    >
+                                        <SelectValue placeholder="Pilih Wilayah" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {masterWilayah.map((w) => (
+                                                <SelectItem
+                                                    key={w.id}
+                                                    value={String(w.id)}
+                                                >
+                                                    {w.nama} ({w.tingkat})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                        )}
+
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="kuorum-kbp">
+                                Bobot Basis Pemilih (K_BP){' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Input
+                                id="kuorum-kbp"
+                                type="number"
+                                value={formKuorum.data.k_bp}
+                                onChange={(e) =>
+                                    formKuorum.setData(
+                                        'k_bp',
+                                        Number(e.target.value),
+                                    )
+                                }
+                                min={1}
+                                required
+                            />
+                        </Field>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="kuorum-kmin">
+                                    Kuorum Min (Kmin) *
+                                </FieldLabel>
+                                <Input
+                                    id="kuorum-kmin"
+                                    type="number"
+                                    step="0.1"
+                                    value={formKuorum.data.kmin}
+                                    onChange={(e) =>
+                                        formKuorum.setData(
+                                            'kmin',
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    min={1}
+                                    required
+                                />
+                            </Field>
+
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="kuorum-kmax">
+                                    Kuorum Max (Kmax) *
+                                </FieldLabel>
+                                <Input
+                                    id="kuorum-kmax"
+                                    type="number"
+                                    step="0.1"
+                                    value={formKuorum.data.kmax}
+                                    onChange={(e) =>
+                                        formKuorum.setData(
+                                            'kmax',
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    min={1}
+                                    required
+                                />
+                            </Field>
+                        </div>
+
+                        <DialogFooter className="pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setModalKuorumBuka(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="default"
+                                disabled={formKuorum.processing}
+                            >
+                                {formKuorum.processing
+                                    ? 'Menyimpan...'
+                                    : 'Simpan Kuorum'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

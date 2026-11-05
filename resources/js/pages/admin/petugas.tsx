@@ -1,22 +1,48 @@
-import { ReactNode, useState, useEffect } from 'react';
-import { Head, router, useForm } from '@inertiajs/react';
+import { type FormEvent, type ReactNode, useEffect, useState } from 'react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
 import {
-    AlertCircle,
     Building2,
     Check,
     Copy,
     KeyRound,
-    Lock,
-    Power,
     RotateCw,
+    Search,
     Shield,
-    UserCheck,
     UserPlus,
-    UserX,
     Users,
     X,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 
 interface InstansiData {
     id: number;
@@ -45,6 +71,8 @@ interface PaginatedData<T> {
     current_page: number;
     last_page: number;
     total: number;
+    from: number | null;
+    to: number | null;
     links: PaginationLink[];
 }
 
@@ -52,6 +80,7 @@ interface PetugasPageProps {
     daftarPetugas: PaginatedData<PetugasData>;
     daftarInstansi: InstansiData[];
     peranFilter?: string | null;
+    cariFilter?: string | null;
     sandiBaru?: string | null;
     petugasBaru?: {
         username: string;
@@ -63,18 +92,30 @@ export default function PetugasPage({
     daftarPetugas,
     daftarInstansi,
     peranFilter,
+    cariFilter,
     sandiBaru: initialSandiBaru,
     petugasBaru: initialPetugasBaru,
 }: PetugasPageProps) {
+    const [searchTerm, setSearchTerm] = useState(cariFilter || '');
     const [modalTambahBuka, setModalTambahBuka] = useState(false);
     const [modalSandiBuka, setModalSandiBuka] = useState(false);
-    const [revealedSandi, setRevealedSandi] = useState<string | null>(initialSandiBaru || null);
+    const [revealedSandi, setRevealedSandi] = useState<string | null>(
+        initialSandiBaru || null,
+    );
     const [revealedUsername, setRevealedUsername] = useState<string | null>(
-        initialPetugasBaru?.username || null
+        initialPetugasBaru?.username || null,
     );
     const [copied, setCopied] = useState(false);
 
-    // Watch props if new sandi is flashed
+    // State konfirmasi modal pengganti window.confirm()
+    const [confirmModal, setConfirmModal] = useState<{
+        open: boolean;
+        type: 'reset-sandi' | 'toggle-status';
+        petugas: PetugasData | null;
+    }>({ open: false, type: 'reset-sandi', petugas: null });
+
+    const activeTab = peranFilter || 'semua';
+
     useEffect(() => {
         if (initialSandiBaru) {
             setRevealedSandi(initialSandiBaru);
@@ -83,11 +124,12 @@ export default function PetugasPage({
         }
     }, [initialSandiBaru, initialPetugasBaru]);
 
-    const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
-        username: '',
-        peran: 'instansi',
-        instansi_id: '',
-    });
+    const { data, setData, post, processing, errors, reset, clearErrors } =
+        useForm({
+            username: '',
+            peran: 'instansi',
+            instansi_id: '',
+        });
 
     const bukaModalTambah = () => {
         reset();
@@ -101,7 +143,7 @@ export default function PetugasPage({
         clearErrors();
     };
 
-    const handleSimpanPetugas = (e: React.FormEvent) => {
+    const handleSimpanPetugas = (e: FormEvent) => {
         e.preventDefault();
         post('/admin/petugas', {
             onSuccess: () => {
@@ -111,27 +153,106 @@ export default function PetugasPage({
     };
 
     const handleSalinSandi = () => {
-        if (!revealedSandi) return;
-        navigator.clipboard.writeText(revealedSandi);
+        if (!revealedSandi) {
+            return;
+        }
+        void navigator.clipboard.writeText(revealedSandi);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleResetSandi = (petugas: PetugasData) => {
-        if (
-            confirm(
-                `Apakah Anda yakin ingin mereset kata sandi petugas ${petugas.username}? Sandi lama tidak akan berlaku lagi.`
-            )
-        ) {
-            router.post(`/admin/petugas/${petugas.id}/reset-sandi`);
+    const bukaKonfirmasiResetSandi = (petugas: PetugasData) => {
+        setConfirmModal({
+            open: true,
+            type: 'reset-sandi',
+            petugas,
+        });
+    };
+
+    const bukaKonfirmasiToggleStatus = (petugas: PetugasData) => {
+        setConfirmModal({
+            open: true,
+            type: 'toggle-status',
+            petugas,
+        });
+    };
+
+    const eksekusiKonfirmasi = () => {
+        if (!confirmModal.petugas) {
+            return;
+        }
+
+        if (confirmModal.type === 'reset-sandi') {
+            router.post(
+                `/admin/petugas/${confirmModal.petugas.id}/reset-sandi`,
+                {},
+                {
+                    onFinish: () =>
+                        setConfirmModal({
+                            open: false,
+                            type: 'reset-sandi',
+                            petugas: null,
+                        }),
+                },
+            );
+        } else {
+            router.patch(
+                `/admin/petugas/${confirmModal.petugas.id}/toggle-status`,
+                {},
+                {
+                    onFinish: () =>
+                        setConfirmModal({
+                            open: false,
+                            type: 'toggle-status',
+                            petugas: null,
+                        }),
+                },
+            );
         }
     };
 
-    const handleToggleStatus = (petugas: PetugasData) => {
-        const aksi = petugas.status_akun === 'aktif' ? 'menonaktifkan' : 'mengaktifkan';
-        if (confirm(`Yakin ingin ${aksi} akun ${petugas.username}?`)) {
-            router.patch(`/admin/petugas/${petugas.id}/toggle-status`);
+    const handleTabChange = (value: string | null) => {
+        if (!value) {
+            return;
         }
+        const params: Record<string, string> = {};
+        if (value !== 'semua') {
+            params.peran = value;
+        }
+        if (searchTerm.trim()) {
+            params.cari = searchTerm.trim();
+        }
+        router.get('/admin/petugas', params, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleSearch = (e: FormEvent) => {
+        e.preventDefault();
+        const params: Record<string, string> = {};
+        if (activeTab !== 'semua') {
+            params.peran = activeTab;
+        }
+        if (searchTerm.trim()) {
+            params.cari = searchTerm.trim();
+        }
+        router.get('/admin/petugas', params, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleResetSearch = () => {
+        setSearchTerm('');
+        const params: Record<string, string> = {};
+        if (activeTab !== 'semua') {
+            params.peran = activeTab;
+        }
+        router.get('/admin/petugas', params, {
+            preserveState: true,
+            replace: true,
+        });
     };
 
     const formatTanggal = (isoString: string) => {
@@ -146,374 +267,599 @@ export default function PetugasPage({
         <div className="space-y-6">
             <Head title="Manajemen Akun Staf - Jagains Admin" />
 
-            {/* Header & Aksi */}
+            {/* Header & Aksi Tambah */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                    <h2 className="text-body-large font-display font-semibold text-foreground">
                         Manajemen Akun Staf
-                    </h1>
-                    <p className="text-sm text-slate-500">
-                        Kelola akun petugas Instansi Teknis dan Auditor Independen (FR-ADM-04).
+                    </h2>
+                    <p className="text-body-sm text-muted-foreground">
+                        Kelola akun petugas Instansi Teknis dan Auditor
+                        Independen.
                     </p>
                 </div>
                 <div>
-                    <button
-                        type="button"
+                    <Button
+                        variant="default"
+                        size="sm"
                         onClick={bukaModalTambah}
-                        className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 transition"
+                        title="Tambah Akun Staf"
+                        aria-label="Tambah Akun Staf"
                     >
-                        <UserPlus className="h-4 w-4" />
-                        <span>Tambah Akun Staf</span>
-                    </button>
+                        <UserPlus className="size-3.5" aria-hidden="true" />
+                        <span className="hidden sm:inline">
+                            Tambah Akun Staf
+                        </span>
+                    </Button>
                 </div>
             </div>
 
-            {/* Filter Peran */}
-            <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
-                <a
-                    href="/admin/petugas"
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                        !peranFilter
-                            ? 'bg-slate-900 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                    }`}
+            {/* Filter Peran & Pencarian */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Tabs
+                    value={activeTab}
+                    onValueChange={handleTabChange}
+                    className="w-full sm:w-auto"
                 >
-                    Semua Staf ({daftarPetugas.total})
-                </a>
-                <a
-                    href="/admin/petugas?peran=instansi"
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                        peranFilter === 'instansi'
-                            ? 'bg-slate-900 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                    }`}
+                    <div className="w-full scrollbar-none overflow-x-auto pb-1 sm:w-auto">
+                        <TabsList className="inline-flex w-max min-w-full justify-start bg-muted/50 p-1">
+                            <TabsTrigger value="semua" className="shrink-0">
+                                Semua Staf ({daftarPetugas.total})
+                            </TabsTrigger>
+                            <TabsTrigger value="instansi" className="shrink-0">
+                                Petugas Instansi
+                            </TabsTrigger>
+                            <TabsTrigger value="auditor" className="shrink-0">
+                                Auditor Independen
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
+                </Tabs>
+
+                <form
+                    onSubmit={handleSearch}
+                    className="flex w-full items-center gap-2 sm:w-auto"
                 >
-                    Petugas Instansi
-                </a>
-                <a
-                    href="/admin/petugas?peran=auditor"
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                        peranFilter === 'auditor'
-                            ? 'bg-slate-900 text-white'
-                            : 'text-slate-600 hover:bg-slate-100'
-                    }`}
-                >
-                    Auditor Independen
-                </a>
+                    <div className="relative max-w-sm min-w-[220px] flex-1 sm:w-64">
+                        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Cari username atau instansi..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="h-9 pr-8 pl-9 text-xs"
+                        />
+                        {searchTerm && (
+                            <button
+                                type="button"
+                                onClick={handleResetSearch}
+                                className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                aria-label="Hapus pencarian"
+                            >
+                                <X className="size-3.5" />
+                            </button>
+                        )}
+                    </div>
+                    <Button
+                        type="submit"
+                        variant="outline"
+                        size="sm"
+                        className="h-9 text-xs"
+                    >
+                        Cari
+                    </Button>
+                </form>
             </div>
 
             {/* Tabel Staf */}
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
-                            <tr>
-                                <th className="p-3.5 pl-4 font-semibold">Username</th>
-                                <th className="p-3.5 font-semibold">Peran</th>
-                                <th className="p-3.5 font-semibold">Instansi / Unit</th>
-                                <th className="p-3.5 font-semibold">Status</th>
-                                <th className="p-3.5 font-semibold">Sandi Wajib Ganti</th>
-                                <th className="p-3.5 font-semibold">Terdaftar</th>
-                                <th className="p-3.5 pr-4 text-right font-semibold">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-slate-700">
-                            {daftarPetugas.data.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="py-12 text-center text-slate-400">
-                                        Tidak ada akun staf ditemukan.
-                                    </td>
-                                </tr>
-                            ) : (
-                                daftarPetugas.data.map((p) => (
-                                    <tr key={p.id} className="hover:bg-slate-50/70 transition">
-                                        <td className="p-3.5 pl-4 font-mono font-bold text-slate-900">
-                                            {p.username}
-                                        </td>
-                                        <td className="p-3.5">
-                                            {p.peran === 'instansi' ? (
-                                                <span className="inline-flex items-center gap-1 rounded bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 font-medium">
-                                                    <Building2 className="h-3 w-3" />
-                                                    Instansi
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <Table>
+                    <TableHeader className="bg-muted/40">
+                        <TableRow>
+                            <TableHead className="font-semibold text-foreground">
+                                Username
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Peran
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Instansi / Unit
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Status
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Sandi Wajib Ganti
+                            </TableHead>
+                            <TableHead className="font-semibold text-foreground">
+                                Terdaftar
+                            </TableHead>
+                            <TableHead className="text-right font-semibold text-foreground">
+                                Aksi
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {daftarPetugas.data.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={7}
+                                    className="h-40 text-center"
+                                >
+                                    <AdminEmptyState
+                                        icon={Users}
+                                        title="Tidak Ada Akun Staf"
+                                        description="Belum ada akun petugas yang terdaftar pada filter ini."
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            daftarPetugas.data.map((p) => (
+                                <TableRow
+                                    key={p.id}
+                                    className="transition-colors hover:bg-muted/30"
+                                >
+                                    <TableCell className="text-body-sm font-normal text-foreground">
+                                        {p.username}
+                                    </TableCell>
+                                    <TableCell>
+                                        {p.peran === 'instansi' ? (
+                                            <Badge
+                                                variant="outline"
+                                                className="gap-1 text-caption-xs"
+                                            >
+                                                <Building2
+                                                    className="size-3 text-muted-foreground"
+                                                    aria-hidden="true"
+                                                />
+                                                <span>Instansi</span>
+                                            </Badge>
+                                        ) : (
+                                            <Badge
+                                                variant="stage-audit"
+                                                className="gap-1 text-caption-xs"
+                                            >
+                                                <Shield
+                                                    className="size-3"
+                                                    aria-hidden="true"
+                                                />
+                                                <span>Auditor</span>
+                                            </Badge>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-body-sm text-foreground">
+                                        {p.instansi ? (
+                                            <div>
+                                                <span className="font-medium">
+                                                    {p.instansi.singkatan}
                                                 </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1 rounded bg-purple-100 text-purple-800 border border-purple-200 px-2 py-0.5 font-medium">
-                                                    <Shield className="h-3 w-3" />
-                                                    Auditor
+                                                <span className="block text-caption-xs text-muted-foreground">
+                                                    {p.instansi.nama}
                                                 </span>
-                                            )}
-                                        </td>
-                                        <td className="p-3.5">
-                                            {p.instansi ? (
-                                                <div>
-                                                    <span className="font-semibold text-slate-800">
-                                                        {p.instansi.singkatan}
-                                                    </span>
-                                                    <span className="block text-[11px] text-slate-500">
-                                                        {p.instansi.nama}
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-slate-400">-</span>
-                                            )}
-                                        </td>
-                                        <td className="p-3.5">
-                                            {p.status_akun === 'aktif' ? (
-                                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[11px] font-medium">
-                                                    <UserCheck className="h-3 w-3" />
-                                                    Aktif
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 text-rose-800 px-2 py-0.5 text-[11px] font-medium">
-                                                    <UserX className="h-3 w-3" />
-                                                    {p.status_akun}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="p-3.5">
-                                            {p.wajib_ganti_sandi ? (
-                                                <span className="rounded bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 font-medium">
-                                                    Ya
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-400">Tidak</span>
-                                            )}
-                                        </td>
-                                        <td className="p-3.5 text-slate-500">
-                                            {formatTanggal(p.created_at)}
-                                        </td>
-                                        <td className="p-3.5 pr-4 text-right">
-                                            <div className="flex items-center justify-end gap-1.5">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleResetSandi(p)}
-                                                    title="Reset Kata Sandi"
-                                                    className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-700 hover:bg-slate-50 hover:text-teal-600 transition"
-                                                >
-                                                    <RotateCw className="h-3 w-3" />
-                                                    <span>Reset</span>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleToggleStatus(p)}
-                                                    title={
-                                                        p.status_akun === 'aktif'
-                                                            ? 'Nonaktifkan Akun'
-                                                            : 'Aktifkan Akun'
-                                                    }
-                                                    className={`inline-flex items-center gap-1 rounded-md border px-2.5 py-1 transition ${
-                                                        p.status_akun === 'aktif'
-                                                            ? 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
-                                                            : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                                    }`}
-                                                >
-                                                    <Power className="h-3 w-3" />
-                                                    <span>
-                                                        {p.status_akun === 'aktif'
-                                                            ? 'Nonaktifkan'
-                                                            : 'Aktifkan'}
-                                                    </span>
-                                                </button>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                        ) : (
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={
+                                                p.status_akun === 'aktif'
+                                                    ? 'sla-safe'
+                                                    : p.status_akun ===
+                                                        'dibekukan'
+                                                      ? 'destructive'
+                                                      : 'closed'
+                                            }
+                                            className="text-caption-xs capitalize"
+                                        >
+                                            {p.status_akun}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        {p.wajib_ganti_sandi ? (
+                                            <Badge
+                                                variant="sla-warn"
+                                                className="text-caption-xs"
+                                            >
+                                                Ya
+                                            </Badge>
+                                        ) : (
+                                            <span className="text-caption-xs text-muted-foreground">
+                                                Tidak
+                                            </span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-caption-xs text-muted-foreground tabular-nums">
+                                        {formatTanggal(p.created_at)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() =>
+                                                    bukaKonfirmasiResetSandi(p)
+                                                }
+                                                title={`Reset sandi ${p.username}`}
+                                                aria-label={`Reset sandi ${p.username}`}
+                                            >
+                                                <KeyRound
+                                                    className="size-3 text-muted-foreground"
+                                                    aria-hidden="true"
+                                                />
+                                                <span className="hidden sm:inline">
+                                                    Reset Sandi
+                                                </span>
+                                            </Button>
+                                            <Button
+                                                variant={
+                                                    p.status_akun === 'aktif'
+                                                        ? 'outline'
+                                                        : 'default'
+                                                }
+                                                size="sm"
+                                                onClick={() =>
+                                                    bukaKonfirmasiToggleStatus(
+                                                        p,
+                                                    )
+                                                }
+                                                title={
+                                                    p.status_akun === 'aktif'
+                                                        ? `Nonaktifkan akun ${p.username}`
+                                                        : `Aktifkan akun ${p.username}`
+                                                }
+                                                aria-label={
+                                                    p.status_akun === 'aktif'
+                                                        ? `Nonaktifkan akun ${p.username}`
+                                                        : `Aktifkan akun ${p.username}`
+                                                }
+                                            >
+                                                <RotateCw
+                                                    className="size-3"
+                                                    aria-hidden="true"
+                                                />
+                                                <span className="hidden sm:inline">
+                                                    {p.status_akun === 'aktif'
+                                                        ? 'Nonaktifkan'
+                                                        : 'Aktifkan'}
+                                                </span>
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+
+                {/* Pagination */}
+                {daftarPetugas.last_page > 1 && (
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
+                        <p className="text-body-sm text-muted-foreground">
+                            Halaman{' '}
+                            <span className="font-medium text-foreground">
+                                {daftarPetugas.current_page}
+                            </span>{' '}
+                            dari{' '}
+                            <span className="font-medium text-foreground">
+                                {daftarPetugas.last_page}
+                            </span>{' '}
+                            ({daftarPetugas.total} akun staf)
+                        </p>
+                        <div className="flex items-center gap-1">
+                            {daftarPetugas.links.map((link, idx) => {
+                                if (!link.url && !link.active) {
+                                    return null;
+                                }
+                                return (
+                                    <Button
+                                        key={idx}
+                                        variant={
+                                            link.active ? 'default' : 'outline'
+                                        }
+                                        size="sm"
+                                        disabled={!link.url}
+                                        render={
+                                            link.url ? (
+                                                <Link
+                                                    href={link.url}
+                                                    preserveScroll
+                                                    preserveState
+                                                />
+                                            ) : undefined
+                                        }
+                                    >
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label
+                                                    .replace('&laquo;', '‹')
+                                                    .replace('&raquo;', '›'),
+                                            }}
+                                        />
+                                    </Button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* Modal Tambah Staf Baru */}
-            {modalTambahBuka && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="w-full max-w-md rounded-xl bg-white shadow-xl overflow-hidden border border-slate-200">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                            <div className="flex items-center gap-2">
-                                <UserPlus className="h-5 w-5 text-teal-600" />
-                                <h3 className="font-semibold text-slate-900 text-base">
-                                    Tambah Akun Staf Baru
-                                </h3>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={tutupModalTambah}
-                                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
+            {/* Modal Dialog Tambah Akun Staf */}
+            <Dialog
+                open={modalTambahBuka}
+                onOpenChange={(open) => !open && tutupModalTambah()}
+            >
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <UserPlus
+                                className="size-5 text-primary"
+                                aria-hidden="true"
+                            />
+                            <span>Tambah Akun Staf</span>
+                        </DialogTitle>
+                        <DialogDescription>
+                            Daftarkan akun petugas baru untuk penanganan laporan
+                            atau pengawasan audit.
+                        </DialogDescription>
+                    </DialogHeader>
 
-                        <form onSubmit={handleSimpanPetugas} className="p-6 space-y-4">
-                            {/* Username */}
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Username Akun <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.username}
-                                    onChange={(e) => setData('username', e.target.value)}
-                                    placeholder="contoh: petugas_bina_marga"
-                                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                                />
-                                {errors.username && (
-                                    <p className="text-xs text-rose-600">{errors.username}</p>
-                                )}
-                            </div>
-
-                            {/* Peran */}
-                            <div className="space-y-1.5">
-                                <label className="block text-xs font-semibold text-slate-700">
-                                    Peran Akun <span className="text-rose-500">*</span>
-                                </label>
-                                <select
-                                    value={data.peran}
-                                    onChange={(e) => setData('peran', e.target.value)}
-                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                                >
-                                    <option value="instansi">Petugas Instansi Teknis (OPD)</option>
-                                    <option value="auditor">Auditor Independen</option>
-                                </select>
-                                {errors.peran && (
-                                    <p className="text-xs text-rose-600">{errors.peran}</p>
-                                )}
-                            </div>
-
-                            {/* Instansi (hanya jika peran === 'instansi') */}
-                            {data.peran === 'instansi' && (
-                                <div className="space-y-1.5">
-                                    <label className="block text-xs font-semibold text-slate-700">
-                                        Instansi Teknis <span className="text-rose-500">*</span>
-                                    </label>
-                                    <select
-                                        value={data.instansi_id}
-                                        onChange={(e) => setData('instansi_id', e.target.value)}
-                                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                                    >
-                                        <option value="">-- Pilih Instansi --</option>
-                                        {daftarInstansi.map((ins) => (
-                                            <option key={ins.id} value={ins.id}>
-                                                {ins.singkatan} - {ins.nama}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.instansi_id && (
-                                        <p className="text-xs text-rose-600">{errors.instansi_id}</p>
-                                    )}
-                                </div>
+                    <form
+                        onSubmit={handleSimpanPetugas}
+                        className="space-y-4 pt-1"
+                    >
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="username-input">
+                                Username{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Input
+                                id="username-input"
+                                type="text"
+                                value={data.username}
+                                onChange={(e) =>
+                                    setData('username', e.target.value)
+                                }
+                                placeholder="Contoh: staf_pupr_01"
+                                required
+                            />
+                            {errors.username && (
+                                <FieldError>{errors.username}</FieldError>
                             )}
+                        </Field>
 
-                            {/* Info Kredensial Awal */}
-                            <div className="rounded-lg bg-teal-50 border border-teal-200 p-3 text-xs text-teal-800 space-y-1">
-                                <div className="font-semibold flex items-center gap-1.5">
-                                    <KeyRound className="h-4 w-4" />
-                                    <span>Kata Sandi Acak Sekali Tampil</span>
-                                </div>
-                                <p className="text-teal-700">
-                                    Sistem akan menghasilkan kata sandi acak aman secara otomatis. Anda dapat menyalinnya setelah akun berhasil disimpan.
-                                </p>
-                            </div>
-
-                            {/* Tombol Aksi */}
-                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                                <button
-                                    type="button"
-                                    onClick={tutupModalTambah}
-                                    disabled={processing}
-                                    className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-700 transition disabled:opacity-50"
-                                >
-                                    {processing ? 'Menyimpan...' : 'Simpan Akun'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal Kredensial Sekali Tampil */}
-            {modalSandiBuka && revealedSandi && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-                    <div className="w-full max-w-md rounded-xl bg-white shadow-2xl overflow-hidden border border-slate-200">
-                        <div className="bg-amber-500 p-4 text-white flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Lock className="h-5 w-5" />
-                                <h3 className="font-bold text-sm">
-                                    Kredensial Akun Baru / Reset
-                                </h3>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setModalSandiBuka(false)}
-                                className="text-white/80 hover:text-white"
+                        <Field className="space-y-1.5">
+                            <FieldLabel htmlFor="peran-select">
+                                Peran Akun{' '}
+                                <span className="text-destructive">*</span>
+                            </FieldLabel>
+                            <Select
+                                value={data.peran}
+                                onValueChange={(val) => {
+                                    setData('peran', val ?? 'instansi');
+                                    if (val === 'auditor') {
+                                        setData('instansi_id', '');
+                                    }
+                                }}
                             >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
+                                <SelectTrigger
+                                    id="peran-select"
+                                    className="w-full"
+                                >
+                                    <SelectValue placeholder="Pilih Peran" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="instansi">
+                                            Petugas Instansi Teknis
+                                        </SelectItem>
+                                        <SelectItem value="auditor">
+                                            Auditor Independen
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            {errors.peran && (
+                                <FieldError>{errors.peran}</FieldError>
+                            )}
+                        </Field>
 
-                        <div className="p-6 space-y-4">
-                            <p className="text-xs text-slate-600">
-                                Kata sandi sementara telah dibuat untuk{' '}
-                                <strong className="text-slate-900 font-mono">
-                                    {revealedUsername || 'pengguna'}
+                        {data.peran === 'instansi' && (
+                            <Field className="space-y-1.5">
+                                <FieldLabel htmlFor="petugas-instansi-select">
+                                    Instansi Teknis{' '}
+                                    <span className="text-destructive">*</span>
+                                </FieldLabel>
+                                <Select
+                                    value={data.instansi_id}
+                                    onValueChange={(val) =>
+                                        setData('instansi_id', val ?? '')
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="petugas-instansi-select"
+                                        className="w-full"
+                                    >
+                                        <SelectValue placeholder="Pilih Instansi / OPD" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {daftarInstansi.map((ins) => (
+                                                <SelectItem
+                                                    key={ins.id}
+                                                    value={String(ins.id)}
+                                                >
+                                                    {ins.singkatan} - {ins.nama}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {errors.instansi_id && (
+                                    <FieldError>
+                                        {errors.instansi_id}
+                                    </FieldError>
+                                )}
+                            </Field>
+                        )}
+
+                        <DialogFooter className="pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={tutupModalTambah}
+                                disabled={processing}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="default"
+                                disabled={processing || !data.username}
+                            >
+                                {processing ? 'Menyimpan...' : 'Simpan Akun'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Dialog Konfirmasi Aksi (Pengganti window.confirm) */}
+            <Dialog
+                open={confirmModal.open}
+                onOpenChange={(open) =>
+                    !open &&
+                    setConfirmModal({
+                        open: false,
+                        type: 'reset-sandi',
+                        petugas: null,
+                    })
+                }
+            >
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {confirmModal.type === 'reset-sandi'
+                                ? 'Reset Kata Sandi Akun?'
+                                : confirmModal.petugas?.status_akun === 'aktif'
+                                  ? 'Nonaktifkan Akun Petugas?'
+                                  : 'Aktifkan Akun Petugas?'}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {confirmModal.type === 'reset-sandi'
+                                ? `Kata sandi lama untuk akun "${confirmModal.petugas?.username}" tidak akan berlaku lagi. Sistem akan menghasilkan kata sandi baru acak yang wajib diganti oleh petugas saat masuk.`
+                                : confirmModal.petugas?.status_akun === 'aktif'
+                                  ? `Akun "${confirmModal.petugas?.username}" tidak akan dapat masuk ke dalam panel hingga diaktifkan kembali.`
+                                  : `Akun "${confirmModal.petugas?.username}" akan diaktifkan kembali dan dapat mengakses panel operasional.`}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                setConfirmModal({
+                                    open: false,
+                                    type: 'reset-sandi',
+                                    petugas: null,
+                                })
+                            }
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            variant={
+                                confirmModal.type === 'reset-sandi' ||
+                                confirmModal.petugas?.status_akun === 'aktif'
+                                    ? 'destructive'
+                                    : 'default'
+                            }
+                            onClick={eksekusiKonfirmasi}
+                        >
+                            {confirmModal.type === 'reset-sandi'
+                                ? 'Reset Sandi'
+                                : confirmModal.petugas?.status_akun === 'aktif'
+                                  ? 'Nonaktifkan Akun'
+                                  : 'Aktifkan Akun'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Dialog Kata Sandi Baru / Dibuat */}
+            <Dialog open={modalSandiBuka} onOpenChange={setModalSandiBuka}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <KeyRound
+                                className="size-5 text-primary"
+                                aria-hidden="true"
+                            />
+                            <span>Kata Sandi Baru Dibuat</span>
+                        </DialogTitle>
+                        <DialogDescription>
+                            Salin dan serahkan kata sandi ini kepada petugas
+                            terkait. Kata sandi ini hanya ditampilkan satu kali.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 pt-2">
+                        {revealedUsername && (
+                            <div className="text-body-sm text-muted-foreground">
+                                Username:{' '}
+                                <strong className="font-mono text-foreground">
+                                    {revealedUsername}
                                 </strong>
-                                . Berikan kata sandi ini kepada pemilik akun. Akun akan diwajibkan mengganti kata sandi pada login pertama.
-                            </p>
-
-                            <div className="rounded-lg bg-slate-900 p-4 text-white flex items-center justify-between">
-                                <span className="font-mono text-base font-bold tracking-widest text-emerald-400">
-                                    {revealedSandi}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={handleSalinSandi}
-                                    className="inline-flex items-center gap-1.5 rounded bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20 transition"
-                                >
-                                    {copied ? (
-                                        <>
-                                            <Check className="h-3.5 w-3.5 text-emerald-400" />
-                                            <span>Tersalin!</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy className="h-3.5 w-3.5" />
-                                            <span>Salin</span>
-                                        </>
-                                    )}
-                                </button>
                             </div>
+                        )}
 
-                            <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-                                <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
-                                <span>
-                                    PENTING: Kata sandi ini hanya ditampilkan satu kali dan tidak akan bisa dilihat kembali demi keamanan Zero-Knowledge.
-                                </span>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() => setModalSandiBuka(false)}
-                                className="w-full rounded-lg bg-slate-900 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 transition"
+                        <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 p-3 text-body-medium font-mono font-semibold text-foreground">
+                            <span>{revealedSandi}</span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleSalinSandi}
+                                className="gap-1.5"
                             >
-                                Saya Sudah Menyimpan Kata Sandi Ini
-                            </button>
+                                {copied ? (
+                                    <>
+                                        <Check
+                                            className="size-3.5 text-sla-safe"
+                                            aria-hidden="true"
+                                        />
+                                        <span>Tersalin</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy
+                                            className="size-3.5"
+                                            aria-hidden="true"
+                                        />
+                                        <span>Salin</span>
+                                    </>
+                                )}
+                            </Button>
                         </div>
                     </div>
-                </div>
-            )}
+
+                    <DialogFooter className="pt-2">
+                        <Button
+                            variant="default"
+                            onClick={() => setModalSandiBuka(false)}
+                        >
+                            Selesai
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
 
 PetugasPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Akun Staf" breadcrumb="Admin > Manajemen">
+    <InternalLayout title="Akun Staf" breadcrumb="Admin > Pengguna">
         {page}
     </InternalLayout>
 );

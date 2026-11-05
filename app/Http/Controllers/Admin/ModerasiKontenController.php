@@ -23,6 +23,7 @@ class ModerasiKontenController extends Controller
     public function index(Request $request): Response
     {
         $statusFilter = $request->query('status', 'menunggu');
+        $cari = $request->query('cari');
 
         $query = LaporanPelanggaran::with([
             'laporan.kategori:id,nama',
@@ -35,6 +36,20 @@ class ModerasiKontenController extends Controller
 
         if ($statusFilter && in_array($statusFilter, ['menunggu', 'ditinjau', 'selesai'])) {
             $query->where('status', $statusFilter);
+        }
+
+        if ($cari) {
+            $query->where(function ($q) use ($cari) {
+                $q->where('catatan', 'like', "%{$cari}%")
+                    ->orWhere('alasan', 'like', "%{$cari}%")
+                    ->orWhereHas('laporan', function ($lq) use ($cari) {
+                        $lq->where('nomor_tiket', 'like', "%{$cari}%")
+                            ->orWhere('judul', 'like', "%{$cari}%");
+                    })
+                    ->orWhereHas('pelapor', function ($pq) use ($cari) {
+                        $pq->where('username', 'like', "%{$cari}%");
+                    });
+            });
         }
 
         $antreanModerasi = $query->paginate(10)
@@ -77,6 +92,7 @@ class ModerasiKontenController extends Controller
         return Inertia::render('admin/moderasi', [
             'antreanModerasi' => $antreanModerasi,
             'statusFilter' => $statusFilter,
+            'cariFilter' => $cari,
         ]);
     }
 
