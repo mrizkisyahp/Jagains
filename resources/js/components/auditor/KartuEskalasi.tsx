@@ -1,135 +1,171 @@
+import type { ComponentType } from 'react';
 import { EskalasiItem, PemicuEskalasi } from '@/types/auditor';
-import { AlertCircle, ArrowRight, Clock, Building2, MapPin, Scale, ShieldAlert, AlertTriangle } from 'lucide-react';
+import {
+    AlertCircle,
+    AlertTriangle,
+    ArrowRight,
+    Building2,
+    Clock,
+    MapPin,
+    Scale,
+    ShieldAlert,
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { buttonVariants } from '@/components/ui/button';
+import { Link } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
 
-interface KartuEskalasiProps {
-    eskalasi: EskalasiItem;
-    onBukaPerkara: (eskalasiId: number) => void;
+export interface PemicuBadgeInfo {
+    label: string;
+    icon: ComponentType<{ className?: string }>;
+    variant:
+        | 'destructive'
+        | 'sla-warn'
+        | 'sla-late'
+        | 'stage-audit'
+        | 'secondary'
+        | 'default'
+        | 'outline';
 }
 
-export function getPemicuBadge(pemicu: PemicuEskalasi) {
+export function getPemicuBadge(pemicu: PemicuEskalasi): PemicuBadgeInfo {
     switch (pemicu) {
         case 'SLA':
             return {
                 label: 'Keterlambatan SLA',
                 icon: Clock,
-                classes: 'bg-rose-500/10 text-rose-700 border-rose-300 dark:text-rose-400 dark:border-rose-800',
+                variant: 'destructive',
             };
         case 'SANGGAHAN':
             return {
                 label: 'Sanggahan Instansi',
                 icon: ShieldAlert,
-                classes: 'bg-violet-500/10 text-violet-700 border-violet-300 dark:text-violet-400 dark:border-violet-800',
+                variant: 'stage-audit',
             };
         case 'RONDE':
             return {
-                label: 'Sengketa Ronde 4x (Buntu)',
+                label: 'Sengketa Ronde 4x',
                 icon: AlertTriangle,
-                classes: 'bg-amber-500/10 text-amber-700 border-amber-300 dark:text-amber-400 dark:border-amber-800',
+                variant: 'sla-warn',
             };
         case 'TANPA_KUORUM':
             return {
                 label: '14 Hari Tanpa Kuorum',
                 icon: AlertCircle,
-                classes: 'bg-indigo-500/10 text-indigo-700 border-indigo-300 dark:text-indigo-400 dark:border-indigo-800',
+                variant: 'secondary',
             };
     }
 }
 
-export default function KartuEskalasi({ eskalasi, onBukaPerkara }: KartuEskalasiProps) {
+interface KartuEskalasiProps {
+    eskalasi: EskalasiItem;
+    onBukaPerkara?: (eskalasiId: number) => void;
+}
+
+export default function KartuEskalasi({
+    eskalasi,
+    onBukaPerkara,
+}: KartuEskalasiProps) {
     const badge = getPemicuBadge(eskalasi.pemicu);
     const BadgeIcon = badge.icon;
     const { laporan } = eskalasi;
 
-    const formattedDate = new Date(eskalasi.created_at).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-    });
+    const formattedDate = new Date(eskalasi.created_at).toLocaleDateString(
+        'id-ID',
+        {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+        },
+    );
 
     return (
-        <div className="flex flex-col justify-between rounded-xl border border-zinc-200 bg-white p-5 shadow-xs transition-all hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
+        <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/20">
             <div>
                 {/* Header: Pemicu Badge & Waktu Masuk */}
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-100 pb-3 dark:border-zinc-800/80">
-                    <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${badge.classes}`}>
-                            <BadgeIcon className="size-3.5" />
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+                    <div className="flex items-center gap-1.5">
+                        <Badge variant={badge.variant} className="gap-1 text-caption-xs font-semibold">
+                            <BadgeIcon className="size-3" />
                             {badge.label}
-                        </span>
+                        </Badge>
                         {eskalasi.tahap && (
-                            <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                            <Badge variant="outline" className="text-caption-xs font-normal">
                                 Tahap {eskalasi.tahap}
-                            </span>
+                            </Badge>
                         )}
                     </div>
-                    <span className="text-xs text-zinc-400 font-numeric dark:text-zinc-500">
-                        Masuk {formattedDate}
+                    <span className="text-caption-xs tabular-nums text-muted-foreground">
+                        {formattedDate}
                     </span>
                 </div>
 
                 {/* Nomor Tiket & Judul */}
                 <div className="mt-3">
                     <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs font-bold tracking-tight text-teal-800 dark:text-teal-400">
+                        <span className="font-mono text-xs font-semibold text-foreground">
                             {laporan.nomor_tiket}
                         </span>
                         {laporan.kategori && (
-                            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                            <span className="text-caption-xs text-muted-foreground">
                                 {laporan.kategori.nama}
                             </span>
                         )}
                     </div>
-                    <h3 className="mt-1 line-clamp-1 font-display text-base font-bold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="mt-1 line-clamp-1 text-body-sm font-semibold text-foreground">
                         {laporan.judul}
                     </h3>
-                    <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                    <p className="mt-1 line-clamp-2 text-caption-sm text-muted-foreground">
                         {laporan.keterangan}
                     </p>
                 </div>
 
                 {/* Lokasi & Instansi */}
-                <div className="mt-4 space-y-1.5 rounded-lg bg-zinc-50/80 p-2.5 text-xs dark:bg-zinc-800/40">
-                    <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
-                        <Building2 className="size-3.5 text-zinc-400 shrink-0" />
+                <div className="mt-3 space-y-1.5 rounded-lg border border-border/60 bg-muted/30 p-2.5 text-caption-sm">
+                    <div className="flex items-center gap-2 text-foreground">
+                        <Building2 className="size-3.5 shrink-0 text-muted-foreground" />
                         <span className="truncate font-medium">
                             {laporan.instansi?.nama || 'Instansi Terkait'}
                         </span>
                         {laporan.instansi?.singkatan && (
-                            <span className="rounded bg-zinc-200/80 px-1.5 py-0.2 text-[10px] font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
+                            <span className="rounded bg-muted px-1.5 py-0.2 text-[10px] font-semibold text-muted-foreground">
                                 {laporan.instansi.singkatan}
                             </span>
                         )}
                     </div>
-                    <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
-                        <MapPin className="size-3.5 text-zinc-400 shrink-0" />
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
                         <span className="truncate">
                             Kelurahan {laporan.kelurahan?.nama || '-'}
                         </span>
                     </div>
                 </div>
 
-                {/* Keterlambatan SLA Info Bar (jika SLA) */}
+                {/* Info Keterlambatan SLA */}
                 {eskalasi.pemicu === 'SLA' && eskalasi.hari_terlambat > 0 && (
-                    <div className="mt-3 flex items-center gap-2 rounded-md bg-rose-50 px-2.5 py-1.5 text-xs font-medium text-rose-700 border border-rose-200/60 dark:bg-rose-950/30 dark:border-rose-900/40 dark:text-rose-400">
-                        <Clock className="size-3.5 shrink-0 text-rose-500" />
-                        <span>Terlambat <strong className="font-numeric">{eskalasi.hari_terlambat} hari kerja</strong> dari batas SLA resmi.</span>
+                    <div className="mt-2.5 flex items-center gap-2 rounded-md border border-destructive/20 bg-destructive/10 px-2.5 py-1.5 text-caption-xs font-medium text-destructive">
+                        <Clock className="size-3.5 shrink-0" />
+                        <span>
+                            Terlambat <strong className="tabular-nums">{eskalasi.hari_terlambat} hari kerja</strong> dari SLA.
+                        </span>
                     </div>
                 )}
             </div>
 
             {/* Tombol Aksi */}
-            <div className="mt-5 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-                <button
-                    type="button"
-                    onClick={() => onBukaPerkara(eskalasi.id)}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-zinc-800 active:scale-[0.99] dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            <div className="mt-4 border-t border-border pt-3">
+                <Link
+                    href={`/auditor/antrean/${eskalasi.id}`}
+                    className={cn(
+                        buttonVariants({ variant: 'default', size: 'sm' }),
+                        'w-full gap-2 text-xs font-semibold',
+                    )}
                 >
-                    <Scale className="size-4" />
+                    <Scale className="size-3.5" />
                     <span>Telaah Perkara & Putuskan</span>
                     <ArrowRight className="size-3.5" />
-                </button>
+                </Link>
             </div>
         </div>
     );
 }
-

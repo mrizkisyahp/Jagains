@@ -1,10 +1,10 @@
 import { ReactNode } from 'react';
 import { Head } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
-import AuditLogFilterBar from '@/components/admin/AuditLogFilterBar';
-import AuditLogTable from '@/components/admin/AuditLogTable';
+import AuditorAuditLogCard from '@/components/auditor/AuditorAuditLogCard';
 import { AuditLogItem, AuditLogFilterState, PaginatedData } from '@/types/audit';
 import { ShieldCheck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface AuditLogPageProps {
     logs: PaginatedData<AuditLogItem>;
@@ -12,42 +12,50 @@ interface AuditLogPageProps {
     daftarAksi: string[];
 }
 
-export default function AuditorAuditLogPage({ logs, filters, daftarAksi }: AuditLogPageProps) {
+export default function AuditorAuditLogPage({
+    logs,
+    filters,
+    daftarAksi,
+}: AuditLogPageProps) {
     return (
-        <div className="space-y-6 w-full min-w-0">
-            <Head title="Log Audit Pengawasan - Jagains Auditor" />
+        <div className="w-full min-w-0 space-y-6">
+            <Head title="Log audit pengawasan" />
 
-            {/* Header */}
+            {/* Header Konteks */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                    <h2 className="text-display-sm font-display font-semibold tracking-tight text-foreground">
                         Log Audit Pengawasan
-                    </h1>
-                    <p className="text-sm text-slate-500">
-                        Inspeksi seluruh mutasi status, alur disposisi, pembuatan kredensial, dan intervensi investigasi.
+                    </h2>
+                    <p className="text-body-sm text-muted-foreground">
+                        Inspeksi seluruh mutasi status, alur disposisi,
+                        pembuatan kredensial, dan intervensi investigasi.
                     </p>
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-lg bg-purple-50 border border-purple-200 px-3.5 py-1.5 text-xs font-semibold text-purple-800">
-                    <ShieldCheck className="h-4 w-4 text-purple-600" />
-                    <span>Pengawasan Ombudsman</span>
-                </div>
+                <Badge
+                    variant="outline"
+                    className="h-8 gap-1.5 border-border bg-muted/40 px-3 py-1 text-caption-xs text-foreground"
+                >
+                    <ShieldCheck className="size-3.5 text-muted-foreground" />
+                    <span>Pengawasan Independen</span>
+                </Badge>
             </div>
 
-            {/* Filter Bar */}
-            <AuditLogFilterBar
+            {/* Card Terpadu: Filter di Header Card, Tabel di Body, Paginasi di Footer */}
+            <AuditorAuditLogCard
+                logs={logs}
                 filters={filters}
                 daftarAksi={daftarAksi}
-                routeUrl="/auditor/audit-log"
             />
-
-            {/* Audit Log Table */}
-            <AuditLogTable logs={logs} />
         </div>
     );
 }
 
 AuditorAuditLogPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Log Audit Pengawasan" breadcrumb="Auditor > Pengawasan > Log Audit">
+    <InternalLayout
+        title="Log audit pengawasan"
+        breadcrumb="Auditor > Log audit"
+    >
         {page}
     </InternalLayout>
 );
