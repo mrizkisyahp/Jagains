@@ -16,8 +16,17 @@ class AturanRoutingJakartaSeeder extends Seeder
      */
     public function run(): void
     {
+        $dkiCityNames = [
+            'Kota Administrasi Jakarta Selatan',
+            'Kota Administrasi Jakarta Timur',
+            'Kota Administrasi Jakarta Pusat',
+            'Kota Administrasi Jakarta Barat',
+            'Kota Administrasi Jakarta Utara',
+            'Kabupaten Administrasi Kepulauan Seribu',
+        ];
+
         $dkiCities = Wilayah::where('tingkat', 'kota')
-            ->where('nama', '!=', 'Kota Depok')
+            ->whereIn('nama', $dkiCityNames)
             ->get();
 
         if ($dkiCities->isEmpty()) {

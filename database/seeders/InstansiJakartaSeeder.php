@@ -14,14 +14,6 @@ class InstansiJakartaSeeder extends Seeder
      */
     public function run(): void
     {
-        $dkiCities = Wilayah::where('tingkat', 'kota')
-            ->where('nama', '!=', 'Kota Depok')
-            ->get();
-
-        if ($dkiCities->isEmpty()) {
-            return;
-        }
-
         $singkatanKotaMap = [
             'Kota Administrasi Jakarta Selatan' => 'JAKSEL',
             'Kota Administrasi Jakarta Timur' => 'JAKTIM',
@@ -30,6 +22,14 @@ class InstansiJakartaSeeder extends Seeder
             'Kota Administrasi Jakarta Utara' => 'JAKUT',
             'Kabupaten Administrasi Kepulauan Seribu' => 'KEP. SERIBU',
         ];
+
+        $dkiCities = Wilayah::where('tingkat', 'kota')
+            ->whereIn('nama', array_keys($singkatanKotaMap))
+            ->get();
+
+        if ($dkiCities->isEmpty()) {
+            return;
+        }
 
         DB::transaction(function () use ($dkiCities, $singkatanKotaMap) {
             foreach ($dkiCities as $kota) {

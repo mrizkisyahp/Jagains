@@ -39,6 +39,7 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
 
         $this->seedDemoDepok();
         $this->seedDemoJakarta();
+        $this->seedDemoBodetabek();
     }
 
     private function seedDemoDepok(): void
@@ -54,21 +55,16 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
                 throw new \RuntimeException('Data demo sebelumnya tidak lengkap. Jalankan php artisan migrate:fresh --seed.');
             }
 
-            $laporanDemoSebelumnya->values()->each(function (Laporan $laporan): void {
-                if ($laporan->kelurahan) {
-                    [$lintang, $bujur] = $this->koordinatKelurahanAlami($laporan->kelurahan, $laporan->nomor_tiket);
-                    $laporan->forceFill(['lintang' => $lintang, 'bujur' => $bujur])->save();
-                }
-            });
-
             return;
         }
 
+        $depokKotaId = Wilayah::where('nama', 'Kota Depok')->value('id') ?? 1;
+        $depokKecamatanIds = Wilayah::where('induk_id', $depokKotaId)->pluck('id');
         $kelurahan = Wilayah::query()
             ->where('tingkat', 'kelurahan')
-            ->where(function ($q) {
+            ->where(function ($q) use ($depokKecamatanIds) {
                 $q->where('id', '<=', 75)
-                    ->orWhereHas('induk.induk', fn ($induk) => $induk->where('nama', 'Kota Depok'));
+                    ->orWhereIn('induk_id', $depokKecamatanIds);
             })
             ->orderBy('id')
             ->get();
@@ -122,13 +118,6 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
             ->get();
 
         if ($laporanJakartaSebelumnya->isNotEmpty()) {
-            $laporanJakartaSebelumnya->each(function (Laporan $laporan): void {
-                if ($laporan->kelurahan) {
-                    [$lintang, $bujur] = $this->koordinatKelurahanAlami($laporan->kelurahan, $laporan->nomor_tiket);
-                    $laporan->forceFill(['lintang' => $lintang, 'bujur' => $bujur])->save();
-                }
-            });
-
             return;
         }
 
@@ -140,9 +129,11 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
             'Kota Administrasi Jakarta Utara' => 'JAKUT',
         ];
 
+        $dkiKotaIds = $dkiCities->pluck('id');
+        $dkiKecamatanIds = Wilayah::whereIn('induk_id', $dkiKotaIds)->pluck('id');
         $firstKelurahanJakarta = Wilayah::query()
             ->where('tingkat', 'kelurahan')
-            ->whereHas('induk.induk', fn ($q) => $q->where('nama', '!=', 'Kota Depok'))
+            ->whereIn('induk_id', $dkiKecamatanIds)
             ->orderBy('id')
             ->first();
 
@@ -262,9 +253,10 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
                 }
 
                 $singkatan = $singkatanKotaMap[$kota->nama];
+                $kecamatanIds = Wilayah::where('induk_id', $kota->id)->pluck('id');
                 $kelurahans = Wilayah::query()
                     ->where('tingkat', 'kelurahan')
-                    ->whereHas('induk', fn ($q) => $q->where('induk_id', $kota->id))
+                    ->whereIn('induk_id', $kecamatanIds)
                     ->orderBy('id')
                     ->get();
 
@@ -369,6 +361,280 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
         });
     }
 
+    private function seedDemoBodetabek(): void
+    {
+        $laporanBodetabekSebelumnya = Laporan::query()
+            ->whereLike('nomor_tiket', 'JAG-2026-BDT-%')
+            ->with('kelurahan')
+            ->orderBy('nomor_tiket')
+            ->get();
+
+        if ($laporanBodetabekSebelumnya->isNotEmpty()) {
+            return;
+        }
+
+        $singkatanKotaMap = [
+            'Kota Bogor' => 'BGR',
+            'Kabupaten Bogor' => 'KAB-BGR',
+            'Kota Tangerang' => 'TNG',
+            'Kota Tangerang Selatan' => 'TGL',
+            'Kabupaten Tangerang' => 'KAB-TNG',
+            'Kota Bekasi' => 'BKS',
+            'Kabupaten Bekasi' => 'KAB-BKS',
+        ];
+
+        $bodetabekCities = Wilayah::query()
+            ->where('tingkat', 'kota')
+            ->whereIn('nama', array_keys($singkatanKotaMap))
+            ->orderBy('id')
+            ->get();
+
+        if ($bodetabekCities->isEmpty()) {
+            return;
+        }
+
+        $bodetabekKotaIds = $bodetabekCities->pluck('id');
+        $bodetabekKecamatanIds = Wilayah::whereIn('induk_id', $bodetabekKotaIds)->pluck('id');
+        $firstKelurahanBodetabek = Wilayah::query()
+            ->where('tingkat', 'kelurahan')
+            ->whereIn('induk_id', $bodetabekKecamatanIds)
+            ->orderBy('id')
+            ->first();
+
+        if (! $firstKelurahanBodetabek) {
+            return;
+        }
+
+        $wargaBodetabek = $this->wargaDemoBodetabek($firstKelurahanBodetabek);
+        $auditor = User::query()->where('peran', 'auditor')->orderBy('id')->firstOrFail();
+        $semuaKategori = Kategori::query()->get()->keyBy('nama');
+
+        $kasusTemplates = [
+            [
+                'status' => 'DITERUSKAN',
+                'kategori' => 'Jalan Berlubang',
+                'tipe_opd' => 'infra',
+                'judul' => 'Jalan berlubang cukup parah di jalur utama',
+                'keterangan' => 'Terdapat lubang berdiameter sekitar 40 cm dan kedalaman 10 cm, membahayakan pengendara roda dua.',
+                'keparahan' => 'berat',
+            ],
+            [
+                'status' => 'DITERIMA',
+                'kategori' => 'Drainase Tersumbat',
+                'tipe_opd' => 'infra',
+                'judul' => 'Saluran drainase mampet akibat sedimen lumpur',
+                'keterangan' => 'Saluran air tidak mengalir dan kerap meluap ke badan jalan saat intensitas hujan tinggi.',
+                'keparahan' => 'sedang',
+            ],
+            [
+                'status' => 'DISURVEI',
+                'kategori' => 'Lampu Jalan Padam',
+                'tipe_opd' => 'dishub',
+                'judul' => 'Lampu PJU padam di persimpangan jalan',
+                'keterangan' => 'Lampu penerangan jalan umum mati total sejak tiga hari lalu, memicu kerawanan di malam hari.',
+                'keparahan' => 'sedang',
+            ],
+            [
+                'status' => 'TERJADWAL_ANGGARAN',
+                'kategori' => 'Trotoar Rusak',
+                'tipe_opd' => 'infra',
+                'judul' => 'Paving block trotoar amblas dan hancur',
+                'keterangan' => 'Jalur pedestrian rusak dan ubin pemandu difabel terputus akibat amblas.',
+                'keparahan' => 'sedang',
+            ],
+            [
+                'status' => 'DIKERJAKAN',
+                'kategori' => 'Sampah Liar',
+                'tipe_opd' => 'dlh',
+                'judul' => 'Tumpukan sampah liar di tepi jalan umum',
+                'keterangan' => 'Sampah rumah tangga liar menumpuk dan menimbulkan bau tidak sedap ke pemukiman warga.',
+                'keparahan' => 'sedang',
+            ],
+            [
+                'status' => 'MENUNGGU_VERIFIKASI',
+                'kategori' => 'Jalan Berlubang',
+                'tipe_opd' => 'infra',
+                'judul' => 'Penambalan aspal jalan telah selesai dikerjakan',
+                'keterangan' => 'Pekerjaan penambalan lubang jalan sudah rampung, dinas menunggu konfirmasi verifikasi dari warga pelapor.',
+                'keparahan' => 'sedang',
+            ],
+            [
+                'status' => 'DISENGKETAKAN',
+                'kategori' => 'Drainase Tersumbat',
+                'tipe_opd' => 'infra',
+                'judul' => 'Normalisasi saluran dinilai belum tuntas oleh warga',
+                'keterangan' => 'Warga mengajukan sengketa karena endapan lumpur hanya diangkat sebagian dan saluran tetap meluap saat hujan.',
+                'keparahan' => 'berat',
+            ],
+            [
+                'status' => 'MENUNGGU_KEPUTUSAN_AUDITOR',
+                'kategori' => 'Lampu Jalan Padam',
+                'tipe_opd' => 'dishub',
+                'judul' => 'Perbedaan pandangan perbaikan PJU menunggu telaah auditor',
+                'keterangan' => 'Dinas menyatakan lampu menyala normal sedangkan warga melaporkan bohlam redup dan berkedip.',
+                'keparahan' => 'sedang',
+            ],
+            [
+                'status' => 'TERTUTUP_WARGA',
+                'kategori' => 'Rambu Lalu Lintas Rusak',
+                'tipe_opd' => 'dishub',
+                'judul' => 'Rambu petunjuk arah telah dipasang kembali dengan kokoh',
+                'keterangan' => 'Warga mengonfirmasi pekerjaan selesai dengan baik dan menutup tiket laporan secara swadaya.',
+                'keparahan' => 'ringan',
+            ],
+            [
+                'status' => 'TERTUTUP_AUDITOR',
+                'kategori' => 'Sampah Liar',
+                'tipe_opd' => 'dlh',
+                'judul' => 'Pengangkutan tumpukan sampah liar telah tuntas',
+                'keterangan' => 'Auditor menyetujui penutupan tiket setelah memeriksa bukti foto pembersihan dan berita acara.',
+                'keparahan' => 'sedang',
+            ],
+            [
+                'status' => 'USULAN_TOLAK',
+                'kategori' => 'Jembatan Rusak',
+                'tipe_opd' => 'infra',
+                'judul' => 'Usulan perbaikan jembatan penyeberangan orang',
+                'keterangan' => 'Instansi mengusulkan penolakan karena aset JPO berada di bawah kewenangan kementerian pusat.',
+                'keparahan' => 'berat',
+            ],
+            [
+                'status' => 'DITOLAK',
+                'kategori' => 'Jalan Berlubang',
+                'tipe_opd' => 'infra',
+                'judul' => 'Laporan jalan rusak di perumahan privat',
+                'keterangan' => 'Ditolak oleh auditor karena jalan belum diserahterimakan sebagai aset fasos/fasum pemerintah daerah.',
+                'keparahan' => 'ringan',
+            ],
+        ];
+
+        DB::transaction(function () use ($bodetabekCities, $singkatanKotaMap, $wargaBodetabek, $auditor, $semuaKategori, $kasusTemplates): void {
+            $nomorGlobal = 1;
+
+            foreach ($bodetabekCities as $kota) {
+                if (! isset($singkatanKotaMap[$kota->nama])) {
+                    continue;
+                }
+
+                $singkatan = $singkatanKotaMap[$kota->nama];
+                $kecamatanIds = Wilayah::where('induk_id', $kota->id)->pluck('id');
+                $kelurahans = Wilayah::query()
+                    ->where('tingkat', 'kelurahan')
+                    ->whereIn('induk_id', $kecamatanIds)
+                    ->orderBy('id')
+                    ->get();
+
+                if ($kelurahans->isEmpty()) {
+                    continue;
+                }
+
+                // 1. Buat 1 Laporan PERLU_ROUTING per kota
+                $nomorRouting = $nomorGlobal;
+                $waktuRouting = CarbonImmutable::now()->subDays(20 - ($nomorRouting % 10));
+                $pelaporRouting = $wargaBodetabek[$nomorRouting % $wargaBodetabek->count()];
+                $kelurahanRouting = $kelurahans[$nomorRouting % $kelurahans->count()];
+                $kategoriRouting = $semuaKategori->first();
+                $nomorTiketRouting = sprintf('JAG-2026-BDT-ROUT-%03d', $nomorRouting);
+                [$latRouting, $lngRouting] = $this->koordinatKelurahanAlami($kelurahanRouting, $nomorTiketRouting);
+
+                $laporanRouting = Laporan::create([
+                    'nomor_tiket' => $nomorTiketRouting,
+                    'pelapor_id' => $pelaporRouting->id,
+                    'kategori_id' => $kategoriRouting->id,
+                    'instansi_id' => null,
+                    'kelurahan_id' => $kelurahanRouting->id,
+                    'judul' => "Laporan fasilitas di {$kelurahanRouting->nama}",
+                    'keterangan' => 'Laporan fasilitas umum baru yang membutuhkan penentuan dan disposisi instansi teknis.',
+                    'keparahan' => 'sedang',
+                    'lintang' => $latRouting,
+                    'bujur' => $lngRouting,
+                    'akurasi_gps_m' => 8.0,
+                    'lokasi_sumber' => 'gps',
+                    'status' => 'PERLU_ROUTING',
+                    'jenis_pendanaan' => null,
+                    'tanggal_target_awal' => null,
+                    'tanggal_target' => null,
+                    'ronde_sengketa' => 0,
+                    'jumlah_pengalihan' => 0,
+                    'disembunyikan' => false,
+                    'diteruskan_pertama_pada' => null,
+                    'ditutup_pada' => null,
+                    'created_at' => $waktuRouting,
+                    'updated_at' => $waktuRouting,
+                ]);
+                $this->catat($laporanRouting, 'T-02', null, 'PERLU_ROUTING', $pelaporRouting, null, 'Aturan routing belum menemukan instansi penerima.', $waktuRouting);
+                $this->fotoAwal($laporanRouting, $pelaporRouting, $waktuRouting);
+                $nomorGlobal++;
+
+                // 2. Buat 12 Laporan siklus hidup untuk kota ini
+                foreach ($kasusTemplates as $i => $kasus) {
+                    $nomorKasus = $i + 1;
+                    $waktuKasus = CarbonImmutable::now()->subDays(50 - ($nomorKasus * 3));
+                    $pelaporKasus = $wargaBodetabek[$nomorKasus % $wargaBodetabek->count()];
+                    $kelurahanKasus = $kelurahans[$nomorKasus % $kelurahans->count()];
+                    $kategoriKasus = $semuaKategori[$kasus['kategori']] ?? $semuaKategori->first();
+
+                    $instansiKasus = match ($kasus['tipe_opd']) {
+                        'infra' => Instansi::where('wilayah_id', $kota->id)
+                            ->where(function ($q) {
+                                $q->where('nama', 'like', 'Dinas Pekerjaan Umum%')
+                                    ->orWhere('nama', 'like', 'Dinas Bina Marga%')
+                                    ->orWhere('nama', 'like', 'Dinas Sumber Daya Air%');
+                            })->first(),
+                        'dishub' => Instansi::where('wilayah_id', $kota->id)
+                            ->where('nama', 'like', 'Dinas Perhubungan%')->first(),
+                        'dlh' => Instansi::where('wilayah_id', $kota->id)
+                            ->where('nama', 'like', 'Dinas Lingkungan Hidup%')->first(),
+                        default => null,
+                    };
+
+                    if (! $instansiKasus) {
+                        continue;
+                    }
+
+                    $petugasKasus = User::where('instansi_id', $instansiKasus->id)->first()
+                        ?: User::where('peran', 'instansi')->firstOrFail();
+
+                    $nomorTiketKasus = sprintf('JAG-2026-BDT-%s-%03d', $singkatan, $nomorKasus);
+                    [$latKasus, $lngKasus] = $this->koordinatKelurahanAlami($kelurahanKasus, $nomorTiketKasus);
+
+                    $butuhTarget = in_array($kasus['status'], ['TERJADWAL_ANGGARAN', 'DIKERJAKAN', 'MENUNGGU_VERIFIKASI', 'DISENGKETAKAN', 'MENUNGGU_KEPUTUSAN_AUDITOR', 'TERTUTUP_WARGA', 'TERTUTUP_AUDITOR'], true);
+                    $ditutup = in_array($kasus['status'], ['DITOLAK', 'TERTUTUP_WARGA', 'TERTUTUP_AUDITOR'], true);
+
+                    $laporanKasus = Laporan::create([
+                        'nomor_tiket' => $nomorTiketKasus,
+                        'pelapor_id' => $pelaporKasus->id,
+                        'kategori_id' => $kategoriKasus->id,
+                        'instansi_id' => $instansiKasus->id,
+                        'kelurahan_id' => $kelurahanKasus->id,
+                        'judul' => "{$kasus['judul']} di {$kelurahanKasus->nama}",
+                        'keterangan' => $kasus['keterangan'],
+                        'keparahan' => $kasus['keparahan'],
+                        'lintang' => $latKasus,
+                        'bujur' => $lngKasus,
+                        'akurasi_gps_m' => 6.5,
+                        'lokasi_sumber' => 'gps',
+                        'status' => $kasus['status'],
+                        'jenis_pendanaan' => $butuhTarget ? 'APBD_KOTA' : null,
+                        'tanggal_target_awal' => $butuhTarget ? $waktuKasus->addDays(21)->toDateString() : null,
+                        'tanggal_target' => $butuhTarget ? $waktuKasus->addDays(21)->toDateString() : null,
+                        'ronde_sengketa' => in_array($kasus['status'], ['DISENGKETAKAN', 'MENUNGGU_KEPUTUSAN_AUDITOR', 'TERTUTUP_AUDITOR'], true) ? 1 : 0,
+                        'jumlah_pengalihan' => 0,
+                        'disembunyikan' => false,
+                        'diteruskan_pertama_pada' => $waktuKasus,
+                        'ditutup_pada' => $ditutup ? $waktuKasus->addDays(8) : null,
+                        'created_at' => $waktuKasus,
+                        'updated_at' => $waktuKasus->addDays(8),
+                    ]);
+
+                    $this->catat($laporanKasus, 'T-01', null, 'DITERUSKAN', $pelaporKasus, $instansiKasus, 'Laporan diteruskan ke instansi penerima.', $waktuKasus);
+                    $this->fotoAwal($laporanKasus, $pelaporKasus, $waktuKasus);
+                    $this->linimasa($laporanKasus, $kasus['status'], $petugasKasus, $auditor, $waktuKasus);
+                }
+            }
+        });
+    }
+
     private function wargaDemo(Wilayah $kelurahan): Collection
     {
         $password = Hash::make('password123');
@@ -397,6 +663,21 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
         }
 
         return User::query()->whereLike('username', 'warga_jkt_%')->orderBy('id')->get();
+    }
+
+    private function wargaDemoBodetabek(Wilayah $kelurahan): Collection
+    {
+        $password = Hash::make('password123');
+        foreach (range(1, 7) as $nomor) {
+            User::updateOrCreate(['username' => "warga_bdt_{$nomor}"], [
+                'peran' => 'warga', 'status_akun' => 'aktif',
+                'email_hash' => hash('sha256', "warga_bdt_{$nomor}@example.test"),
+                'kelurahan_id' => $kelurahan->id, 'instansi_id' => null, 'password' => $password,
+                'wajib_ganti_sandi' => false, 'poin_peringatan' => 0, 'aktivitas_terakhir_pada' => now(),
+            ]);
+        }
+
+        return User::query()->whereLike('username', 'warga_bdt_%')->orderBy('id')->get();
     }
 
     private function buatPerluRouting(int $nomor, $kelurahan, $kategori, $warga): void

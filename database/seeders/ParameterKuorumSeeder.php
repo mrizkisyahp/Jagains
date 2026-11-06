@@ -13,11 +13,11 @@ class ParameterKuorumSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Wilayah tingkat Kota Depok
-        $kotaDepok = Wilayah::where('tingkat', 'kota')->first();
-        if ($kotaDepok) {
+        // 1. Seluruh wilayah tingkat Kota / Kabupaten (Jabodetabek)
+        $kotaList = Wilayah::where('tingkat', 'kota')->get();
+        foreach ($kotaList as $kota) {
             ParameterKuorum::updateOrCreate(
-                ['wilayah_id' => $kotaDepok->id],
+                ['wilayah_id' => $kota->id],
                 [
                     'k_bp' => 200, // 2%
                     'kmin' => 2.0,
@@ -26,7 +26,7 @@ class ParameterKuorumSeeder extends Seeder
             );
         }
 
-        // 2. Seluruh kelurahan percontohan di Kota Depok
+        // 2. Seluruh kelurahan / desa (Jabodetabek)
         $kelurahanList = Wilayah::where('tingkat', 'kelurahan')->get();
         foreach ($kelurahanList as $kelurahan) {
             ParameterKuorum::updateOrCreate(

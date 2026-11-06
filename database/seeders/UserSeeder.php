@@ -69,23 +69,32 @@ class UserSeeder extends Seeder
 
         // 3. Akun Instansi (sesuai jumlah instansi di database)
         $daftarInstansi = Instansi::with('wilayah.induk')->orderBy('id')->get();
+        $existingUsersByInstansi = User::whereNotNull('instansi_id')->get()->keyBy('instansi_id');
+        $takenUsernames = User::whereNull('instansi_id')->pluck('username', 'username')->all();
+
+        foreach ($existingUsersByInstansi as $u) {
+            $takenUsernames[$u->username] = $u->instansi_id;
+        }
 
         foreach ($daftarInstansi as $instansi) {
             $username = $this->buatUsernameInstansi($instansi);
 
-            // Jika username sudah terpakai oleh instansi lain, tambahkan ID instansi
-            $bentrok = User::where('username', $username)
-                ->where('instansi_id', '!=', $instansi->id)
-                ->exists();
-
-            if ($bentrok) {
+            // Jika username sudah terpakai oleh instansi lain atau akun admin/auditor, tambahkan ID instansi
+            if (isset($takenUsernames[$username]) && $takenUsernames[$username] !== $instansi->id) {
                 $suffix = '_'.$instansi->id;
                 $username = substr($username, 0, 30 - strlen($suffix)).$suffix;
             }
 
-            User::updateOrCreate(
-                ['instansi_id' => $instansi->id],
-                [
+            $takenUsernames[$username] = $instansi->id;
+
+            $existing = $existingUsersByInstansi->get($instansi->id);
+            if ($existing) {
+                if ($existing->username !== $username) {
+                    $existing->update(['username' => $username]);
+                }
+            } else {
+                User::create([
+                    'instansi_id' => $instansi->id,
                     'username' => $username,
                     'peran' => 'instansi',
                     'status_akun' => 'aktif',
@@ -94,8 +103,8 @@ class UserSeeder extends Seeder
                     'kelurahan_id' => null,
                     'password' => $defaultPassword,
                     'aktivitas_terakhir_pada' => now(),
-                ]
-            );
+                ]);
+            }
         }
     }
 

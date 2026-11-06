@@ -62,7 +62,7 @@ export default function LocationPickerMap({
                     onChangeLocation(lat, lng, akurasi, sumber, wilayahLabel);
                 } else {
                     onChangeLocation(lat, lng, akurasi, sumber, null);
-                    setGeoError('Titik koordinat berada di luar wilayah jangkauan layanan (Kota Depok & DKI Jakarta).');
+                    setGeoError('Titik koordinat berada di luar wilayah jangkauan layanan (Jabodetabek).');
                 }
             } catch {
                 onChangeLocation(lat, lng, akurasi, sumber, null);
@@ -297,7 +297,7 @@ export default function LocationPickerMap({
                         <>
                             <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400 shrink-0" />
                             <span className="text-amber-700 dark:text-amber-400">
-                                {geoError || 'Geser pin ke dalam wilayah jangkauan layanan (Kota Depok & DKI Jakarta)'}
+                                {geoError || 'Geser pin ke dalam wilayah jangkauan layanan (Jabodetabek)'}
                             </span>
                         </>
                     )}
