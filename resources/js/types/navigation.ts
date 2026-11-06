@@ -18,4 +18,7 @@ export interface InternalLayoutProps {
     children: ReactNode;
     title?: string;
     breadcrumb?: string;
+    fullWidth?: boolean;
+    noPadding?: boolean;
+    mainClassName?: string;
 }

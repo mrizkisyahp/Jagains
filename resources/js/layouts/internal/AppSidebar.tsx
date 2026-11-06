@@ -8,6 +8,7 @@ import {
     Clock,
     FilePlus,
     FileText,
+    Globe,
     Inbox,
     LogIn,
     LogOut,
@@ -87,8 +88,7 @@ const NAVIGATION_ITEMS: Record<string, NavEntry[]> = {
         { label: 'Profil dinas', href: '/instansi/profil', icon: Building2 },
     ],
     warga: [
-        { label: 'Peta laporan', href: '/peta', icon: Map },
-        { label: 'Lapor kerusakan', href: '/warga/lapor', icon: FilePlus },
+        { label: 'Eksplorasi', href: '/peta', icon: Globe },
         { label: 'Riwayat laporan', href: '/warga/riwayat', icon: Clock },
         { label: 'Verifikasi', href: '/warga/verifikasi', icon: CheckSquare },
         { label: 'Profil & wilayah', href: '/warga/profil', icon: UserIcon },
@@ -221,10 +221,13 @@ export default function AppSidebar() {
                 </SidebarContent>
 
                 <SidebarFooter className="p-3 group-data-[collapsible=icon]:p-2">
-                    <div className="flex items-center gap-2 border-t border-border pt-3 group-data-[collapsible=icon]:justify-center">
+                    <div className="flex items-center gap-2 border-t border-border pt-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-2.5">
                         {user ? (
                             <>
-                                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-caption-xs font-semibold group-data-[collapsible=icon]:hidden">
+                                <span
+                                    title={user.username}
+                                    className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-caption-xs font-semibold text-foreground"
+                                >
                                     {user.username?.slice(0, 2).toUpperCase()}
                                 </span>
                                 <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
@@ -240,8 +243,9 @@ export default function AppSidebar() {
                                     size="icon-sm"
                                     onClick={() => setLogoutOpen(true)}
                                     aria-label="Keluar"
+                                    title="Keluar"
                                 >
-                                    <LogOut />
+                                    <LogOut className="size-4" />
                                 </Button>
                             </>
                         ) : (

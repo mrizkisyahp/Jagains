@@ -5,11 +5,15 @@ import { Toaster, toast } from '@/components/ui/toast';
 import AppSidebar from './internal/AppSidebar';
 import AppHeader from './internal/AppHeader';
 import { InternalLayoutProps } from '@/types/navigation';
+import { cn } from '@/lib/utils';
 
 export default function InternalLayout({
     children,
     title,
     breadcrumb,
+    fullWidth = false,
+    noPadding = false,
+    mainClassName,
 }: InternalLayoutProps) {
     const { flash } = usePage<{
         flash?: {
@@ -34,7 +38,14 @@ export default function InternalLayout({
             <AppSidebar />
             <SidebarInset className="flex min-h-screen max-w-full min-w-0 flex-col overflow-x-hidden bg-background text-foreground">
                 <AppHeader title={title} breadcrumb={breadcrumb} />
-                <main className="mx-auto w-full max-w-7xl min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+                <main
+                    className={cn(
+                        'min-w-0 flex-1',
+                        noPadding ? 'p-0' : 'p-4 sm:p-6 lg:p-8',
+                        fullWidth ? 'w-full' : 'mx-auto w-full max-w-7xl',
+                        mainClassName,
+                    )}
+                >
                     {children}
                 </main>
             </SidebarInset>

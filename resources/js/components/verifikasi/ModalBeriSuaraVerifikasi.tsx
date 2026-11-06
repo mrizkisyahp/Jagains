@@ -8,8 +8,6 @@ import {
     AlertTriangle,
     ShieldCheck,
     RotateCcw,
-    Sparkles,
-    Eye,
     Loader2,
 } from 'lucide-react';
 import {
@@ -24,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/toast';
 import { TiketVerifikasiItem } from '@/types/verifikasi';
+import { cn } from '@/lib/utils';
 
 interface ModalBeriSuaraVerifikasiProps {
     open: boolean;
@@ -228,134 +227,160 @@ export default function ModalBeriSuaraVerifikasi({
         });
     };
 
+    const kategoriNama =
+        tiket.kategori?.nama || (tiket as any).kategori_nama || '';
+    const kelurahanNama =
+        tiket.kelurahan?.nama || (tiket as any).kelurahan_nama || 'Depok';
+    const instansiNama =
+        tiket.instansi?.nama || (tiket as any).instansi_nama || '';
+    const fotoAwalUrl =
+        (tiket as any).foto_awal?.url ||
+        (tiket.lampiran?.[0] ? `/storage/${tiket.lampiran[0].path}` : null);
+    const fotoSesudahUrl =
+        (tiket as any).foto_sesudah?.url ||
+        (tiket.ronde_verifikasi?.[0]?.lampiran_sesudah
+            ? `/storage/${tiket.ronde_verifikasi[0].lampiran_sesudah.path}`
+            : null);
+    const beritaAcaraDinas = tiket.berita_acara?.[0];
+
     return (
         <Dialog open={open} onOpenChange={(v) => (!v ? handleClose() : null)}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 sm:p-8">
-                <DialogHeader className="space-y-1 pb-3 border-b border-border/60">
-                    <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="font-mono text-xs">
-                            {tiket.nomor_tiket}
-                        </Badge>
-                        <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30 text-[11px]">
-                            Tahap Verifikasi Warga
+            <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-background p-5 sm:p-6 shadow-lg">
+                <DialogHeader className="space-y-1.5 pb-3 border-b border-border">
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 text-caption-xs text-muted-foreground">
+                            <span className="font-mono font-medium text-foreground">
+                                #{tiket.nomor_tiket}
+                            </span>
+                            {kategoriNama && (
+                                <>
+                                    <span>·</span>
+                                    <span>{kategoriNama}</span>
+                                </>
+                            )}
+                        </div>
+                        <Badge variant="outline" className="text-[10px] font-medium border-border">
+                            Verifikasi Warga
                         </Badge>
                     </div>
-                    <DialogTitle className="font-display text-lg font-bold text-foreground">
-                        Konfirmasi Verifikasi Hasil Perbaikan
+                    <DialogTitle className="font-display text-base font-semibold text-foreground">
+                        Konfirmasi Hasil Perbaikan
                     </DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground">
-                        Kedaulatan penutupan tiket berada di tangan warga. Tentukan apakah klaim perbaikan dinas sudah sesuai standar atau belum.
+                    <DialogDescription className="text-caption-xs text-muted-foreground">
+                        Tinjau dokumentasi fisik hasil pengerjaan dinas dan tentukan apakah perbaikan sudah tuntas.
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-5 pt-3">
+                <form onSubmit={handleSubmit} className="space-y-4 pt-2">
                     {/* Ringkasan Aduan & Bukti Dinas */}
-                    <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 space-y-3">
-                        <div className="flex items-start justify-between gap-3">
-                            <div>
-                                <h4 className="font-display text-sm font-bold text-foreground">{tiket.judul}</h4>
-                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{tiket.deskripsi}</p>
-                            </div>
-                            <span className="shrink-0 text-[11px] font-semibold text-primary">
-                                Kel. {tiket.kelurahan?.nama}
-                            </span>
+                    <div className="rounded-lg border border-border bg-muted/20 p-3.5 space-y-2.5">
+                        <div className="space-y-0.5">
+                            <h4 className="font-display text-body-sm font-semibold text-foreground">
+                                {tiket.judul}
+                            </h4>
+                            <p className="text-caption-xs text-muted-foreground">
+                                Kel. {kelurahanNama}
+                                {instansiNama ? ` · ${instansiNama}` : ''}
+                            </p>
                         </div>
 
                         {/* Komparasi Foto Sebelum vs Foto Sesudah Dinas */}
-                        <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div className="grid grid-cols-2 gap-2.5 pt-1">
                             <div className="space-y-1">
-                                <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                                    <Eye className="size-3" /> Foto Kerusakan Awal
+                                <span className="text-[11px] font-medium text-muted-foreground">
+                                    Foto Sebelum
                                 </span>
-                                {tiket.lampiran?.[0] ? (
+                                {fotoAwalUrl ? (
                                     <img
-                                        src={`/storage/${tiket.lampiran[0].path}`}
+                                        src={fotoAwalUrl}
                                         alt="Bukti Awal"
-                                        className="h-28 w-full object-cover rounded-xl border border-border"
+                                        className="h-24 w-full object-cover rounded-md border border-border"
                                     />
                                 ) : (
-                                    <div className="h-28 w-full rounded-xl bg-muted/60 flex items-center justify-center text-[10px] text-muted-foreground">
-                                        Foto awal tidak tersedia
+                                    <div className="h-24 w-full rounded-md border border-border bg-muted/40 flex items-center justify-center text-caption-xs text-muted-foreground">
+                                        Foto awal tidak ada
                                     </div>
                                 )}
                             </div>
 
                             <div className="space-y-1">
-                                <span className="text-[11px] font-semibold text-primary flex items-center gap-1">
-                                    <ShieldCheck className="size-3" /> Foto Selesai Dinas
+                                <span className="text-[11px] font-medium text-foreground">
+                                    Foto Sesudah Dinas
                                 </span>
-                                {tiket.ronde_verifikasi?.[0]?.lampiran_sesudah ? (
+                                {fotoSesudahUrl ? (
                                     <img
-                                        src={`/storage/${tiket.ronde_verifikasi[0].lampiran_sesudah.path}`}
+                                        src={fotoSesudahUrl}
                                         alt="Bukti Sesudah Dinas"
-                                        className="h-28 w-full object-cover rounded-xl border border-primary/30"
+                                        className="h-24 w-full object-cover rounded-md border border-border"
                                     />
                                 ) : (
-                                    <div className="h-28 w-full rounded-xl bg-muted/60 flex items-center justify-center text-[10px] text-muted-foreground">
-                                        Foto sesudah tidak tersedia
+                                    <div className="h-24 w-full rounded-md border border-border bg-muted/40 flex items-center justify-center text-caption-xs text-muted-foreground">
+                                        Foto sesudah tidak ada
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        {/* Berita Acara Terakhir */}
-                        {tiket.berita_acara?.[0] && (
-                            <div className="rounded-xl bg-card p-3 border border-border/60 text-xs space-y-1">
-                                <p className="font-semibold text-foreground text-[11px]">
-                                    Berita Acara Dinas (Versi {tiket.berita_acara[0].versi}):
-                                </p>
-                                <p className="text-muted-foreground text-[11px] italic">
-                                    &ldquo;{tiket.berita_acara[0].kegiatan}. Hasil: {tiket.berita_acara[0].hasil}&rdquo;
-                                </p>
+                        {/* Catatan Berita Acara Dinas */}
+                        {beritaAcaraDinas && (
+                            <div className="border-t border-border/60 pt-2 text-caption-xs text-muted-foreground">
+                                <span className="font-semibold text-foreground">Catatan Dinas:</span>{' '}
+                                <span>{beritaAcaraDinas.kegiatan} — {beritaAcaraDinas.hasil}</span>
                             </div>
                         )}
                     </div>
 
-                    {/* Pemilihan Jalur Bukti */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-foreground">
-                            Pilih Jalur Pembuktian Suara:
+                    {/* Pemilihan Jalur Pembuktian */}
+                    <div className="space-y-1.5">
+                        <label className="text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Metode Pembuktian
                         </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {/* Jalur B: Jarak Jauh */}
                             <button
                                 type="button"
                                 onClick={() => setJalur('B')}
-                                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                                className={cn(
+                                    'p-3 rounded-lg border text-left transition-colors cursor-pointer space-y-1',
                                     jalur === 'B'
-                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                                        : 'border-border/80 bg-card hover:border-primary/40'
-                                }`}
+                                        ? 'border-primary bg-primary/5 text-foreground'
+                                        : 'border-border bg-card hover:bg-muted/30 text-muted-foreground',
+                                )}
                             >
-                                <div className="flex items-center justify-between pb-1">
-                                    <span className="font-display text-sm font-bold text-foreground">Jalur B (Jarak Jauh)</span>
-                                    <Badge variant="outline" className="text-[10px] font-bold">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-display text-body-sm font-semibold text-foreground">
+                                        Jarak Jauh
+                                    </span>
+                                    <Badge variant="outline" className="text-[10px] font-medium border-border">
                                         Bobot 0.5
                                     </Badge>
                                 </div>
-                                <p className="text-[11px] text-muted-foreground">
-                                    Verifikasi dari rumah/pengamatan sekitar tanpa perlu memotret di lokasi fisik.
+                                <p className="text-caption-xs text-muted-foreground leading-normal">
+                                    Verifikasi dari pengamatan sekitar tanpa foto langsung di lokasi.
                                 </p>
                             </button>
 
+                            {/* Jalur A: Di Lokasi */}
                             <button
                                 type="button"
                                 onClick={() => setJalur('A')}
-                                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                                className={cn(
+                                    'p-3 rounded-lg border text-left transition-colors cursor-pointer space-y-1',
                                     jalur === 'A'
-                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                                        : 'border-border/80 bg-card hover:border-primary/40'
-                                }`}
+                                        ? 'border-primary bg-primary/5 text-foreground'
+                                        : 'border-border bg-card hover:bg-muted/30 text-muted-foreground',
+                                )}
                             >
-                                <div className="flex items-center justify-between pb-1">
-                                    <span className="font-display text-sm font-bold text-foreground flex items-center gap-1.5">
-                                        <Sparkles className="size-3.5 text-primary" /> Jalur A (Di Lokasi)
+                                <div className="flex items-center justify-between">
+                                    <span className="font-display text-body-sm font-semibold text-foreground">
+                                        Di Lokasi
                                     </span>
-                                    <Badge className="bg-primary text-primary-foreground text-[10px] font-bold">
+                                    <Badge variant="outline" className="text-[10px] font-semibold border-primary/40 text-primary">
                                         Bobot 1.0 (Penuh)
                                     </Badge>
                                 </div>
-                                <p className="text-[11px] text-muted-foreground">
-                                    Hadir langsung di lokasi, foto via kamera peramban, dan GPS diverifikasi dalam radius 50m.
+                                <p className="text-caption-xs text-muted-foreground leading-normal">
+                                    Hadir langsung dengan foto kamera peramban & verifikasi GPS (radius ≤ 50m).
                                 </p>
                             </button>
                         </div>
@@ -363,10 +388,11 @@ export default function ModalBeriSuaraVerifikasi({
 
                     {/* Area Khusus Jalur A: Kamera Langsung & Geofence GPS */}
                     {jalur === 'A' && (
-                        <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 space-y-3">
-                            <div className="flex items-center justify-between">
-                                <span className="font-display text-xs font-bold text-foreground flex items-center gap-1.5">
-                                    <Camera className="size-4 text-primary" /> Kamera Lapangan & Validasi GPS
+                        <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-2.5">
+                            <div className="flex items-center justify-between text-caption-xs">
+                                <span className="font-semibold text-foreground flex items-center gap-1.5">
+                                    <Camera className="size-3.5 text-muted-foreground" />
+                                    <span>Kamera & Validasi Lokasi (GPS)</span>
                                 </span>
                                 {gpsLoading ? (
                                     <span className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -374,13 +400,15 @@ export default function ModalBeriSuaraVerifikasi({
                                     </span>
                                 ) : jarakMeter !== null ? (
                                     <Badge
-                                        className={`text-[10px] font-semibold ${
+                                        variant="outline"
+                                        className={cn(
+                                            'text-[10px] font-medium',
                                             isGeofenceValid
-                                                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
-                                                : 'bg-destructive/15 text-destructive border-destructive/30'
-                                        }`}
+                                                ? 'border-emerald-500/40 text-emerald-700 dark:text-emerald-300'
+                                                : 'border-destructive/40 text-destructive',
+                                        )}
                                     >
-                                        <MapPin className="size-3 mr-1" />
+                                        <MapPin className="size-2.5 mr-1" />
                                         {isGeofenceValid
                                             ? `Lokasi Cocok (${jarakMeter}m ≤ 50m)`
                                             : `Terlalu Jauh (${jarakMeter}m > 50m)`}
@@ -389,7 +417,7 @@ export default function ModalBeriSuaraVerifikasi({
                             </div>
 
                             {/* Viewport Kamera / Hasil Tangkap */}
-                            <div className="relative overflow-hidden rounded-xl bg-black aspect-video flex items-center justify-center border border-border">
+                            <div className="relative overflow-hidden rounded-md bg-black aspect-video flex items-center justify-center border border-border">
                                 {capturedFoto ? (
                                     <img
                                         src={capturedFoto}
@@ -409,36 +437,37 @@ export default function ModalBeriSuaraVerifikasi({
                                 <canvas ref={canvasRef} className="hidden" />
 
                                 {cameraError && !capturedFoto && (
-                                    <div className="absolute inset-0 bg-background/90 p-4 flex flex-col items-center justify-center text-center">
-                                        <AlertTriangle className="size-8 text-destructive mb-2" />
-                                        <p className="text-xs text-foreground font-semibold">{cameraError}</p>
-                                        <p className="text-[11px] text-muted-foreground mt-1">
-                                            Silakan aktifkan izin kamera atau beralih ke Jalur B.
+                                    <div className="absolute inset-0 bg-background/95 p-4 flex flex-col items-center justify-center text-center">
+                                        <AlertTriangle className="size-6 text-destructive mb-1.5" />
+                                        <p className="text-caption-xs text-foreground font-semibold">{cameraError}</p>
+                                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                                            Aktifkan izin kamera pada browser atau beralih ke Jalur B.
                                         </p>
                                         <Button
                                             type="button"
                                             size="sm"
                                             variant="outline"
                                             onClick={() => setJalur('B')}
-                                            className="mt-3 text-xs"
+                                            className="mt-2 text-caption-xs h-7"
                                         >
-                                            Gunakan Jalur B Saja
+                                            Pilih Jalur B (Jarak Jauh)
                                         </Button>
                                     </div>
                                 )}
                             </div>
 
                             {/* Tombol Kontrol Kamera */}
-                            <div className="flex items-center justify-between pt-1">
+                            <div>
                                 {!capturedFoto ? (
                                     <Button
                                         type="button"
                                         size="sm"
+                                        variant="outline"
                                         onClick={handleSnap}
                                         disabled={!!cameraError}
-                                        className="w-full text-xs gap-1.5"
+                                        className="w-full text-caption-xs h-8 gap-1.5 font-medium cursor-pointer"
                                     >
-                                        <Camera className="size-3.5" /> Ambil Foto Bukti Lapangan
+                                        <Camera className="size-3.5" /> Ambil Foto Bukti
                                     </Button>
                                 ) : (
                                     <Button
@@ -446,111 +475,146 @@ export default function ModalBeriSuaraVerifikasi({
                                         size="sm"
                                         variant="outline"
                                         onClick={handleRetake}
-                                        className="w-full text-xs gap-1.5"
+                                        className="w-full text-caption-xs h-8 gap-1.5 font-medium cursor-pointer"
                                     >
-                                        <RotateCcw className="size-3.5" /> Foto Ulang
+                                        <RotateCcw className="size-3.5" /> Ambil Ulang Foto
                                     </Button>
                                 )}
                             </div>
 
                             {!isGeofenceValid && jarakMeter !== null && (
                                 <p className="text-[11px] text-destructive leading-tight">
-                                    Koordinat GPS Anda berada di luar radius toleransi 50 meter dari titik kerusakan. Anda hanya dapat menggunakan Jalur B jika tidak berada di lokasi.
+                                    Posisi GPS Anda ({jarakMeter}m) melebihi batas radius 50 meter dari titik kerusakan. Silakan gunakan Jalur B.
                                 </p>
                             )}
                         </div>
                     )}
 
                     {/* Keputusan Suara Warga */}
-                    <div className="space-y-3">
-                        <label className="text-xs font-bold text-foreground">
-                            Bagaimana Penilaian Anda atas Hasil Perbaikan?
+                    <div className="space-y-1.5">
+                        <label className="text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            Penilaian Hasil Pengerjaan
                         </label>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             <button
                                 type="button"
                                 onClick={() => setSetuju(true)}
-                                className={`p-4 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
+                                className={cn(
+                                    'p-3 rounded-lg border text-left transition-colors cursor-pointer space-y-1',
                                     setuju === true
-                                        ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/30'
-                                        : 'border-border/80 bg-card hover:border-emerald-500/40'
-                                }`}
+                                        ? 'border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/20'
+                                        : 'border-border bg-card hover:bg-muted/30',
+                                )}
                             >
-                                <CheckCircle2 className={`size-5 ${setuju === true ? 'text-emerald-600' : 'text-muted-foreground'}`} />
-                                <span className="font-display text-sm font-bold text-foreground">Perbaikan Sudah Sesuai</span>
-                                <span className="text-[10px] text-muted-foreground">Fasilitas publik kembali berfungsi baik</span>
+                                <div className="flex items-center gap-1.5">
+                                    <CheckCircle2
+                                        className={cn(
+                                            'size-4',
+                                            setuju === true ? 'text-emerald-600' : 'text-muted-foreground',
+                                        )}
+                                    />
+                                    <span className="font-display text-body-sm font-semibold text-foreground">
+                                        Sesuai Standar
+                                    </span>
+                                </div>
+                                <p className="text-caption-xs text-muted-foreground leading-normal pl-5.5">
+                                    Pekerjaan selesai dan fasilitas kembali berfungsi baik.
+                                </p>
                             </button>
 
                             <button
                                 type="button"
                                 onClick={() => setSetuju(false)}
-                                className={`p-4 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
+                                className={cn(
+                                    'p-3 rounded-lg border text-left transition-colors cursor-pointer space-y-1',
                                     setuju === false
-                                        ? 'border-destructive bg-destructive/10 ring-2 ring-destructive/30'
-                                        : 'border-border/80 bg-card hover:border-destructive/40'
-                                }`}
+                                        ? 'border-destructive bg-destructive/10 dark:bg-destructive/20'
+                                        : 'border-border bg-card hover:bg-muted/30',
+                                )}
                             >
-                                <XCircle className={`size-5 ${setuju === false ? 'text-destructive' : 'text-muted-foreground'}`} />
-                                <span className="font-display text-sm font-bold text-foreground">Belum Sesuai / Rusak</span>
-                                <span className="text-[10px] text-muted-foreground">Pekerjaan asal-asalan / belum tuntas</span>
+                                <div className="flex items-center gap-1.5">
+                                    <XCircle
+                                        className={cn(
+                                            'size-4',
+                                            setuju === false ? 'text-destructive' : 'text-muted-foreground',
+                                        )}
+                                    />
+                                    <span className="font-display text-body-sm font-semibold text-foreground">
+                                        Belum Sesuai
+                                    </span>
+                                </div>
+                                <p className="text-caption-xs text-muted-foreground leading-normal pl-5.5">
+                                    Masih ada kerusakan atau perbaikan belum tuntas.
+                                </p>
                             </button>
                         </div>
                     </div>
 
                     {/* Alasan Penolakan jika Memilih Belum Sesuai */}
                     {setuju === false && (
-                        <div className="space-y-2 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 animate-in fade-in">
-                            <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold text-destructive flex items-center gap-1">
-                                    <AlertTriangle className="size-3.5" /> Uraikan Alasan Penolakan Anda (Wajib):
+                        <div className="space-y-1.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 animate-in fade-in">
+                            <div className="flex items-center justify-between text-caption-xs">
+                                <label className="font-semibold text-destructive flex items-center gap-1">
+                                    <AlertTriangle className="size-3.5" />
+                                    <span>Alasan Penolakan (Wajib):</span>
                                 </label>
                                 <span
-                                    className={`text-[10px] font-mono ${
-                                        alasan.trim().length >= 10 ? 'text-emerald-600 font-semibold' : 'text-destructive'
-                                    }`}
+                                    className={cn(
+                                        'font-mono text-[11px]',
+                                        alasan.trim().length >= 10
+                                            ? 'text-emerald-600 font-semibold'
+                                            : 'text-destructive',
+                                    )}
                                 >
                                     {alasan.trim().length} / 10 karakter minimum
                                 </span>
                             </div>
                             <Textarea
-                                rows={3}
-                                placeholder="Contoh: Aspal masih bergelombang dan tipis, lubang di sisi kiri trotoar belum ditambal..."
+                                rows={2}
+                                placeholder="Jelaskan bagian yang belum tuntas atau masih rusak..."
                                 value={alasan}
                                 onChange={(e) => setAlasan(e.target.value)}
-                                className="text-xs bg-background"
+                                className="text-body-sm bg-background border-border"
                             />
-                            <p className="text-[10px] text-muted-foreground">
-                                Alasan penolakan Anda akan dipublikasikan secara transparan pada tiket untuk evaluasi dinas & auditor tanpa memuat nama Anda.
+                            <p className="text-[11px] text-muted-foreground">
+                                Catatan ini akan diteruskan ke dinas dan auditor sebagai bahan evaluasi tindak lanjut.
                             </p>
                         </div>
                     )}
 
-                    {/* Jaminan Privasi */}
-                    <div className="rounded-xl bg-muted/40 p-3 text-[11px] text-muted-foreground flex items-center gap-2">
-                        <ShieldCheck className="size-4 text-primary shrink-0" />
+                    {/* Jaminan Privasi Anonim */}
+                    <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-caption-xs text-muted-foreground flex items-center gap-2">
+                        <ShieldCheck className="size-3.5 text-muted-foreground shrink-0" />
                         <span>
-                            Suara Anda bersifat <strong>rahasia dan anonim</strong>. Identitas Anda tidak pernah ditampilkan pada publikasi hasil voting. Suara yang telah dikirim tidak dapat diubah (AS-01).
+                            Suara Anda bersifat <strong>anonim</strong> dan tidak dapat diubah setelah dikirimkan.
                         </span>
                     </div>
 
                     {/* Tombol Aksi Bawah */}
-                    <div className="flex items-center justify-end gap-2 pt-2">
-                        <Button type="button" variant="outline" size="sm" onClick={handleClose}>
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleClose}
+                            className="h-9 px-4 rounded-lg text-caption-xs font-semibold cursor-pointer"
+                        >
                             Batal
                         </Button>
                         <Button
                             type="submit"
                             size="sm"
                             disabled={!isReadySubmit || isSubmitting}
-                            className="text-xs font-bold"
+                            className="h-9 px-4 rounded-lg text-caption-xs font-semibold cursor-pointer"
                         >
                             {isSubmitting ? (
                                 <>
-                                    <Loader2 className="size-3.5 animate-spin mr-1.5" /> Menyimpan Suara...
+                                    <Loader2 className="size-3.5 animate-spin mr-1.5" />
+                                    <span>Menyimpan Suara...</span>
                                 </>
                             ) : (
-                                'Kirim Konfirmasi Suara'
+                                'Kirim Suara Verifikasi'
                             )}
                         </Button>
                     </div>

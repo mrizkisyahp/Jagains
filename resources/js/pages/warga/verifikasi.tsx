@@ -3,17 +3,26 @@ import { Head, router } from '@inertiajs/react';
 import {
     ShieldCheck,
     Search,
-    Filter,
     CheckCircle2,
-    Users,
     AlertCircle,
+    ChevronLeft,
+    ChevronRight,
+    RotateCcw,
 } from 'lucide-react';
 import InternalLayout from '@/layouts/InternalLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import KartuTiketVerifikasi from '@/components/verifikasi/KartuTiketVerifikasi';
 import { TiketVerifikasiItem } from '@/types/verifikasi';
+import { cn } from '@/lib/utils';
 
 interface VerifikasiPageProps {
     daftarTiket: {
@@ -45,19 +54,18 @@ export default function VerifikasiWargaPage({
     filters,
 }: VerifikasiPageProps) {
     const [search, setSearch] = useState(filters.q || '');
-    const [selectedKategori, setSelectedKategori] = useState(filters.kategori_id || '');
     const currentTab = filters.tab || 'perlu_suara';
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSearch = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         router.get(
             '/warga/verifikasi',
             {
                 tab: currentTab,
-                q: search || undefined,
-                kategori_id: selectedKategori || undefined,
+                q: search.trim() || undefined,
+                kategori_id: filters.kategori_id || undefined,
             },
-            { preserveState: true, preserveScroll: true }
+            { preserveState: true, preserveScroll: true },
         );
     };
 
@@ -66,190 +74,290 @@ export default function VerifikasiWargaPage({
             '/warga/verifikasi',
             {
                 tab: tab,
-                q: search || undefined,
-                kategori_id: selectedKategori || undefined,
+                q: search.trim() || undefined,
+                kategori_id: filters.kategori_id || undefined,
             },
-            { preserveState: true, preserveScroll: true }
+            { preserveState: true, preserveScroll: true },
         );
     };
 
     const handleKategoriChange = (katId: string) => {
-        setSelectedKategori(katId);
         router.get(
             '/warga/verifikasi',
             {
                 tab: currentTab,
-                q: search || undefined,
-                kategori_id: katId || undefined,
+                q: search.trim() || undefined,
+                kategori_id: katId && katId !== 'semua' ? katId : undefined,
             },
-            { preserveState: true, preserveScroll: true }
+            { preserveState: true, preserveScroll: true },
         );
     };
 
+    const handleResetFilter = () => {
+        setSearch('');
+        router.get(
+            '/warga/verifikasi',
+            { tab: currentTab },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
+
+    const hasFilters = Boolean(filters.q || filters.kategori_id);
+
     return (
-        <div className="space-y-6">
-            <Head title="Verifikasi Hasil Perbaikan Warga" />
+        <div className="mx-auto w-full max-w-7xl space-y-6 pb-20">
+            <Head title="Verifikasi Warga - Jagains" />
 
-            {/* Banner Edukasi Kedaulatan Kuorum */}
-            <div className="relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-500/10 via-background to-blue-500/5 p-6 sm:p-8">
-                <div className="max-w-2xl space-y-2">
-                    <div className="flex items-center gap-2">
-                        <Badge className="bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/40 text-xs font-bold">
-                            Kedaulatan Warga Kelurahan {kelurahan?.nama || 'Depok'}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Users className="size-3.5" /> Kuorum Partisipatif (FR-VER-01 s/d 04)
-                        </span>
-                    </div>
-
-                    <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-                        Uji & Verifikasi Hasil Perbaikan Dinas
+            {/* Header Halaman (Sesuai Konvensi Admin / Auditor / Instansi) */}
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="font-display text-display-xs font-semibold tracking-tight text-foreground sm:text-display-sm">
+                        Verifikasi Hasil Perbaikan
                     </h1>
-
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                        Di Jagains, aparatur dinas <strong>tidak dapat menutup tiket sendiri</strong>. Penutupan tiket hanya sah melalui persetujuan warga setempat (Jalur A di lokasi bernilai 1.0 suara, Jalur B berbobot 0.5 suara). Jika pekerjaan tidak sesuai standar, warga berhak menolaknya untuk disengketakan.
+                    <p className="text-body-sm text-muted-foreground">
+                        Uji dan berikan suara kuorum pada hasil perbaikan fasilitas publik di wilayah Kelurahan {kelurahan?.nama || 'Depok'}.
                     </p>
                 </div>
             </div>
 
-            {/* Tab Navigasi & Filter Bar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-2">
-                {/* Tabs */}
-                <div className="inline-flex rounded-2xl bg-muted/50 p-1 border border-border">
-                    <button
-                        type="button"
-                        onClick={() => handleTabChange('perlu_suara')}
-                        className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-                            currentTab === 'perlu_suara'
-                                ? 'bg-card text-foreground shadow-xs'
-                                : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                    >
-                        Perlu Suara Anda
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleTabChange('semua')}
-                        className={`rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-                            currentTab === 'semua'
-                                ? 'bg-card text-foreground shadow-xs'
-                                : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                    >
-                        Semua Tiket Tahap Verifikasi
-                    </button>
+            {/* Tab Navigasi Standar */}
+            <Tabs
+                value={currentTab}
+                onValueChange={handleTabChange}
+                className="space-y-4"
+            >
+                <div className="overflow-x-auto pb-1">
+                    <TabsList className="inline-flex h-9 w-max min-w-full justify-start bg-muted/50 p-1">
+                        <TabsTrigger
+                            value="perlu_suara"
+                            className="shrink-0 gap-2 text-body-sm"
+                        >
+                            <AlertCircle className="size-4" />
+                            <span>Perlu Suara Anda</span>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="semua"
+                            className="shrink-0 gap-2 text-body-sm"
+                        >
+                            <CheckCircle2 className="size-4" />
+                            <span>Semua Tiket Tahap Verifikasi</span>
+                            <span className="rounded-full bg-muted-foreground/10 px-1.5 py-0.5 text-caption-xs font-semibold">
+                                {daftarTiket.total}
+                            </span>
+                        </TabsTrigger>
+                    </TabsList>
                 </div>
 
-                {/* Filter Form */}
-                <form onSubmit={handleSearch} className="flex items-center gap-2 flex-wrap">
-                    <div className="relative min-w-[200px]">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Cari nomor tiket..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="h-9 pl-8 text-xs rounded-xl"
-                        />
-                    </div>
-
-                    <select
-                        value={selectedKategori}
-                        onChange={(e) => handleKategoriChange(e.target.value)}
-                        className="h-9 px-3 text-xs rounded-xl border border-input bg-background text-foreground"
+                {/* Toolbar Filter Horizontal */}
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* Search Form */}
+                    <form
+                        onSubmit={handleSearch}
+                        className="flex min-w-0 flex-1 basis-72 items-center gap-2"
                     >
-                        <option value="">Semua Kategori</option>
-                        {kategoriList.map((kat) => (
-                            <option key={kat.id} value={kat.id}>
-                                {kat.nama}
-                            </option>
+                        <div className="relative min-w-0 flex-1">
+                            <Input
+                                type="search"
+                                placeholder="Cari nomor atau judul tiket…"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="h-9 pl-9 text-body-sm shadow-none"
+                            />
+                            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                        </div>
+                        <Button
+                            type="submit"
+                            variant="outline"
+                            className="h-9 shadow-none text-caption-xs font-semibold"
+                        >
+                            Cari
+                        </Button>
+                    </form>
+
+                    {/* Kategori Select */}
+                    <Select
+                        value={filters.kategori_id || 'semua'}
+                        onValueChange={(val) => handleKategoriChange(val ?? 'semua')}
+                    >
+                        <SelectTrigger className="h-9 w-full sm:w-52 text-body-sm shadow-none">
+                            <SelectValue placeholder="Semua kategori" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="semua">Semua kategori</SelectItem>
+                            {kategoriList.map((kat) => (
+                                <SelectItem key={kat.id} value={String(kat.id)}>
+                                    {kat.nama}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    {/* Reset Filter Button */}
+                    {hasFilters && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={handleResetFilter}
+                            className="h-9 gap-1 text-muted-foreground hover:text-foreground text-caption-xs"
+                        >
+                            <RotateCcw className="size-3.5" />
+                            Reset filter
+                        </Button>
+                    )}
+                </div>
+
+                {/* Grid Daftar Tiket Verifikasi */}
+                {daftarTiket.data.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center space-y-4 rounded-xl border border-dashed border-border bg-card p-12 text-center shadow-xs">
+                        <div className="flex size-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                            <CheckCircle2 className="size-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <h3 className="font-display text-body-medium font-semibold text-foreground">
+                                {currentTab === 'perlu_suara'
+                                    ? 'Tidak Ada Tiket yang Menunggu Suara Anda'
+                                    : 'Belum Ada Tiket dalam Tahap Verifikasi'}
+                            </h3>
+                            <p className="mx-auto max-w-md text-body-sm text-muted-foreground">
+                                {currentTab === 'perlu_suara'
+                                    ? 'Seluruh pekerjaan perbaikan di kelurahan Anda saat ini sudah Anda beri suara atau belum ada pekerjaan fisik baru yang diajukan selesai oleh dinas.'
+                                    : 'Saat dinas mengajukan selesai pada suatu perbaikan, tiket akan otomatis muncul di sini selama 14 hari kalender untuk diverifikasi bersama warga.'}
+                            </p>
+                        </div>
+                        {hasFilters ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleResetFilter}
+                                className="rounded-lg border-border text-caption-xs font-semibold"
+                            >
+                                Reset Semua Filter
+                            </Button>
+                        ) : (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => router.visit('/warga/riwayat')}
+                                className="rounded-lg text-caption-xs font-semibold"
+                            >
+                                Lihat Riwayat Laporan Saya
+                            </Button>
+                        )}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                        {daftarTiket.data.map((tiket) => (
+                            <KartuTiketVerifikasi
+                                key={tiket.id}
+                                tiket={tiket}
+                                onSuaraBerhasil={() =>
+                                    router.reload({ only: ['daftarTiket'] })
+                                }
+                            />
                         ))}
-                    </select>
-
-                    <Button type="submit" size="sm" variant="outline" className="h-9 px-3 text-xs rounded-xl">
-                        <Filter className="size-3 mr-1" /> Filter
-                    </Button>
-                </form>
-            </div>
-
-            {/* Grid Daftar Tiket Verifikasi */}
-            {daftarTiket.data.length === 0 ? (
-                <div className="rounded-3xl border border-dashed border-border/80 p-12 text-center space-y-3">
-                    <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-600">
-                        <CheckCircle2 className="size-6" />
                     </div>
-                    <h3 className="font-display text-base font-bold text-foreground">
-                        {currentTab === 'perlu_suara'
-                            ? 'Tidak Ada Tiket yang Menunggu Suara Anda'
-                            : 'Belum Ada Tiket dalam Tahap Verifikasi'}
-                    </h3>
-                    <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                        {currentTab === 'perlu_suara'
-                            ? 'Seluruh pekerjaan perbaikan di kelurahan Anda saat ini sudah Anda beri suara atau belum ada pekerjaan fisik baru yang diajukan selesai oleh dinas.'
-                            : 'Saat dinas mengajukan selesai pada suatu perbaikan, tiket akan otomatis muncul di sini selama 14 hari kalender untuk diverifikasi bersama warga.'}
-                    </p>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.visit('/warga/riwayat')}
-                        className="text-xs mt-2"
-                    >
-                        Lihat Riwayat Laporan Saya
-                    </Button>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {daftarTiket.data.map((tiket) => (
-                        <KartuTiketVerifikasi
-                            key={tiket.id}
-                            tiket={tiket}
-                            onSuaraBerhasil={() => router.reload({ only: ['daftarTiket'] })}
-                        />
-                    ))}
-                </div>
-            )}
+                )}
 
-            {/* Paginasi */}
-            {daftarTiket.last_page > 1 && (
-                <div className="flex items-center justify-between border-t border-border/60 pt-4 text-xs text-muted-foreground">
-                    <span>
-                        Menampilkan {daftarTiket.from} - {daftarTiket.to} dari total {daftarTiket.total} tiket
-                    </span>
-                    <div className="flex items-center gap-1">
-                        {daftarTiket.links.map((link, idx) => {
-                            if (!link.url) {
-                                return (
-                                    <span
-                                        key={idx}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                        className="px-2.5 py-1 text-muted-foreground/50 text-xs"
-                                    />
-                                );
-                            }
-                            return (
-                                <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => router.visit(link.url!)}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                                        link.active
-                                            ? 'bg-primary text-primary-foreground font-bold'
-                                            : 'hover:bg-muted text-foreground'
-                                    }`}
-                                />
-                            );
-                        })}
+                {/* Paginasi Standar Sesuai Acuan Internal */}
+                {daftarTiket.last_page > 1 && (
+                    <div className="flex flex-col items-center justify-between gap-3 border-t border-border pt-4 text-body-sm text-muted-foreground sm:flex-row">
+                        <p>
+                            Menampilkan{' '}
+                            <span className="font-semibold text-foreground">
+                                {daftarTiket.from}
+                            </span>{' '}
+                            sampai{' '}
+                            <span className="font-semibold text-foreground">
+                                {daftarTiket.to}
+                            </span>{' '}
+                            dari{' '}
+                            <span className="font-semibold text-foreground">
+                                {daftarTiket.total}
+                            </span>{' '}
+                            tiket
+                        </p>
+                        <div className="flex items-center gap-1">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                aria-label="Halaman sebelumnya"
+                                disabled={daftarTiket.current_page <= 1}
+                                onClick={() => {
+                                    if (daftarTiket.current_page > 1) {
+                                        router.get(
+                                            '/warga/verifikasi',
+                                            {
+                                                tab: currentTab,
+                                                page: daftarTiket.current_page - 1,
+                                                q: search.trim() || undefined,
+                                                kategori_id:
+                                                    filters.kategori_id ||
+                                                    undefined,
+                                            },
+                                            {
+                                                preserveState: true,
+                                                preserveScroll: true,
+                                            },
+                                        );
+                                    }
+                                }}
+                                className="size-9 shadow-none"
+                            >
+                                <ChevronLeft className="size-4" />
+                            </Button>
+                            <span className="px-2 text-caption-xs font-medium text-foreground">
+                                Halaman {daftarTiket.current_page} dari{' '}
+                                {daftarTiket.last_page}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                aria-label="Halaman berikutnya"
+                                disabled={
+                                    daftarTiket.current_page >=
+                                    daftarTiket.last_page
+                                }
+                                onClick={() => {
+                                    if (
+                                        daftarTiket.current_page <
+                                        daftarTiket.last_page
+                                    ) {
+                                        router.get(
+                                            '/warga/verifikasi',
+                                            {
+                                                tab: currentTab,
+                                                page: daftarTiket.current_page + 1,
+                                                q: search.trim() || undefined,
+                                                kategori_id:
+                                                    filters.kategori_id ||
+                                                    undefined,
+                                            },
+                                            {
+                                                preserveState: true,
+                                                preserveScroll: true,
+                                            },
+                                        );
+                                    }
+                                }}
+                                className="size-9 shadow-none"
+                            >
+                                <ChevronRight className="size-4" />
+                            </Button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </Tabs>
         </div>
     );
 }
 
 VerifikasiWargaPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Verifikasi Warga" breadcrumb="Warga > Verifikasi Kuorum">
+    <InternalLayout
+        title="Verifikasi Warga"
+        breadcrumb="Warga > Verifikasi Kuorum"
+    >
         {page}
     </InternalLayout>
 );
