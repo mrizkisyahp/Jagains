@@ -50,7 +50,7 @@ test('wilayah seeder mematuhi aturan bounding box dan geometri geojson', functio
     }
 });
 
-test('instansi seeder mengisi 99 instansi dengan relasi wilayah yang valid', function () {
+test('instansi seeder mengisi 25 instansi dinas dengan relasi wilayah yang valid', function () {
     $this->seed(WilayahSeeder::class);
 
     $depokWilayahIds = Wilayah::where('kode_bps', 'like', '3276%')->pluck('id');
@@ -59,7 +59,7 @@ test('instansi seeder mengisi 99 instansi dengan relasi wilayah yang valid', fun
     $this->seed(InstansiSeeder::class);
 
     $depokInstansi = Instansi::whereIn('wilayah_id', $depokWilayahIds);
-    expect($depokInstansi->count())->toBe(99);
+    expect($depokInstansi->count())->toBe(25);
 
     $instansiDinasKota = Instansi::where('wilayah_id', 1)->get();
     expect($instansiDinasKota)->toHaveCount(25);

@@ -71,35 +71,6 @@ class InstansiJakartaSeeder extends Seeder
                         ]
                     );
                 }
-
-                // 2. Kantor Kecamatan & Kelurahan
-                $kecamatans = Wilayah::where('induk_id', $kota->id)->where('tingkat', 'kecamatan')->get();
-                foreach ($kecamatans as $kec) {
-                    Instansi::updateOrCreate(
-                        [
-                            'wilayah_id' => $kec->id,
-                            'nama' => 'Kantor Kecamatan '.$kec->nama,
-                        ],
-                        [
-                            'singkatan' => 'KEC. '.strtoupper($kec->nama),
-                            'aktif' => true,
-                        ]
-                    );
-
-                    $kelurahans = Wilayah::where('induk_id', $kec->id)->where('tingkat', 'kelurahan')->get();
-                    foreach ($kelurahans as $kel) {
-                        Instansi::updateOrCreate(
-                            [
-                                'wilayah_id' => $kel->id,
-                                'nama' => 'Kantor Kelurahan '.$kel->nama,
-                            ],
-                            [
-                                'singkatan' => 'KEL. '.strtoupper($kel->nama),
-                                'aktif' => true,
-                            ]
-                        );
-                    }
-                }
             }
 
             if (DB::getDriverName() === 'pgsql') {
