@@ -106,7 +106,7 @@ Route::middleware(['auth', 'role:instansi'])->prefix('instansi')->name('instansi
     Route::post('/tiket/{laporan}/revisi-target', [AntreanInstansiController::class, 'revisiTarget'])->name('tiket.revisi-target');
     Route::post('/tiket/{laporan}/respons-sengketa', [AntreanInstansiController::class, 'responsSengketa'])->name('tiket.respons-sengketa');
 
-    Route::get('/sengketa', fn () => Inertia::render('instansi/sengketa'))->name('sengketa');
+    Route::get('/sengketa', fn () => redirect()->route('instansi.antrean', ['status' => 'sengketa']))->name('sengketa');
     Route::get('/dashboard', [DashboardInstansiController::class, 'index'])->name('dashboard');
     Route::get('/profil', fn () => Inertia::render('instansi/profil'))->name('profil');
 });

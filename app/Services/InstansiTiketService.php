@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\FotoProcessingException;
 use App\Models\BeritaAcara;
 use App\Models\HariLibur;
 use App\Models\Instansi;
@@ -472,6 +473,10 @@ class InstansiTiketService
         // Proses kompresi dan pembersihan EXIF foto bukti sesudah (ST-16)
         try {
             $fotoInfo = $this->fotoService->prosesFotoKamera($fotoBase64);
+        } catch (FotoProcessingException $e) {
+            throw ValidationException::withMessages([
+                'foto' => [$e->getMessage()],
+            ]);
         } catch (\InvalidArgumentException $e) {
             throw ValidationException::withMessages([
                 'foto' => [$e->getMessage()],
@@ -525,14 +530,19 @@ class InstansiTiketService
             $nomorRonde = (RondeVerifikasi::where('laporan_id', $laporan->id)->max('nomor') ?? 0) + 1;
             $kuorumK = $this->hitungKuorumK($laporan);
 
+            $param = ParameterKuorum::where('wilayah_id', $laporan->kelurahan_id)->first();
+            $kbp = $param ? (int) $param->k_bp : 200;
+            $kmin = $param ? (float) $param->kmin : 2.0;
+            $kmax = $param ? (float) $param->kmax : 5.0;
+
             RondeVerifikasi::create([
                 'laporan_id' => $laporan->id,
                 'nomor' => $nomorRonde,
                 'k' => $kuorumK,
                 'k_param' => [
-                    'k_bp' => 2,
-                    'kmin' => 2.0,
-                    'kmax' => 5.0,
+                    'k_bp' => $kbp,
+                    'kmin' => $kmin,
+                    'kmax' => $kmax,
                 ],
                 'lampiran_sesudah_id' => $lampiran->id,
                 'mulai' => now(),
@@ -733,14 +743,15 @@ class InstansiTiketService
     }
 
     /**
-     * Menghitung kuorum K untuk ronde verifikasi warga (P-08 s/d P-10).
+     * Menghitung kuorum K untuk ronde verifikasi warga (BR-VER-02, P-08 s/d P-10).
+     * Rumus: K = min(Kmax, max(Kmin, ceil(k * N))) di mana k_bp dalam basis points (10000 bp = 100%, 200 bp = 2%).
      */
     protected function hitungKuorumK(Laporan $laporan): float
     {
         $param = ParameterKuorum::where('wilayah_id', $laporan->kelurahan_id)->first();
         $kmin = $param ? (float) $param->kmin : 2.0;
         $kmax = $param ? (float) $param->kmax : 5.0;
-        $kbp = $param ? (int) $param->k_bp : 2; // 2%
+        $kbp = $param ? (int) $param->k_bp : 200; // default 200 bp = 2%
 
         // Ambil jumlah akun warga aktif di kelurahan terkait (P-13: 90 hari)
         $wargaAktif = User::where('peran', 'warga')
@@ -748,7 +759,8 @@ class InstansiTiketService
             ->where('status_akun', 'aktif')
             ->count();
 
-        $kalkulasi = round(($wargaAktif * $kbp) / 100, 1);
+        // Rumus SRS BR-VER-02: pembulatan atas (ceil) dari k * N
+        $kalkulasi = (float) ceil(($wargaAktif * $kbp) / 10000);
 
         return (float) max($kmin, min($kmax, $kalkulasi));
     }

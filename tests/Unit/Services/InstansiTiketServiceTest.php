@@ -20,7 +20,7 @@ uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
     // Sesi trigger PostgreSQL untuk testing
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $this->kota = Wilayah::create([
         'kode' => '32.76',
@@ -87,9 +87,13 @@ beforeEach(function () {
     $this->service = app(InstansiTiketService::class);
 });
 
+afterEach(function () {
+    DB::statement('RESET jagains.izin_status');
+});
+
 function buatLaporanUji(array $attributes = []): Laporan
 {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $seq = rand(1000, 99999);
     $default = [
@@ -395,3 +399,51 @@ test('revisiTanggalTarget dibatasi maksimal 2 kali per tiket (FR-TIK-14 & P-16)'
         $this->petugasA
     );
 })->throws(ValidationException::class);
+
+test('hitungKuorumK menghitung target kuorum K secara proporsional sesuai BR-VER-02', function () {
+    $laporan = buatLaporanUji([
+        'pelapor_id' => $this->warga->id,
+        'kategori_id' => $this->kategori->id,
+        'instansi_id' => $this->instansiA->id,
+        'kelurahan_id' => $this->kelurahan->id,
+        'status' => 'DIKERJAKAN',
+    ]);
+
+    $method = new ReflectionMethod($this->service, 'hitungKuorumK');
+
+    // 1. Kasus 1 warga aktif di kelurahan: target K harus tetap Kmin (2.0)
+    $k = $method->invoke($this->service, $laporan);
+    expect($k)->toBe(2.0);
+
+    // 2. Tambah 1 warga aktif lagi (total 2 warga): target K WAJIB TETAP 2.0, BUKAN 4.0
+    User::factory()->warga()->create([
+        'kelurahan_id' => $this->kelurahan->id,
+        'status_akun' => 'aktif',
+    ]);
+    $k = $method->invoke($this->service, $laporan);
+    expect($k)->toBe(2.0);
+
+    // 3. Tambah hingga total 100 warga aktif: 100 * 2% = 2.0 -> target K tetap 2.0
+    User::factory()->warga()->count(98)->create([
+        'kelurahan_id' => $this->kelurahan->id,
+        'status_akun' => 'aktif',
+    ]);
+    $k = $method->invoke($this->service, $laporan);
+    expect($k)->toBe(2.0);
+
+    // 4. Tambah hingga total 150 warga aktif: 150 * 2% = 3.0 -> target K naik menjadi 3.0
+    User::factory()->warga()->count(50)->create([
+        'kelurahan_id' => $this->kelurahan->id,
+        'status_akun' => 'aktif',
+    ]);
+    $k = $method->invoke($this->service, $laporan);
+    expect($k)->toBe(3.0);
+
+    // 5. Tambah hingga total 300 warga aktif: 300 * 2% = 6.0 -> dibatasi Kmax menjadi 5.0
+    User::factory()->warga()->count(150)->create([
+        'kelurahan_id' => $this->kelurahan->id,
+        'status_akun' => 'aktif',
+    ]);
+    $k = $method->invoke($this->service, $laporan);
+    expect($k)->toBe(5.0);
+});

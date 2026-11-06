@@ -10,7 +10,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $this->kota = Wilayah::create([
         'kode' => '32.76',
@@ -33,6 +33,10 @@ beforeEach(function () {
         'status_akun' => 'aktif',
         'email_hash' => null,
     ]);
+});
+
+afterEach(function () {
+    DB::statement('RESET jagains.izin_status');
 });
 
 test('auditor dapat mengakses halaman pola pengawasan (FR-AUD-03)', function () {

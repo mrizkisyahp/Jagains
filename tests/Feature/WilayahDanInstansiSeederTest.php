@@ -52,9 +52,12 @@ test('wilayah seeder mematuhi aturan bounding box dan geometri geojson', functio
 
 test('instansi seeder mengisi 99 instansi dengan relasi wilayah yang valid', function () {
     $this->seed(WilayahSeeder::class);
-    $this->seed(InstansiSeeder::class);
 
     $depokWilayahIds = Wilayah::where('kode_bps', 'like', '3276%')->pluck('id');
+    Instansi::whereIn('wilayah_id', $depokWilayahIds)->delete();
+
+    $this->seed(InstansiSeeder::class);
+
     $depokInstansi = Instansi::whereIn('wilayah_id', $depokWilayahIds);
     expect($depokInstansi->count())->toBe(99);
 

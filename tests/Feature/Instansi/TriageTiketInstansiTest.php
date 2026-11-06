@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $this->kota = Wilayah::create([
         'kode' => '32.76',
@@ -86,9 +86,13 @@ beforeEach(function () {
     ]);
 });
 
+afterEach(function () {
+    DB::statement('RESET jagains.izin_status');
+});
+
 function buatTiketTriage(array $attr = []): Laporan
 {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $seq = rand(1000, 99999);
     $default = [

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\FotoProcessingException;
 use App\Models\HariLibur;
 use App\Models\Kategori;
 use App\Models\Lampiran;
@@ -61,6 +62,10 @@ class LaporanService
         // 4. Proses Foto Kamera & Pembersihan EXIF (FR-LAP-02 & ST-16)
         try {
             $fotoInfo = $this->fotoService->prosesFotoKamera($data['foto']);
+        } catch (FotoProcessingException $e) {
+            throw ValidationException::withMessages([
+                'foto' => [$e->getMessage()],
+            ]);
         } catch (\InvalidArgumentException $e) {
             throw ValidationException::withMessages([
                 'foto' => [$e->getMessage()],

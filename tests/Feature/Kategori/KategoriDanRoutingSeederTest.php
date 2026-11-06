@@ -5,7 +5,6 @@ namespace Tests\Feature\Kategori;
 use App\Models\AturanRouting;
 use App\Models\Instansi;
 use App\Models\Kategori;
-use App\Models\Wilayah;
 use Database\Seeders\AturanRoutingDanSlaSeeder;
 use Database\Seeders\InstansiSeeder;
 use Database\Seeders\KategoriSeeder;
@@ -42,14 +41,8 @@ class KategoriDanRoutingSeederTest extends TestCase
 
     public function test_aturan_routing_dan_sla_terisi_lengkap_untuk_semua_kategori(): void
     {
-        if (Wilayah::count() === 0) {
-            $this->seed(WilayahSeeder::class);
-        }
-
-        if (Instansi::count() === 0) {
-            $this->seed(InstansiSeeder::class);
-        }
-
+        $this->seed(WilayahSeeder::class);
+        $this->seed(InstansiSeeder::class);
         $this->seed(KategoriSeeder::class);
         $this->seed(AturanRoutingDanSlaSeeder::class);
 

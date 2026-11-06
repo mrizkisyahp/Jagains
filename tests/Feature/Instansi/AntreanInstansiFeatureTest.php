@@ -13,7 +13,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $this->kota = Wilayah::create([
         'kode' => '32.76',
@@ -77,9 +77,13 @@ beforeEach(function () {
     ]);
 });
 
+afterEach(function () {
+    DB::statement('RESET jagains.izin_status');
+});
+
 function buatLaporanFeature(array $attr = []): Laporan
 {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $seq = rand(1000, 99999);
     $default = [
@@ -203,4 +207,10 @@ test('aksi alihkan tiket via HTTP controller berhasil memindahkan instansi penan
 
     expect($laporan->fresh()->instansi_id)->toBe($this->instansiB->id);
     expect($laporan->fresh()->jumlah_pengalihan)->toBe(1);
+});
+
+test('rute /instansi/sengketa dialihkan langsung ke antrean dengan filter sengketa', function () {
+    $this->actingAs($this->petugasA)
+        ->get('/instansi/sengketa')
+        ->assertRedirect('/instansi/antrean?status=sengketa');
 });

@@ -17,7 +17,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $this->kota = Wilayah::create([
         'kode' => '32.76',
@@ -89,6 +89,10 @@ beforeEach(function () {
             'tinggi' => 600,
         ]);
     $this->app->instance(FotoLaporanService::class, $this->fotoServiceMock);
+});
+
+afterEach(function () {
+    DB::statement('RESET jagains.izin_status');
 });
 
 function buatLaporanVerifikasiFeature($test): array

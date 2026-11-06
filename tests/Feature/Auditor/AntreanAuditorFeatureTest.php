@@ -16,7 +16,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $this->kota = Wilayah::create([
         'kode' => '32.76',
@@ -76,6 +76,10 @@ beforeEach(function () {
         'kelurahan_id' => $this->kelurahan->id,
         'status_akun' => 'aktif',
     ]);
+});
+
+afterEach(function () {
+    DB::statement('RESET jagains.izin_status');
 });
 
 function buatEskalasiFeatureFixture($test): array

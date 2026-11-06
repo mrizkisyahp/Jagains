@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $this->kota = Wilayah::create([
         'kode' => '32.76',
@@ -73,9 +73,13 @@ beforeEach(function () {
     $this->dummyFoto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 });
 
+afterEach(function () {
+    DB::statement('RESET jagains.izin_status');
+});
+
 function buatLaporanPelaksanaan(array $attr = []): Laporan
 {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $seq = rand(1000, 99999);
     $default = [

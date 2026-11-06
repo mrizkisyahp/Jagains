@@ -84,7 +84,6 @@ const NAVIGATION_ITEMS: Record<string, NavEntry[]> = {
             icon: ChartNoAxesCombined,
         },
         { label: 'Antrean tiket', href: '/instansi/antrean', icon: Inbox },
-        { label: 'Tiket sengketa', href: '/instansi/sengketa', icon: Scale },
         { label: 'Profil dinas', href: '/instansi/profil', icon: Building2 },
     ],
     warga: [

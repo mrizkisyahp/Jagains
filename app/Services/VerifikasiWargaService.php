@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\FotoProcessingException;
 use App\Models\Eskalasi;
 use App\Models\HariLibur;
 use App\Models\Lampiran;
@@ -296,6 +297,7 @@ class VerifikasiWargaService
         $lampiranId = null;
         $jarakM = null;
         $akurasiM = null;
+        $fotoInfo = null;
 
         if ($jalur === 'A') {
             if (empty($data['foto_base64'])) {
@@ -344,6 +346,10 @@ class VerifikasiWargaService
             // Proses kompresi dan pembersihan EXIF foto
             try {
                 $fotoInfo = $this->fotoService->prosesFotoKamera($data['foto_base64']);
+            } catch (FotoProcessingException $e) {
+                throw ValidationException::withMessages([
+                    'foto' => [$e->getMessage()],
+                ]);
             } catch (\InvalidArgumentException $e) {
                 throw ValidationException::withMessages([
                     'foto' => [$e->getMessage()],
@@ -363,7 +369,7 @@ class VerifikasiWargaService
             $alasan,
             $jarakM,
             $akurasiM,
-            $data
+            $fotoInfo
         ) {
             DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
@@ -407,8 +413,7 @@ class VerifikasiWargaService
 
             // Simpan lampiran foto warga jika Jalur A
             $lampiranId = null;
-            if ($jalur === 'A' && ! empty($data['foto_base64'])) {
-                $fotoInfo = $this->fotoService->prosesFotoKamera($data['foto_base64']);
+            if ($jalur === 'A' && $fotoInfo) {
                 $lampiran = Lampiran::create([
                     'uuid' => $fotoInfo['uuid'],
                     'laporan_id' => $laporanTerkunci->id,

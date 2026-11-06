@@ -23,7 +23,7 @@ use Tests\TestCase;
 uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
-    DB::statement("SET jagains.izin_status = 'on'");
+    DB::statement("SET LOCAL jagains.izin_status = 'on'");
 
     $this->kota = Wilayah::create([
         'kode' => '32.76',
@@ -80,6 +80,10 @@ beforeEach(function () {
 
     $this->notifikasiService = app(NotifikasiService::class);
     $this->service = new VerifikasiWargaService($this->fotoServiceMock, $this->notifikasiService);
+});
+
+afterEach(function () {
+    DB::statement('RESET jagains.izin_status');
 });
 
 // Helper membuat tiket laporan yang berada pada status MENUNGGU_VERIFIKASI

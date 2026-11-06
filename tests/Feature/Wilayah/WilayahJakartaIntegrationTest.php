@@ -13,6 +13,8 @@ use Database\Seeders\AturanRoutingJakartaSeeder;
 use Database\Seeders\InstansiJakartaSeeder;
 use Database\Seeders\InstansiSeeder;
 use Database\Seeders\KategoriSeeder;
+use Database\Seeders\LaporanSiklusHidupDemoSeeder;
+use Database\Seeders\UserSeeder;
 use Database\Seeders\WilayahJakartaSeeder;
 use Database\Seeders\WilayahSeeder;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -143,5 +145,29 @@ class WilayahJakartaIntegrationTest extends TestCase
 
         $this->assertNotEmpty($response->json('nama'));
         $this->assertNotEmpty($response->json('kecamatan'));
+    }
+
+    public function test_seeder_laporan_demo_membuat_tiket_wilayah_jakarta(): void
+    {
+        $this->seed(UserSeeder::class);
+        $this->seed(LaporanSiklusHidupDemoSeeder::class);
+
+        $laporanJakarta = Laporan::with(['kelurahan.induk.induk'])
+            ->where('nomor_tiket', 'like', 'JAG-2026-JKT-%')
+            ->get();
+
+        $this->assertGreaterThanOrEqual(60, $laporanJakarta->count());
+
+        foreach ($laporanJakarta as $laporan) {
+            $kelurahan = $laporan->kelurahan;
+            $this->assertNotNull($kelurahan);
+            $this->assertNotEquals('Kota Depok', $kelurahan->induk->induk->nama);
+
+            // Koordinat harus berada di dalam batas bounding box kelurahan
+            $this->assertGreaterThanOrEqual((float) $kelurahan->min_lintang, (float) $laporan->lintang);
+            $this->assertLessThanOrEqual((float) $kelurahan->max_lintang, (float) $laporan->lintang);
+            $this->assertGreaterThanOrEqual((float) $kelurahan->min_bujur, (float) $laporan->bujur);
+            $this->assertLessThanOrEqual((float) $kelurahan->max_bujur, (float) $laporan->bujur);
+        }
     }
 }
