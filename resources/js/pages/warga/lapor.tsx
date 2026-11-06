@@ -257,13 +257,13 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
 
     return (
         <div className="w-full space-y-6 pb-12">
-            {/* Header & Kuota Pelaporan */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+            {/* Header Halaman (Sesuai Konvensi Admin / Auditor / Instansi) */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
                 <div>
-                    <h1 className="font-display text-display-md font-bold tracking-tight text-foreground">
-                        Laporkan Kerusakan Fasilitas
+                    <h1 className="font-display text-display-xs font-semibold tracking-tight text-foreground sm:text-display-sm">
+                        Lapor Kerusakan Fasilitas
                     </h1>
-                    <p className="text-body-sm text-muted-foreground mt-1">
+                    <p className="text-body-sm text-muted-foreground mt-0.5">
                         Transparan, terlacak SLA, dan diverifikasi langsung oleh kuorum warga setempat.
                     </p>
                 </div>
@@ -272,12 +272,12 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger className="cursor-help inline-flex items-center">
-                                <Badge variant={kuota.sisa_kuota > 0 ? 'secondary' : 'destructive'} className="font-mono gap-1.5 px-3 py-1">
+                                <Badge variant={kuota.sisa_kuota > 0 ? 'secondary' : 'destructive'} className="font-mono gap-1.5 px-2.5 py-0.5 text-caption-xs font-semibold">
                                     <Clock className="size-3.5" />
                                     {kuota.sisa_kuota} / 5 per Jam
                                 </Badge>
                             </TooltipTrigger>
-                            <TooltipContent className="max-w-xs">
+                            <TooltipContent className="max-w-xs text-caption-xs">
                                 Sesuai Parameter P-17 (SRS FR-LAP-04), batas maksimal adalah 5 laporan per jam per akun untuk mencegah spam dan bot. Kuota ter-reset bertahap setiap 60 menit dari laporan tertua.
                             </TooltipContent>
                         </Tooltip>
@@ -287,7 +287,7 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
 
             {/* Peringatan Jika Kuota Habis (FR-LAP-04 & P-17) */}
             {!kuota.diizinkan && (
-                <Alert variant="destructive" className="rounded-xl">
+                <Alert variant="destructive" className="rounded-lg">
                     <AlertCircle className="size-4" />
                     <AlertDescription className="space-y-1 text-body-sm">
                         <p className="font-semibold">Batas Pelaporan Tercapai</p>
@@ -303,16 +303,16 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                 <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-colors cursor-pointer ${
+                    className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-colors cursor-pointer ${
                         step === 1
                             ? 'border-primary bg-primary/10 text-primary font-semibold shadow-2xs'
                             : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
                     }`}
                 >
-                    <div className={`size-7 rounded-full flex items-center justify-center text-caption-xs font-bold ${
+                    <div className={`size-6 rounded-full flex items-center justify-center text-caption-xs font-bold ${
                         foto ? 'bg-emerald-600 text-white' : step === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}>
-                        {foto ? <CheckCircle2 className="size-4" /> : '1'}
+                        {foto ? <CheckCircle2 className="size-3.5" /> : '1'}
                     </div>
                     <span className="text-body-sm font-semibold truncate">1. Foto Kamera</span>
                 </button>
@@ -321,16 +321,16 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                     type="button"
                     disabled={!canProceedFromStep1}
                     onClick={() => canProceedFromStep1 && setStep(2)}
-                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-colors ${
+                    className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-colors ${
                         step === 2
                             ? 'border-primary bg-primary/10 text-primary font-semibold shadow-2xs'
                             : 'border-border bg-card text-muted-foreground disabled:opacity-50 cursor-pointer'
                     }`}
                 >
-                    <div className={`size-7 rounded-full flex items-center justify-center text-caption-xs font-bold ${
+                    <div className={`size-6 rounded-full flex items-center justify-center text-caption-xs font-bold ${
                         kelurahanNama ? 'bg-emerald-600 text-white' : step === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}>
-                        {kelurahanNama ? <CheckCircle2 className="size-4" /> : '2'}
+                        {kelurahanNama ? <CheckCircle2 className="size-3.5" /> : '2'}
                     </div>
                     <span className="text-body-sm font-semibold truncate">2. Titik Peta</span>
                 </button>
@@ -339,13 +339,13 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                     type="button"
                     disabled={!canProceedFromStep2}
                     onClick={() => canProceedFromStep2 && setStep(3)}
-                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-colors ${
+                    className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-colors ${
                         step === 3
                             ? 'border-primary bg-primary/10 text-primary font-semibold shadow-2xs'
                             : 'border-border bg-card text-muted-foreground disabled:opacity-50 cursor-pointer'
                     }`}
                 >
-                    <div className={`size-7 rounded-full flex items-center justify-center text-caption-xs font-bold ${
+                    <div className={`size-6 rounded-full flex items-center justify-center text-caption-xs font-bold ${
                         step === 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}>
                         3
@@ -355,7 +355,7 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
             </div>
 
             {/* Konten Wizard */}
-            <Card className="border border-border shadow-xs rounded-2xl">
+            <Card className="border border-border shadow-xs rounded-xl">
                 <CardContent className="p-4 sm:p-6 lg:p-8 space-y-6">
                     {/* TAHAP 1: KAMERA LANGSUNG */}
                     {step === 1 && (

@@ -145,8 +145,8 @@ export default function PetaCanvas({
     return (
         <div
             className={cn(
-                'relative w-full h-full overflow-hidden',
-                className ?? 'min-h-[500px] rounded-2xl border border-border shadow-xs'
+                'relative w-full h-full overflow-hidden rounded-none border-none shadow-none',
+                className,
             )}
         >
             {/* Kanvas Leaflet */}

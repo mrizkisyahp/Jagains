@@ -81,7 +81,7 @@ export default function TiketQuickSummary({ tiket, onClose, className }: TiketQu
     return (
         <div
             className={cn(
-                'fixed inset-x-4 bottom-4 z-1000 sm:inset-x-auto sm:bottom-6 sm:left-6 sm:w-[320px] md:w-[340px] pointer-events-none transition-all duration-300',
+                'fixed inset-x-4 bottom-4 z-40 sm:inset-x-auto sm:bottom-6 sm:right-6 md:right-16 sm:w-[320px] md:w-[340px] pointer-events-none transition-all duration-300',
                 className
             )}
         >

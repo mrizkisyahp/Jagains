@@ -7,7 +7,6 @@ import {
     PetaFilterState,
     KondisiSla,
 } from '@/types/peta';
-import PetaFilterBar from '@/components/peta/PetaFilterBar';
 import PetaDrawerList from '@/components/peta/PetaDrawerList';
 import TiketQuickSummary from '@/components/peta/TiketQuickSummary';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -88,7 +87,7 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
             const fokusTiket = urlParams.get('fokus');
             if (fokusTiket) {
                 const target = allTitik.find(
-                    (t) => t.nomor_tiket.toUpperCase() === fokusTiket.toUpperCase()
+                    (t) => t.nomor_tiket.toUpperCase() === fokusTiket.toUpperCase(),
                 );
                 if (target) {
                     setSelectedTiket(target);
@@ -134,7 +133,7 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
                 const query = filters.search.toLowerCase();
                 const matchNomor = item.nomor_tiket.toLowerCase().includes(query);
                 const matchJudul = item.judul.toLowerCase().includes(query);
-                const matchKelurahan = item.kelurahan_nama.toLowerCase().includes(query);
+                const matchKelurahan = item.kelurahan_nama?.toLowerCase().includes(query);
                 if (!matchNomor && !matchJudul && !matchKelurahan) {
                     return false;
                 }
@@ -157,120 +156,82 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
 
     return (
         <>
-            <Head title="Peta Laporan Fasilitas Publik" />
+            <Head title="Eksplorasi - Jagains" />
 
-            <div className="w-full space-y-4 pb-8">
-                {/* Header Halaman (Proporsional sesuai panduan desain) */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                        <h1 className="font-display text-display-md font-bold tracking-tight text-foreground">
-                            Peta Laporan Fasilitas Publik
-                        </h1>
-                        <p className="text-body-sm text-muted-foreground mt-1">
-                            Peta interaktif sebaran laporan kerusakan fasilitas publik di Kota Depok dengan indikator batas waktu SLA dan status tindak lanjut.
-                        </p>
-                    </div>
-
-                    {/* Ringkasan Statistik Singkat */}
-                    <div className="flex items-center gap-3 shrink-0">
-                        <div className="px-3 py-1.5 bg-muted/60 rounded-xl border border-border text-center">
-                            <span className="block text-[11px] text-muted-foreground font-medium">Laporan Aktif</span>
-                            <span className="font-mono text-body-sm font-bold text-foreground">
-                                {masterFilter?.statistik?.laporan_aktif ?? 0}
-                            </span>
-                        </div>
-                        <div className="px-3 py-1.5 bg-muted/60 rounded-xl border border-border text-center">
-                            <span className="block text-[11px] text-muted-foreground font-medium">Telah Selesai</span>
-                            <span className="font-mono text-body-sm font-bold text-emerald-600 dark:text-emerald-400">
-                                {masterFilter?.statistik?.laporan_selesai ?? 0}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* State Error & Retry Button */}
+            <div className="relative h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background">
+                {/* State Error & Retry Button Floating Alert */}
                 {error && (
-                    <Alert variant="destructive" className="rounded-2xl">
-                        <AlertTriangle className="size-4" />
-                        <AlertDescription className="flex items-center justify-between text-body-sm">
-                            <span>{error}. Data gagal dimuat.</span>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={fetchTitik}
-                                className="h-8 gap-1.5 text-caption-xs font-semibold rounded-lg"
-                            >
-                                <RefreshCw className="size-3.5" />
-                                Coba Lagi
-                            </Button>
-                        </AlertDescription>
-                    </Alert>
+                    <div className="absolute top-4 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-4">
+                        <Alert variant="destructive" className="rounded-xl shadow-lg">
+                            <AlertTriangle className="size-4" />
+                            <AlertDescription className="flex items-center justify-between text-caption-xs sm:text-body-sm">
+                                <span>{error}. Data gagal dimuat.</span>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={fetchTitik}
+                                    className="h-7 gap-1 rounded-lg text-caption-xs font-semibold"
+                                >
+                                    <RefreshCw className="size-3" />
+                                    Coba Lagi
+                                </Button>
+                            </AlertDescription>
+                        </Alert>
+                    </div>
                 )}
 
-                {/* Bilah Filter Multi-Kriteria (Floating Bar) */}
-                {masterFilter && (
-                    <PetaFilterBar
-                        filters={filters}
-                        onFilterChange={setFilters}
-                        masterFilter={masterFilter}
-                        totalFiltered={filteredTitik.length}
-                        onReset={handleResetFilter}
-                        onToggleDrawer={() => setIsDrawerOpen((prev) => !prev)}
-                        isDrawerOpen={isDrawerOpen}
-                    />
+                {/* Kontainer Peta Interaktif Utama */}
+                {isMounted ? (
+                    <Suspense
+                        fallback={
+                            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/20 text-muted-foreground">
+                                <RefreshCw className="size-6 animate-spin text-primary" />
+                                <span className="text-body-sm font-medium">Memuat peta interaktif...</span>
+                            </div>
+                        }
+                    >
+                        <PetaCanvas
+                            titikList={filteredTitik}
+                            selectedTiket={selectedTiket}
+                            onSelectTiket={setSelectedTiket}
+                            isLoading={isLoading}
+                            className="h-full w-full rounded-none border-none shadow-none"
+                        />
+                    </Suspense>
+                ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/20 text-muted-foreground">
+                        <RefreshCw className="size-6 animate-spin text-primary" />
+                        <span className="text-body-sm font-medium">Memuat peta interaktif...</span>
+                    </div>
                 )}
 
-                {/* Kontainer Peta Utama */}
-                <div className="relative w-full h-[620px] lg:h-[700px] overflow-hidden rounded-2xl shadow-sm">
-                    {isMounted ? (
-                        <Suspense
-                            fallback={
-                                <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
-                                    <RefreshCw className="size-6 animate-spin text-primary" />
-                                    <span className="text-body-sm font-medium">Memuat peta interaktif...</span>
-                                </div>
-                            }
-                        >
-                            <PetaCanvas
-                                titikList={filteredTitik}
-                                selectedTiket={selectedTiket}
-                                onSelectTiket={setSelectedTiket}
-                                isLoading={isLoading}
-                            />
-                        </Suspense>
-                    ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
-                            <RefreshCw className="size-6 animate-spin text-primary" />
-                            <span className="text-body-sm font-medium">Memuat peta interaktif...</span>
-                        </div>
-                    )}
+                {/* Sliding Drawer List Laporan & Filter (Left to Right) */}
+                <PetaDrawerList
+                    titikList={filteredTitik}
+                    selectedTiket={selectedTiket}
+                    onSelectTiket={(tiket) => setSelectedTiket(tiket)}
+                    onClose={() => setIsDrawerOpen(false)}
+                    onToggle={() => setIsDrawerOpen((prev) => !prev)}
+                    isOpen={isDrawerOpen}
+                    filters={filters}
+                    onFilterChange={setFilters}
+                    masterFilter={masterFilter}
+                    onResetFilter={handleResetFilter}
+                />
 
-                    {/* Drawer Daftar Tiket Laporan (Slide-in) */}
-                    <PetaDrawerList
-                        titikList={filteredTitik}
-                        selectedTiket={selectedTiket}
-                        onSelectTiket={(tiket) => {
-                            setSelectedTiket(tiket);
-                        }}
-                        onClose={() => setIsDrawerOpen(false)}
-                        isOpen={isDrawerOpen}
-                        onResetFilter={handleResetFilter}
-                    />
-
-                    {/* Quick Summary Card / Sheet */}
-                    <TiketQuickSummary
-                        tiket={selectedTiket}
-                        onClose={() => setSelectedTiket(null)}
-                    />
-                </div>
+                {/* Quick Summary Floating Card on Map */}
+                <TiketQuickSummary
+                    tiket={selectedTiket}
+                    onClose={() => setSelectedTiket(null)}
+                />
             </div>
         </>
     );
 }
 
 PetaLaporanPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Peta Laporan Fasilitas" breadcrumb="Warga > Peta Laporan">
+    <InternalLayout title="Eksplorasi" breadcrumb="Warga > Eksplorasi" fullWidth noPadding>
         {page}
     </InternalLayout>
 );
