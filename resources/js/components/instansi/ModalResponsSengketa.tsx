@@ -207,11 +207,17 @@ export default function ModalResponsSengketa({
                             <Field
                                 data-invalid={Boolean(errors.alasan_sanggah)}
                             >
-                                <FieldLabel htmlFor="alasan-sanggah">
-                                    Alasan sanggahan teknis
-                                </FieldLabel>
+                                <div className="flex items-center justify-between">
+                                    <FieldLabel htmlFor="alasan-sanggah">
+                                        Alasan sanggahan teknis
+                                    </FieldLabel>
+                                    <span className="text-caption-xs text-muted-foreground">
+                                        {alasanSanggah.length}/256
+                                    </span>
+                                </div>
                                 <Textarea
                                     id="alasan-sanggah"
+                                    maxLength={256}
                                     value={alasanSanggah}
                                     onChange={(event) =>
                                         setAlasanSanggah(event.target.value)
@@ -222,7 +228,7 @@ export default function ModalResponsSengketa({
                                         errors.alasan_sanggah,
                                     )}
                                     aria-describedby="sanggah-description sanggah-error"
-                                    placeholder="Jelaskan pertimbangan teknis dan bukti yang mendukung sanggahan."
+                                    placeholder="Jelaskan pertimbangan teknis dan bukti yang mendukung sanggahan (maks. 256 karakter)."
                                 />
                                 <FieldDescription
                                     id="sanggah-description"

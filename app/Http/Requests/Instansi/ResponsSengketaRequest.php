@@ -30,6 +30,7 @@ class ResponsSengketaRequest extends FormRequest
                 $pilihan === 'sanggah' ? 'required' : 'nullable',
                 'string',
                 $pilihan === 'sanggah' ? 'min:10' : '',
+                'max:256',
             ],
         ];
     }

@@ -30,11 +30,13 @@ class KeputusanAuditorRequest extends FormRequest
                 in_array($jenis, ['PERINTAH', 'KERJAKAN_ULANG'], true) ? 'required' : 'nullable',
                 'string',
                 in_array($jenis, ['PERINTAH', 'KERJAKAN_ULANG'], true) ? 'min:10' : '',
+                'max:256',
             ],
             'alasan' => [
                 in_array($jenis, ['PERBAIKAN_SAH', 'KERJAKAN_ULANG'], true) ? 'required' : 'nullable',
                 'string',
                 in_array($jenis, ['PERBAIKAN_SAH', 'KERJAKAN_ULANG'], true) ? 'min:10' : '',
+                'max:256',
             ],
             'tenggat' => [
                 in_array($jenis, ['PERINTAH', 'KERJAKAN_ULANG'], true) ? 'required' : 'nullable',

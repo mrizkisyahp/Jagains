@@ -170,13 +170,14 @@ export default function ModalTanggapanResmi({
                                     )}
                                 >
                                     {tanggapan.trim().length >= 10
-                                        ? '✓ Memenuhi syarat'
-                                        : `Min. 10 karakter (${10 - tanggapan.trim().length} lagi)`}
+                                        ? `✓ ${tanggapan.length}/256 karakter (min. 10)`
+                                        : `Min. 10 karakter (${tanggapan.length}/256)`}
                                 </span>
                             </div>
                             <Textarea
                                 id="teks-tanggapan"
-                                placeholder="Tuliskan pernyataan resmi instansi terkait progres lapangan, koordinasi lintas dinas, atau penjelasan teknis kepada publik..."
+                                maxLength={256}
+                                placeholder="Tuliskan pernyataan resmi instansi terkait progres lapangan, koordinasi lintas dinas, atau penjelasan teknis kepada publik (maks. 256 karakter)..."
                                 aria-invalid={Boolean(fieldErrors.isi)}
                                 aria-describedby="error-ModalTanggapanResmi-isi"
                                 value={tanggapan}

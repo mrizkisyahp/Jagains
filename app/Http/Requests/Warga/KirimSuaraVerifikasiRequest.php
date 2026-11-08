@@ -36,6 +36,7 @@ class KirimSuaraVerifikasiRequest extends FormRequest
                 $setuju === false ? 'required' : 'nullable',
                 'string',
                 $setuju === false ? 'min:10' : '',
+                'max:256',
             ],
         ];
     }

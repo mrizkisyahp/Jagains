@@ -20,7 +20,7 @@ class TindakanModerasiRequest extends FormRequest
     {
         return [
             'tindakan' => ['required', Rule::in(['diabaikan', 'peringatan', 'disembunyikan', 'dibekukan'])],
-            'catatan' => ['required', 'string', 'min:10', 'max:1000'],
+            'catatan' => ['required', 'string', 'min:10', 'max:256'],
         ];
     }
 

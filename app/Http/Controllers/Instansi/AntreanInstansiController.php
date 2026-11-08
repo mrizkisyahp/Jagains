@@ -13,6 +13,7 @@ use App\Http\Requests\Instansi\RevisiTargetRequest;
 use App\Http\Requests\Instansi\SurveiSelesaiRequest;
 use App\Http\Requests\Instansi\TanggapanResmiRequest;
 use App\Http\Requests\Instansi\TerimaTiketRequest;
+use App\Http\Requests\Instansi\UnggahFotoSebelumRequest;
 use App\Http\Requests\Instansi\UsulanTolakRequest;
 use App\Models\Instansi;
 use App\Models\Kategori;
@@ -257,10 +258,14 @@ class AntreanInstansiController extends Controller
      */
     public function mulaiPengerjaan(Request $request, Laporan $laporan): RedirectResponse|JsonResponse
     {
+        $validated = $request->validate([
+            'catatan' => ['nullable', 'string', 'max:256'],
+        ]);
+
         $updated = $this->service->mulaiPengerjaan(
             $laporan,
             $request->user(),
-            $request->input('catatan')
+            $validated['catatan'] ?? null
         );
 
         if ($request->wantsJson()) {
@@ -294,6 +299,31 @@ class AntreanInstansiController extends Controller
         }
 
         return back()->with('sukses', "Berita Acara versi {$beritaAcara->versi} berhasil dicatat.");
+    }
+
+    /**
+     * Aksi Mengunggah Foto Dokumentasi 'Sebelum' Pengerjaan Fisik.
+     */
+    public function unggahFotoSebelum(UnggahFotoSebelumRequest $request, Laporan $laporan): RedirectResponse|JsonResponse
+    {
+        $lampiran = $this->service->unggahFotoSebelum(
+            $laporan,
+            $request->validated('foto'),
+            (float) $request->validated('lintang'),
+            (float) $request->validated('bujur'),
+            $request->filled('akurasi_gps_m') ? (float) $request->validated('akurasi_gps_m') : null,
+            $request->user()
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'sukses' => true,
+                'pesan' => 'Foto dokumentasi kondisi sebelum pengerjaan berhasil diunggah.',
+                'lampiran' => $lampiran,
+            ]);
+        }
+
+        return back()->with('sukses', 'Foto dokumentasi kondisi sebelum pengerjaan berhasil diunggah.');
     }
 
     /**

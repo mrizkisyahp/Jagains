@@ -20,7 +20,7 @@ class BuatLaporanRequest extends FormRequest
         return [
             'kategori_id' => ['required', 'integer', 'exists:kategori,id'],
             'keparahan' => ['nullable', 'string', 'in:ringan,sedang,berat'],
-            'keterangan' => ['required', 'string', 'min:10', 'max:2000'],
+            'keterangan' => ['required', 'string', 'min:10', 'max:256'],
             'lintang' => ['required', 'numeric', 'between:-90,90'],
             'bujur' => ['required', 'numeric', 'between:-180,180'],
             'lokasi_sumber' => ['required', 'string', 'in:gps,manual'],

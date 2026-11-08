@@ -148,13 +148,14 @@ export default function ModalLaporKonten({
                                 <Label htmlFor="catatan" className="text-xs font-semibold text-foreground">
                                     Keterangan Tambahan (Opsional)
                                 </Label>
-                                <span className="text-[11px] text-muted-foreground">{catatan.length}/500</span>
+                                <span className="text-[11px] text-muted-foreground">{catatan.length}/256</span>
                             </div>
                             <Textarea
                                 id="catatan"
-                                placeholder="Jelaskan detail bagian foto atau kalimat yang melanggar pedoman..."
+                                maxLength={256}
+                                placeholder="Jelaskan detail bagian foto atau kalimat yang melanggar pedoman (maks. 256 karakter)..."
                                 value={catatan}
-                                onChange={(e) => setCatatan(e.target.value.slice(0, 500))}
+                                onChange={(e) => setCatatan(e.target.value.slice(0, 256))}
                                 rows={3}
                                 className="text-xs"
                             />

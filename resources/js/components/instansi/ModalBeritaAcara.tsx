@@ -258,13 +258,14 @@ export default function ModalBeritaAcara({
                                             )}
                                         >
                                             {kegiatan.trim().length >= 10
-                                                ? '✓ Memenuhi syarat'
-                                                : `Min. 10 karakter (${10 - kegiatan.trim().length} lagi)`}
+                                                ? `✓ ${kegiatan.length}/256 karakter (min. 10)`
+                                                : `Min. 10 karakter (${kegiatan.length}/256)`}
                                         </span>
                                     </div>
                                     <Textarea
                                         id="ba-kegiatan"
-                                        placeholder="Contoh: Penggalian permukaan aspal amblas, pemadatan pondasi agregat kelas A..."
+                                        maxLength={256}
+                                        placeholder="Contoh: Penggalian permukaan aspal amblas, pemadatan pondasi agregat kelas A (maks. 256 karakter)..."
                                         aria-invalid={Boolean(
                                             fieldErrors.kegiatan,
                                         )}
@@ -304,13 +305,14 @@ export default function ModalBeritaAcara({
                                             )}
                                         >
                                             {hasil.trim().length >= 10
-                                                ? '✓ Memenuhi syarat'
-                                                : `Min. 10 karakter (${10 - hasil.trim().length} lagi)`}
+                                                ? `✓ ${hasil.length}/256 karakter (min. 10)`
+                                                : `Min. 10 karakter (${hasil.length}/256)`}
                                         </span>
                                     </div>
                                     <Textarea
                                         id="ba-hasil"
-                                        placeholder="Contoh: Permukaan aspal baru telah di-overlay setebal 5 cm, saluran air di tepi jalan dinormalisasi..."
+                                        maxLength={256}
+                                        placeholder="Contoh: Permukaan aspal baru telah di-overlay setebal 5 cm, saluran air dinormalisasi (maks. 256 karakter)..."
                                         aria-invalid={Boolean(
                                             fieldErrors.hasil,
                                         )}
@@ -331,18 +333,24 @@ export default function ModalBeritaAcara({
                                 </Field>
 
                                 <Field className="gap-2">
-                                    <FieldLabel
-                                        htmlFor="ba-hambatan"
-                                        className="text-body-base font-semibold"
-                                    >
-                                        Kendala Lapangan{' '}
-                                        <span className="text-body-sm font-normal text-muted-foreground">
-                                            (Opsional)
+                                    <div className="flex items-center justify-between">
+                                        <FieldLabel
+                                            htmlFor="ba-hambatan"
+                                            className="text-body-base font-semibold"
+                                        >
+                                            Kendala Lapangan{' '}
+                                            <span className="text-body-sm font-normal text-muted-foreground">
+                                                (Opsional)
+                                            </span>
+                                        </FieldLabel>
+                                        <span className="text-caption-xs text-muted-foreground">
+                                            {hambatan.length}/256
                                         </span>
-                                    </FieldLabel>
+                                    </div>
                                     <Textarea
                                         id="ba-hambatan"
-                                        placeholder="Contoh: Arus lalu lintas padat sehingga pengerjaan digeser ke shift malam..."
+                                        maxLength={256}
+                                        placeholder="Contoh: Arus lalu lintas padat sehingga pengerjaan digeser ke shift malam (maks. 256 karakter)..."
                                         aria-invalid={Boolean(
                                             fieldErrors.hambatan,
                                         )}

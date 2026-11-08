@@ -18,7 +18,7 @@ class SurveiSelesaiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'catatan' => ['nullable', 'string', 'max:1500'],
+            'catatan' => ['nullable', 'string', 'max:256'],
         ];
     }
 }

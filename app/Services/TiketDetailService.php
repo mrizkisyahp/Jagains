@@ -69,6 +69,7 @@ class TiketDetailService
                 'sisa_hari_sla' => $evaluasiSla['sisa_hari'],
                 'sisa_sla_teks' => $evaluasiSla['sisa_teks'],
                 'foto_awal' => null,
+                'foto_sebelum' => null,
                 'foto_sesudah' => null,
                 'foto_verifikasi' => [],
                 'berita_acara' => [],
@@ -90,12 +91,13 @@ class TiketDetailService
                 ->exists();
         }
 
-        // Format lampiran foto (Awal, Sesudah, Verifikasi)
+        // Format lampiran foto (4 Kategori: Awal, Sebelum, Sesudah, Verifikasi)
         $lampiranAwal = $laporan->lampiran->firstWhere('tahap', 'awal');
+        $lampiranSebelum = $laporan->lampiran->where('tahap', 'sebelum')->sortByDesc('created_at')->first();
         $lampiranSesudah = $laporan->lampiran->where('tahap', 'sesudah')->sortByDesc('created_at')->first();
         $lampiranVerifikasi = $laporan->lampiran->where('tahap', 'verifikasi')->map(fn (Lampiran $l) => $this->formatLampiran($l))->values()->all();
 
-        // Format berita acara (Append-Only)
+        // Format berita acara (Append-Only dengan riwayat revisi)
         $beritaAcaraList = $laporan->beritaAcara->map(function ($ba) use ($laporan) {
             return [
                 'id' => $ba->id,
@@ -108,33 +110,12 @@ class TiketDetailService
             ];
         })->values()->all();
 
-        // Format riwayat status (T-01 s/d T-20)
-        $riwayatStatusList = $laporan->riwayatStatus->map(function ($rs) {
-            return [
-                'id' => $rs->id,
-                'kode_transisi' => $rs->kode_transisi,
-                'status_lama' => $rs->status_lama,
-                'status_baru' => $rs->status_baru,
-                'catatan' => $rs->catatan,
-                'waktu' => $rs->waktu?->toIso8601String(),
-                'instansi_nama' => $rs->instansi?->nama,
-                'peran_pelaku' => $rs->pelaku?->peran ?? 'sistem',
-            ];
-        })->values()->all();
-
-        // Format pengalihan dinas
-        $pengalihanList = $laporan->pengalihan->map(function ($p) {
-            return [
-                'id' => $p->id,
-                'instansi_asal' => $p->instansiAsal?->nama ?? 'Instansi Asal',
-                'instansi_tujuan' => $p->instansiTujuan?->nama ?? 'Instansi Tujuan',
-                'alasan' => $p->alasan,
-                'waktu' => $p->waktu?->toIso8601String(),
-            ];
-        })->values()->all();
+        $beritaAcaraTerkini = ! empty($beritaAcaraList) ? end($beritaAcaraList) : null;
+        $beritaAcaraRevisi = array_reverse($beritaAcaraList);
 
         // Format ronde & kuorum verifikasi
         $kuorumData = null;
+        $daftarPemilih = [];
         $rondeTerakhir = $laporan->rondeVerifikasi->sortByDesc('nomor')->first();
         if ($rondeTerakhir) {
             $suaraSetuju = (float) $rondeTerakhir->verifikasiWarga->where('setuju', true)->sum('bobot');
@@ -152,6 +133,24 @@ class TiketDetailService
                 ])
                 ->values()
                 ->all();
+
+            $daftarPemilih = $rondeTerakhir->verifikasiWarga->map(function ($vw, $idx) use ($laporan) {
+                $fotoVerifikasi = $laporan->lampiran
+                    ->where('tahap', 'verifikasi')
+                    ->where('pengguna_id', $vw->pengguna_id)
+                    ->first();
+
+                return [
+                    'id' => $vw->id,
+                    'label_warga' => 'Warga #'.($idx + 1),
+                    'jalur' => strtoupper((string) $vw->jalur),
+                    'setuju' => (bool) $vw->setuju,
+                    'bobot' => (float) $vw->bobot,
+                    'alasan' => $vw->alasan,
+                    'foto_verifikasi' => $this->formatLampiran($fotoVerifikasi),
+                    'waktu' => $vw->waktu?->toIso8601String(),
+                ];
+            })->values()->all();
 
             $kuorumData = [
                 'nomor_ronde' => (int) $rondeTerakhir->nomor,
@@ -183,6 +182,78 @@ class TiketDetailService
             }
         }
 
+        // Format riwayat status (T-01 s/d T-20) beserta detail node lampiran
+        $riwayatStatusList = $laporan->riwayatStatus->map(function ($rs) use (
+            $lampiranSebelum,
+            $lampiranAwal,
+            $lampiranSesudah,
+            $beritaAcaraTerkini,
+            $beritaAcaraRevisi,
+            $kuorumData,
+            $daftarPemilih,
+            $catatanAuditorList
+        ) {
+            $hasDetail = false;
+            $tipeDetail = null;
+            $detail = null;
+
+            if ($rs->status_baru === 'MENUNGGU_VERIFIKASI') {
+                $hasDetail = true;
+                $tipeDetail = 'verifikasi';
+                $detail = [
+                    'komparasi_foto' => [
+                        'sebelum' => $this->formatLampiran($lampiranSebelum) ?? $this->formatLampiran($lampiranAwal),
+                        'sesudah' => $this->formatLampiran($lampiranSesudah),
+                        'awal' => $this->formatLampiran($lampiranAwal),
+                        'sebelum_asli' => $this->formatLampiran($lampiranSebelum),
+                    ],
+                    'berita_acara' => [
+                        'terkini' => $beritaAcaraTerkini,
+                        'riwayat_versi' => $beritaAcaraRevisi,
+                    ],
+                    'verifikasi_ringkasan' => $kuorumData ? array_merge($kuorumData, [
+                        'daftar_pemilih' => $daftarPemilih,
+                    ]) : null,
+                ];
+            } elseif ($rs->status_baru === 'MENUNGGU_KEPUTUSAN_AUDITOR' || (count($catatanAuditorList) > 0 && in_array($rs->kode_transisi, ['T-12', 'T-13', 'T-14', 'T-15'], true))) {
+                $hasDetail = true;
+                $tipeDetail = 'auditor';
+                $detail = [
+                    'catatan_auditor' => $catatanAuditorList,
+                    'komparasi_foto' => [
+                        'sebelum' => $this->formatLampiran($lampiranSebelum) ?? $this->formatLampiran($lampiranAwal),
+                        'sesudah' => $this->formatLampiran($lampiranSesudah),
+                        'awal' => $this->formatLampiran($lampiranAwal),
+                    ],
+                ];
+            }
+
+            return [
+                'id' => $rs->id,
+                'kode_transisi' => $rs->kode_transisi,
+                'status_lama' => $rs->status_lama,
+                'status_baru' => $rs->status_baru,
+                'catatan' => $rs->catatan,
+                'waktu' => $rs->waktu?->toIso8601String(),
+                'instansi_nama' => $rs->instansi?->nama,
+                'peran_pelaku' => $rs->pelaku?->peran ?? 'sistem',
+                'has_detail' => $hasDetail,
+                'tipe_detail' => $tipeDetail,
+                'detail' => $detail,
+            ];
+        })->values()->all();
+
+        // Format pengalihan dinas
+        $pengalihanList = $laporan->pengalihan->map(function ($p) {
+            return [
+                'id' => $p->id,
+                'instansi_asal' => $p->instansiAsal?->nama ?? 'Instansi Asal',
+                'instansi_tujuan' => $p->instansiTujuan?->nama ?? 'Instansi Tujuan',
+                'alasan' => $p->alasan,
+                'waktu' => $p->waktu?->toIso8601String(),
+            ];
+        })->values()->all();
+
         return [
             'id' => $laporan->id,
             'nomor_tiket' => $laporan->nomor_tiket,
@@ -206,6 +277,7 @@ class TiketDetailService
             'sisa_hari_sla' => $evaluasiSla['sisa_hari'],
             'sisa_sla_teks' => $evaluasiSla['sisa_teks'],
             'foto_awal' => $this->formatLampiran($lampiranAwal),
+            'foto_sebelum' => $this->formatLampiran($lampiranSebelum),
             'foto_sesudah' => $this->formatLampiran($lampiranSesudah),
             'foto_verifikasi' => $lampiranVerifikasi,
             'berita_acara' => $beritaAcaraList,

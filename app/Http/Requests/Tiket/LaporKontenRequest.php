@@ -25,7 +25,7 @@ class LaporKontenRequest extends FormRequest
             'catatan' => [
                 'nullable',
                 'string',
-                'max:500',
+                'max:256',
             ],
         ];
     }
@@ -38,7 +38,7 @@ class LaporKontenRequest extends FormRequest
         return [
             'alasan.required' => 'Pilihlah salah satu alasan pelanggaran yang sesuai.',
             'alasan.in' => 'Kategori alasan pelanggaran yang dipilih tidak valid.',
-            'catatan.max' => 'Catatan tambahan tidak boleh melebihi 500 karakter.',
+            'catatan.max' => 'Catatan tambahan tidak boleh melebihi 256 karakter.',
         ];
     }
 }

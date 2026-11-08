@@ -567,12 +567,13 @@ export default function ModalBeriSuaraVerifikasi({
                                             : 'text-destructive',
                                     )}
                                 >
-                                    {alasan.trim().length} / 10 karakter minimum
+                                    {alasan.length}/256 karakter (min. 10)
                                 </span>
                             </div>
                             <Textarea
                                 rows={2}
-                                placeholder="Jelaskan bagian yang belum tuntas atau masih rusak..."
+                                maxLength={256}
+                                placeholder="Jelaskan bagian yang belum tuntas atau masih rusak (maks. 256 karakter)..."
                                 value={alasan}
                                 onChange={(e) => setAlasan(e.target.value)}
                                 className="text-body-sm bg-background border-border"

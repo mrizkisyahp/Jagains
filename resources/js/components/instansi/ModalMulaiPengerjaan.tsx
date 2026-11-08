@@ -153,18 +153,24 @@ export default function ModalMulaiPengerjaan({
                         />
 
                         <Field className="gap-2">
-                            <FieldLabel
-                                htmlFor="catatan-mulai"
-                                className="text-body-base font-semibold"
-                            >
-                                Catatan Pengerjaan Lapangan{' '}
-                                <span className="text-body-sm font-normal text-muted-foreground">
-                                    (Opsional)
+                            <div className="flex items-center justify-between">
+                                <FieldLabel
+                                    htmlFor="catatan-mulai"
+                                    className="text-body-base font-semibold"
+                                >
+                                    Catatan Pengerjaan Lapangan{' '}
+                                    <span className="text-body-sm font-normal text-muted-foreground">
+                                        (Opsional)
+                                    </span>
+                                </FieldLabel>
+                                <span className="text-caption-xs text-muted-foreground">
+                                    {catatan.length}/256
                                 </span>
-                            </FieldLabel>
+                            </div>
                             <Textarea
                                 id="catatan-mulai"
-                                placeholder="Contoh: Alat berat dan armada pengangkut material telah tiba di lokasi. Pengerjaan dimulai..."
+                                maxLength={256}
+                                placeholder="Contoh: Alat berat dan armada pengangkut material telah tiba di lokasi. Pengerjaan dimulai (maks. 256 karakter)..."
                                 aria-invalid={Boolean(fieldErrors.catatan)}
                                 aria-describedby="error-ModalMulaiPengerjaan-catatan"
                                 value={catatan}

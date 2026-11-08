@@ -22,7 +22,7 @@ class AjukanSelesaiRequest extends FormRequest
             'lintang' => ['required', 'numeric', 'between:-90,90'],
             'bujur' => ['required', 'numeric', 'between:-180,180'],
             'akurasi_gps_m' => ['nullable', 'numeric', 'min:0', 'max:500'],
-            'catatan' => ['nullable', 'string', 'max:1000'],
+            'catatan' => ['nullable', 'string', 'max:256'],
         ];
     }
 

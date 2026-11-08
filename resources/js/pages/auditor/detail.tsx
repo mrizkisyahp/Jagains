@@ -672,22 +672,28 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <FieldLabel className="text-xs font-semibold">
-                                        Instruksi / Perintah Tertulis Auditor{' '}
-                                        <span className="text-destructive">*</span>
-                                    </FieldLabel>
+                                    <div className="flex items-center justify-between">
+                                        <FieldLabel className="text-xs font-semibold">
+                                            Instruksi / Perintah Tertulis Auditor{' '}
+                                            <span className="text-destructive">*</span>
+                                        </FieldLabel>
+                                        <span className="text-caption-xs text-muted-foreground">
+                                            {perintah.length}/256
+                                        </span>
+                                    </div>
                                     <Textarea
                                         value={perintah}
+                                        maxLength={256}
                                         onChange={(e) =>
                                             setPerintah(e.target.value)
                                         }
-                                        placeholder="Contoh: Dinas wajib segera menuntaskan penerbitan surat survei lapangan dan berkoordinasi dengan pengawas setempat dalam waktu 2 hari kerja..."
+                                        placeholder="Contoh: Dinas wajib segera menuntaskan penerbitan surat survei lapangan (maks. 256 karakter)..."
                                         rows={4}
                                         className="text-xs"
                                         required
                                     />
                                     <p className="text-[11px] text-muted-foreground">
-                                        Minimal 10 karakter. Perintah ini akan tampil
+                                        Minimal 10 karakter, maksimal 256 karakter. Perintah ini akan tampil
                                         secara publik pada detail tiket dan dikirim
                                         sebagai notifikasi resmi ke dinas terkait.
                                     </p>
@@ -800,22 +806,28 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
 
                                 {/* Alasan Pertimbangan Yuridis / Teknis */}
                                 <div className="rounded-xl border border-border bg-card p-5 space-y-1.5">
-                                    <FieldLabel className="text-xs font-semibold">
-                                        Alasan Pertimbangan Yuridis & Teknis Auditor{' '}
-                                        <span className="text-destructive">*</span>
-                                    </FieldLabel>
+                                    <div className="flex items-center justify-between">
+                                        <FieldLabel className="text-xs font-semibold">
+                                            Alasan Pertimbangan Yuridis & Teknis Auditor{' '}
+                                            <span className="text-destructive">*</span>
+                                        </FieldLabel>
+                                        <span className="text-caption-xs text-muted-foreground">
+                                            {alasan.length}/256
+                                        </span>
+                                    </div>
                                     <Textarea
                                         value={alasan}
+                                        maxLength={256}
                                         onChange={(e) =>
                                             setAlasan(e.target.value)
                                         }
-                                        placeholder="Uraikan dasar pertimbangan penetapan putusan ini berdasarkan telaah foto lapangan, dokumen berita acara, dan dokumen sanggahan..."
+                                        placeholder="Uraikan dasar pertimbangan penetapan putusan ini (maksimal 256 karakter)..."
                                         rows={4}
                                         className="text-xs"
                                         required
                                     />
                                     <p className="text-[11px] text-muted-foreground">
-                                        Minimal 10 karakter. Alasan pertimbangan ini
+                                        Minimal 10 karakter, maksimal 256 karakter. Alasan pertimbangan ini
                                         akan tercatat permanen di audit log dan tampil
                                         secara transparan kepada publik.
                                     </p>

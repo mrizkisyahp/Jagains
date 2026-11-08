@@ -153,18 +153,24 @@ export default function ModalTerimaTiket({
                         />
 
                         <Field className="gap-2">
-                            <FieldLabel
-                                htmlFor="catatan-terima"
-                                className="text-body-base font-semibold"
-                            >
-                                Catatan Tindak Lanjut Awal{' '}
-                                <span className="text-body-sm font-normal text-muted-foreground">
-                                    (Opsional)
+                            <div className="flex items-center justify-between">
+                                <FieldLabel
+                                    htmlFor="catatan-terima"
+                                    className="text-body-base font-semibold"
+                                >
+                                    Catatan Tindak Lanjut Awal{' '}
+                                    <span className="text-body-sm font-normal text-muted-foreground">
+                                        (Opsional)
+                                    </span>
+                                </FieldLabel>
+                                <span className="text-caption-xs text-muted-foreground">
+                                    {catatan.length}/256
                                 </span>
-                            </FieldLabel>
+                            </div>
                             <Textarea
                                 id="catatan-terima"
-                                placeholder="Contoh: Tiket telah diagendakan untuk survei tim lapangan pada hari kerja berikutnya..."
+                                maxLength={256}
+                                placeholder="Contoh: Tiket telah diagendakan untuk survei tim lapangan pada hari kerja berikutnya (maks. 256 karakter)..."
                                 aria-invalid={Boolean(fieldErrors.catatan)}
                                 aria-describedby="error-ModalTerimaTiket-catatan"
                                 value={catatan}

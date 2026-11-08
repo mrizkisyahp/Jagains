@@ -3,7 +3,7 @@ import { KondisiSla } from './peta';
 export interface LampiranFoto {
     uuid: string;
     url: string;
-    tahap: 'awal' | 'sesudah' | 'verifikasi';
+    tahap: 'awal' | 'sebelum' | 'sesudah' | 'verifikasi';
     lebar: number;
     tinggi: number;
     gps_cocok: boolean | null;
@@ -22,6 +22,34 @@ export interface BeritaAcaraItem {
     created_at: string;
 }
 
+export interface PemilihVerifikasiItem {
+    id: number;
+    label_warga: string;
+    jalur: 'A' | 'B';
+    setuju: boolean;
+    bobot: number;
+    alasan: string | null;
+    foto_verifikasi?: LampiranFoto | null;
+    waktu: string;
+}
+
+export interface RiwayatStatusDetailPayload {
+    komparasi_foto?: {
+        sebelum: LampiranFoto | null;
+        sesudah: LampiranFoto | null;
+        awal: LampiranFoto | null;
+        sebelum_asli?: LampiranFoto | null;
+    };
+    berita_acara?: {
+        terkini: BeritaAcaraItem | null;
+        riwayat_versi: BeritaAcaraItem[];
+    };
+    verifikasi_ringkasan?: (KuorumVerifikasiData & {
+        daftar_pemilih?: PemilihVerifikasiItem[];
+    }) | null;
+    catatan_auditor?: CatatanAuditorItem[];
+}
+
 export interface RiwayatStatusItem {
     id: number;
     kode_transisi: string;
@@ -31,6 +59,9 @@ export interface RiwayatStatusItem {
     waktu: string;
     instansi_nama: string | null;
     peran_pelaku: string;
+    has_detail?: boolean;
+    tipe_detail?: 'verifikasi' | 'auditor' | null;
+    detail?: RiwayatStatusDetailPayload | null;
 }
 
 export interface PengalihanItem {
@@ -93,6 +124,7 @@ export interface TiketDetail {
     sisa_hari_sla: number | null;
     sisa_sla_teks: string;
     foto_awal: LampiranFoto | null;
+    foto_sebelum: LampiranFoto | null;
     foto_sesudah: LampiranFoto | null;
     foto_verifikasi: LampiranFoto[];
     berita_acara: BeritaAcaraItem[];

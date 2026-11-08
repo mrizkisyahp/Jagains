@@ -425,6 +425,73 @@ class InstansiTiketService
     }
 
     /**
+     * Mengunggah foto dokumentasi kondisi 'sebelum' pengerjaan fisik oleh petugas instansi wajib kamera & geofence GPS 50m.
+     */
+    public function unggahFotoSebelum(
+        Laporan $laporan,
+        string $fotoBase64,
+        float $lat,
+        float $lng,
+        ?float $akurasi,
+        User $petugas
+    ): Lampiran {
+        $this->pastikanKewenanganTiket($laporan, $petugas);
+
+        if (! in_array($laporan->status, ['DITERIMA', 'DISURVEI', 'TERJADWAL_ANGGARAN', 'DIKERJAKAN', 'DISENGKETAKAN'], true)) {
+            throw ValidationException::withMessages([
+                'status' => ["Foto sebelum pengerjaan hanya dapat diunggah saat tiket dalam proses penanganan (status saat ini: {$laporan->status})."],
+            ]);
+        }
+
+        // Validasi Geofence GPS (P-12: Toleransi maks 50 meter)
+        $jarakM = $this->hitungJarakMeter(
+            (float) $laporan->lintang,
+            (float) $laporan->bujur,
+            $lat,
+            $lng
+        );
+
+        if ($jarakM > 50.0) {
+            throw ValidationException::withMessages([
+                'lokasi' => [
+                    sprintf(
+                        'Posisi koordinat Anda berjarak %.1f meter dari lokasi kerusakan. Pengambilan foto sebelum wajib dilakukan di lokasi fisik (radius maksimal 50 meter sesuai Parameter P-12).',
+                        $jarakM
+                    ),
+                ],
+            ]);
+        }
+
+        // Proses kompresi dan pembersihan EXIF foto bukti sebelum
+        try {
+            $fotoInfo = $this->fotoService->prosesFotoKamera($fotoBase64);
+        } catch (FotoProcessingException $e) {
+            throw ValidationException::withMessages([
+                'foto' => [$e->getMessage()],
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages([
+                'foto' => [$e->getMessage()],
+            ]);
+        }
+
+        return Lampiran::create([
+            'uuid' => $fotoInfo['uuid'],
+            'laporan_id' => $laporan->id,
+            'pengguna_id' => $petugas->id,
+            'tahap' => 'sebelum',
+            'path' => $fotoInfo['path'],
+            'ukuran_byte' => $fotoInfo['ukuran_byte'],
+            'lebar' => $fotoInfo['lebar'],
+            'tinggi' => $fotoInfo['tinggi'],
+            'gps_cocok' => true,
+            'jarak_m' => $jarakM,
+            'akurasi_m' => $akurasi ?? 5.0,
+            'created_at' => now(),
+        ]);
+    }
+
+    /**
      * Mengajukan penyelesaian fisik wajib foto kamera langsung dan validasi geofence GPS 50m (FR-TIK-08 & ST-03).
      */
     public function ajukanSelesai(

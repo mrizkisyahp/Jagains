@@ -251,13 +251,14 @@ export default function ModalUsulanTolak({
                                     )}
                                 >
                                     {keterangan.trim().length >= 10
-                                        ? '✓ Memenuhi syarat'
-                                        : `Min. 10 karakter (${10 - keterangan.trim().length} lagi)`}
+                                        ? `✓ ${keterangan.length}/256 karakter (min. 10)`
+                                        : `Min. 10 karakter (${keterangan.length}/256)`}
                                 </span>
                             </div>
                             <Textarea
                                 id="keterangan-usul-tolak"
-                                placeholder="Uraikan fakta penolakan, nomor sertifikat/status PSU, atau bukti lain yang akan diperiksa oleh Auditor..."
+                                maxLength={256}
+                                placeholder="Uraikan fakta penolakan, nomor sertifikat/status PSU, atau bukti lain yang akan diperiksa oleh Auditor (maks. 256 karakter)..."
                                 aria-invalid={Boolean(fieldErrors.keterangan)}
                                 aria-describedby="error-ModalUsulanTolak-keterangan"
                                 value={keterangan}

@@ -18,9 +18,9 @@ class BeritaAcaraRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'kegiatan' => ['required', 'string', 'min:10', 'max:2000'],
-            'hasil' => ['required', 'string', 'min:10', 'max:2000'],
-            'hambatan' => ['nullable', 'string', 'max:2000'],
+            'kegiatan' => ['required', 'string', 'min:10', 'max:256'],
+            'hasil' => ['required', 'string', 'min:10', 'max:256'],
+            'hambatan' => ['nullable', 'string', 'max:256'],
         ];
     }
 
@@ -32,8 +32,11 @@ class BeritaAcaraRequest extends FormRequest
         return [
             'kegiatan.required' => 'Uraian kegiatan fisik wajib diisi.',
             'kegiatan.min' => 'Uraian kegiatan minimal berisi 10 karakter.',
+            'kegiatan.max' => 'Uraian kegiatan fisik maksimal 256 karakter.',
             'hasil.required' => 'Uraian hasil fisik pekerjaan wajib diisi.',
             'hasil.min' => 'Uraian hasil minimal berisi 10 karakter.',
+            'hasil.max' => 'Uraian hasil fisik pekerjaan maksimal 256 karakter.',
+            'hambatan.max' => 'Uraian kendala/hambatan maksimal 256 karakter.',
         ];
     }
 }

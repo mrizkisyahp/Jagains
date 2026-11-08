@@ -486,14 +486,15 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                                     </Label>
                                     <span className={`text-caption-xs ${keterangan.trim().length >= 10 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-destructive font-medium'}`}>
                                         {keterangan.trim().length >= 10
-                                            ? `✓ ${keterangan.trim().length} karakter (memenuhi syarat min. 10)`
-                                            : `Minimal 10 karakter (kurang ${10 - keterangan.trim().length} lagi)`}
+                                            ? `✓ ${keterangan.length}/256 karakter (min. 10)`
+                                            : `Minimal 10 karakter (${keterangan.length}/256)`}
                                     </span>
                                 </div>
                                 <Textarea
                                     id="keterangan"
                                     rows={4}
-                                    placeholder="Jelaskan kondisi kerusakan fisik di lokasi secara rinci, patokan jalan, atau dampak terhadap warga sekitar..."
+                                    maxLength={256}
+                                    placeholder="Jelaskan kondisi kerusakan fisik di lokasi secara rinci, patokan jalan, atau dampak terhadap warga sekitar (maks. 256 karakter)..."
                                     value={keterangan}
                                     onChange={(e) => setKeterangan(e.target.value)}
                                     className="resize-none text-body-base rounded-xl"

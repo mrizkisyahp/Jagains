@@ -274,18 +274,24 @@ export default function ModalJadwalAnggaran({
                         </Field>
 
                         <Field className="gap-2">
-                            <FieldLabel
-                                htmlFor="catatan-anggaran"
-                                className="text-body-base font-semibold"
-                            >
-                                Keterangan Rencana Kegiatan{' '}
-                                <span className="text-body-sm font-normal text-muted-foreground">
-                                    (Opsional)
+                            <div className="flex items-center justify-between">
+                                <FieldLabel
+                                    htmlFor="catatan-anggaran"
+                                    className="text-body-base font-semibold"
+                                >
+                                    Keterangan Rencana Kegiatan{' '}
+                                    <span className="text-body-sm font-normal text-muted-foreground">
+                                        (Opsional)
+                                    </span>
+                                </FieldLabel>
+                                <span className="text-caption-xs text-muted-foreground">
+                                    {catatan.length}/256
                                 </span>
-                            </FieldLabel>
+                            </div>
                             <Textarea
                                 id="catatan-anggaran"
-                                placeholder="Contoh: Pekerjaan diplot pada mata anggaran pemeliharaan berkala triwulan berjalan..."
+                                maxLength={256}
+                                placeholder="Contoh: Pekerjaan diplot pada mata anggaran pemeliharaan berkala triwulan berjalan (maks. 256 karakter)..."
                                 aria-invalid={Boolean(fieldErrors.catatan)}
                                 aria-describedby="error-ModalJadwalAnggaran-catatan"
                                 value={catatan}

@@ -25,7 +25,7 @@ class JadwalAnggaranRequest extends FormRequest
                 'after_or_equal:today',
                 'before_or_equal:'.now()->addDays(180)->toDateString(),
             ],
-            'catatan' => ['nullable', 'string', 'max:1000'],
+            'catatan' => ['nullable', 'string', 'max:256'],
         ];
     }
 

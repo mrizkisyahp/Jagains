@@ -153,18 +153,24 @@ export default function ModalSurveiSelesai({
                         />
 
                         <Field className="gap-2">
-                            <FieldLabel
-                                htmlFor="catatan-survei"
-                                className="text-body-base font-semibold"
-                            >
-                                Catatan Temuan Lapangan & Dimensi Kerusakan{' '}
-                                <span className="text-body-sm font-normal text-muted-foreground">
-                                    (Opsional)
+                            <div className="flex items-center justify-between">
+                                <FieldLabel
+                                    htmlFor="catatan-survei"
+                                    className="text-body-base font-semibold"
+                                >
+                                    Catatan Temuan Lapangan & Dimensi Kerusakan{' '}
+                                    <span className="text-body-sm font-normal text-muted-foreground">
+                                        (Opsional)
+                                    </span>
+                                </FieldLabel>
+                                <span className="text-caption-xs text-muted-foreground">
+                                    {catatan.length}/256
                                 </span>
-                            </FieldLabel>
+                            </div>
                             <Textarea
                                 id="catatan-survei"
-                                placeholder="Contoh: Telah disurvei tim teknis. Estimasi luas jalan berlubang 4x3 meter, kedalaman 8 cm, membutuhkan perkerasan agregat B..."
+                                maxLength={256}
+                                placeholder="Contoh: Telah disurvei tim teknis. Estimasi luas jalan berlubang 4x3 meter (maks. 256 karakter)..."
                                 aria-invalid={Boolean(fieldErrors.catatan)}
                                 aria-describedby="error-ModalSurveiSelesai-catatan"
                                 value={catatan}

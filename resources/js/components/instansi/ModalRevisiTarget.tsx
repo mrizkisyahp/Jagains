@@ -238,13 +238,14 @@ export default function ModalRevisiTarget({
                                     )}
                                 >
                                     {alasan.trim().length >= 10
-                                        ? '✓ Memenuhi syarat'
-                                        : `Min. 10 karakter (${10 - alasan.trim().length} lagi)`}
+                                        ? `✓ ${alasan.length}/256 karakter (min. 10)`
+                                        : `Min. 10 karakter (${alasan.length}/256)`}
                                 </span>
                             </div>
                             <Textarea
                                 id="alasan-revisi"
-                                placeholder="Jelaskan alasan kendala cuaca, keterlambatan pasokan material, atau hambatan teknis lainnya..."
+                                maxLength={256}
+                                placeholder="Jelaskan alasan kendala cuaca, keterlambatan pasokan material, atau hambatan teknis lainnya (maks. 256 karakter)..."
                                 aria-invalid={Boolean(fieldErrors.alasan)}
                                 aria-describedby="error-ModalRevisiTarget-alasan"
                                 value={alasan}

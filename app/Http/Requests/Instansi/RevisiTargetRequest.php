@@ -24,7 +24,7 @@ class RevisiTargetRequest extends FormRequest
                 'after_or_equal:today',
                 'before_or_equal:'.now()->addDays(180)->toDateString(),
             ],
-            'alasan' => ['required', 'string', 'min:10', 'max:1500'],
+            'alasan' => ['required', 'string', 'min:10', 'max:256'],
         ];
     }
 

@@ -19,7 +19,7 @@ class DisposisiRoutingRequest extends FormRequest
     {
         return [
             'instansi_id' => ['required', 'integer', 'exists:instansi,id'],
-            'catatan' => ['required', 'string', 'min:10', 'max:1000'],
+            'catatan' => ['required', 'string', 'min:10', 'max:256'],
         ];
     }
 

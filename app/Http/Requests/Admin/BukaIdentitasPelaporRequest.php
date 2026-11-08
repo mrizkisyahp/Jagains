@@ -18,7 +18,7 @@ class BukaIdentitasPelaporRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'alasan' => ['required', 'string', 'min:10', 'max:500'],
+            'alasan' => ['required', 'string', 'min:10', 'max:256'],
         ];
     }
 

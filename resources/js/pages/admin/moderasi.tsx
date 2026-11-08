@@ -745,12 +745,13 @@ export default function ModerasiPage({
                                 </FieldLabel>
                                 <Textarea
                                     id="catatan-moderator"
+                                    maxLength={256}
                                     value={data.catatan}
                                     onChange={(e) =>
                                         setData('catatan', e.target.value)
                                     }
                                     rows={3}
-                                    placeholder="Dasar pertimbangan dan temuan bukti moderator (minimal 10 karakter)..."
+                                    placeholder="Dasar pertimbangan dan temuan bukti moderator (maksimal 256 karakter)..."
                                     className="resize-none"
                                 />
                                 <div className="flex justify-between text-caption-xs text-muted-foreground">
@@ -764,7 +765,7 @@ export default function ModerasiPage({
                                                 : 'text-muted-foreground'
                                         }
                                     >
-                                        {data.catatan.trim().length} karakter
+                                        {data.catatan.length}/256 karakter
                                     </span>
                                 </div>
                                 {errors.catatan && (

@@ -250,10 +250,11 @@ export default function ModalBukaIdentitasPelapor({
                                 </FieldLabel>
                                 <Textarea
                                     id="alasan-investigasi"
+                                    maxLength={256}
                                     value={alasan}
                                     onChange={(e) => setAlasan(e.target.value)}
                                     rows={3}
-                                    placeholder="Tuliskan nomor surat tugas, dasar hukum, atau alasan audit resmi (minimal 10 karakter)..."
+                                    placeholder="Tuliskan nomor surat tugas, dasar hukum, atau alasan audit resmi (maksimal 256 karakter)..."
                                     className="resize-none"
                                 />
                                 <div className="flex justify-between text-caption-xs text-muted-foreground">
@@ -265,7 +266,7 @@ export default function ModalBukaIdentitasPelapor({
                                                 : 'text-muted-foreground'
                                         }
                                     >
-                                        {alasan.trim().length} karakter
+                                        {alasan.length}/256 karakter
                                     </span>
                                 </div>
                                 {error && <FieldError>{error}</FieldError>}

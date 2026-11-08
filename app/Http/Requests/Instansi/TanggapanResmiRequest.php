@@ -18,7 +18,7 @@ class TanggapanResmiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tanggapan' => ['required', 'string', 'min:10', 'max:2500'],
+            'tanggapan' => ['required', 'string', 'min:10', 'max:256'],
         ];
     }
 

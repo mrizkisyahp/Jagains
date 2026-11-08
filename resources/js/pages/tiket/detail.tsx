@@ -21,7 +21,7 @@ import {
     ThumbsUp,
     ZoomIn,
 } from 'lucide-react';
-import type { TiketDetail, LampiranFoto } from '@/types/tiket';
+import type { TiketDetail, LampiranFoto, RiwayatStatusItem } from '@/types/tiket';
 import type { User } from '@/types/auth';
 import InternalLayout from '@/layouts/InternalLayout';
 import LandingNavbar from '@/components/landing/LandingNavbar';
@@ -44,6 +44,7 @@ import ModalLaporKonten from '@/components/tiket/ModalLaporKonten';
 import ModalKonfirmasiLogin from '@/components/tiket/ModalKonfirmasiLogin';
 import ModalBukaIdentitasPelapor from '@/components/admin/ModalBukaIdentitasPelapor';
 import ModalBeriSuaraVerifikasi from '@/components/verifikasi/ModalBeriSuaraVerifikasi';
+import ModalDetailTimelineNode from '@/components/tiket/ModalDetailTimelineNode';
 
 const LocationMap = lazy(
     () => import('@/components/instansi/InstansiLocationMap'),
@@ -136,6 +137,7 @@ export default function DetailTiketPage({
     const [laporModalOpen, setLaporModalOpen] = useState(false);
     const [modalIdentitasOpen, setModalIdentitasOpen] = useState(false);
     const [modalVerifikasiOpen, setModalVerifikasiOpen] = useState(false);
+    const [selectedTimelineItem, setSelectedTimelineItem] = useState<RiwayatStatusItem | null>(null);
 
     const documentPages = Math.max(1, Math.ceil(tiket.berita_acara.length / 3));
 
@@ -811,6 +813,20 @@ export default function DetailTiketPage({
                                                     )}
                                                 </p>
                                             )}
+                                            {item.has_detail && (
+                                                <div className="mt-3">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setSelectedTimelineItem(item)}
+                                                        className="h-8 gap-1.5 rounded-lg border-primary/30 bg-primary/5 text-caption-xs font-semibold text-primary hover:bg-primary/10 hover:border-primary/50"
+                                                    >
+                                                        <FileText className="size-3.5" />
+                                                        <span>Lihat detail</span>
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </li>
                                     ))}
                                 </ol>
@@ -1192,6 +1208,14 @@ export default function DetailTiketPage({
                 onClose={() => setModalVerifikasiOpen(false)}
                 tiket={tiket as any}
                 onSuccess={() => router.reload()}
+            />
+
+            <ModalDetailTimelineNode
+                open={!!selectedTimelineItem}
+                onClose={() => setSelectedTimelineItem(null)}
+                item={selectedTimelineItem}
+                nomorTiket={tiket.nomor_tiket}
+                onPreviewPhoto={setPreview}
             />
         </div>
     );

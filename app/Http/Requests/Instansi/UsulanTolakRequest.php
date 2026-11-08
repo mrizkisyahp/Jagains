@@ -23,7 +23,7 @@ class UsulanTolakRequest extends FormRequest
                 'string',
                 'in:bukan_fasilitas_publik,lahan_privat,laporan_fiktif,dalam_sengketa_hukum,lainnya',
             ],
-            'keterangan' => ['required', 'string', 'min:10', 'max:1500'],
+            'keterangan' => ['required', 'string', 'min:10', 'max:256'],
         ];
     }
 

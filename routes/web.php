@@ -99,6 +99,7 @@ Route::middleware(['auth', 'role:instansi'])->prefix('instansi')->name('instansi
     Route::post('/tiket/{laporan}/survei', [AntreanInstansiController::class, 'selesaikanSurvei'])->name('tiket.survei');
     Route::post('/tiket/{laporan}/anggaran', [AntreanInstansiController::class, 'jadwalkanAnggaran'])->name('tiket.anggaran');
     Route::post('/tiket/{laporan}/mulai', [AntreanInstansiController::class, 'mulaiPengerjaan'])->name('tiket.mulai');
+    Route::post('/tiket/{laporan}/foto-sebelum', [AntreanInstansiController::class, 'unggahFotoSebelum'])->name('tiket.foto-sebelum');
     Route::post('/tiket/{laporan}/berita-acara', [AntreanInstansiController::class, 'simpanBeritaAcara'])->name('tiket.berita-acara');
     Route::post('/tiket/{laporan}/selesai', [AntreanInstansiController::class, 'ajukanSelesai'])->name('tiket.selesai');
     Route::post('/tiket/{laporan}/tanggapan', [AntreanInstansiController::class, 'tanggapanResmi'])->name('tiket.tanggapan');

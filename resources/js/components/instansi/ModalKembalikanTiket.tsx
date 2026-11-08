@@ -172,13 +172,14 @@ export default function ModalKembalikanTiket({
                                     )}
                                 >
                                     {alasan.trim().length >= 10
-                                        ? '✓ Memenuhi syarat'
-                                        : `Min. 10 karakter (${10 - alasan.trim().length} lagi)`}
+                                        ? `✓ ${alasan.length}/256 karakter (min. 10)`
+                                        : `Min. 10 karakter (${alasan.length}/256)`}
                                 </span>
                             </div>
                             <Textarea
                                 id="alasan-kembalikan"
-                                placeholder="Jelaskan kendala penetapan kewenangan, aset lintas instansi, atau alasan penugasan administratif lainnya..."
+                                maxLength={256}
+                                placeholder="Jelaskan kendala penetapan kewenangan, aset lintas instansi, atau alasan penugasan administratif lainnya (maks. 256 karakter)..."
                                 aria-invalid={Boolean(fieldErrors.alasan)}
                                 aria-describedby="error-ModalKembalikanTiket-alasan"
                                 value={alasan}

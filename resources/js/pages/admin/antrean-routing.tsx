@@ -503,12 +503,13 @@ export default function AntreanRoutingPage({
                                 </FieldLabel>
                                 <Textarea
                                     id="catatan-textarea"
+                                    maxLength={256}
                                     value={data.catatan}
                                     onChange={(e) =>
                                         setData('catatan', e.target.value)
                                     }
                                     rows={3}
-                                    placeholder="Alasan penugasan tiket ini ke OPD terkait (minimal 10 karakter)..."
+                                    placeholder="Alasan penugasan tiket ini ke OPD terkait (maksimal 256 karakter)..."
                                     className="resize-none"
                                 />
                                 <div className="flex justify-between text-caption-xs text-muted-foreground">
@@ -523,7 +524,7 @@ export default function AntreanRoutingPage({
                                                 : 'text-muted-foreground'
                                         }
                                     >
-                                        {data.catatan.trim().length} karakter
+                                        {data.catatan.length}/256 karakter
                                     </span>
                                 </div>
                                 {errors.catatan && (

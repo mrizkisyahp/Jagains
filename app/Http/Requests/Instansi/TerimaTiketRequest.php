@@ -18,7 +18,7 @@ class TerimaTiketRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'catatan' => ['nullable', 'string', 'max:1000'],
+            'catatan' => ['nullable', 'string', 'max:256'],
         ];
     }
 }

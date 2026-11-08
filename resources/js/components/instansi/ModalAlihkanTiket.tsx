@@ -280,13 +280,14 @@ export default function ModalAlihkanTiket({
                                             )}
                                         >
                                             {alasan.trim().length >= 10
-                                                ? '✓ Memenuhi syarat'
-                                                : `Min. 10 karakter (${10 - alasan.trim().length} lagi)`}
+                                                ? `✓ ${alasan.length}/256 karakter (min. 10)`
+                                                : `Min. 10 karakter (${alasan.length}/256)`}
                                         </span>
                                     </div>
                                     <Textarea
                                         id="alasan-alihkan"
-                                        placeholder="Jelaskan alasan pengalihan, dasar kewenangan peraturan, atau koordinasi antar-dinas..."
+                                        maxLength={256}
+                                        placeholder="Jelaskan alasan pengalihan, dasar kewenangan peraturan, atau koordinasi antar-dinas (maks. 256 karakter)..."
                                         aria-invalid={Boolean(
                                             fieldErrors.alasan,
                                         )}

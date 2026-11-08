@@ -28,7 +28,7 @@ class AlihkanTiketRequest extends FormRequest
                 'required',
                 'string',
                 'min:10',
-                'max:1000',
+                'max:256',
             ],
         ];
     }

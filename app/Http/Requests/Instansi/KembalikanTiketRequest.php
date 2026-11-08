@@ -18,7 +18,7 @@ class KembalikanTiketRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'alasan' => ['required', 'string', 'min:10', 'max:1000'],
+            'alasan' => ['required', 'string', 'min:10', 'max:256'],
         ];
     }
 
