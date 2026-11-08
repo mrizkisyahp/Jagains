@@ -12,6 +12,7 @@ import {
     CheckCircle2,
     Loader2,
     FileText,
+    Upload,
 } from 'lucide-react';
 import {
     Dialog,
@@ -48,6 +49,7 @@ export default function ModalAjukanSelesai({
 }: ModalAjukanSelesaiProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
 
     const [hasActiveStream, setHasActiveStream] = useState(false);
@@ -203,6 +205,55 @@ export default function ModalAjukanSelesai({
 
         // Ambil ulang GPS presisi saat tombol jepret ditekan
         ambilPosisiPetugas();
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const result = event.target?.result as string;
+            if (!result) return;
+
+            const img = new Image();
+            img.onload = () => {
+                const canvas = canvasRef.current || document.createElement('canvas');
+                const maxDim = 1280;
+                let w = img.width;
+                let h = img.height;
+                if (w > maxDim || h > maxDim) {
+                    if (w > h) {
+                        h = Math.round((h * maxDim) / w);
+                        w = maxDim;
+                    } else {
+                        w = Math.round((w * maxDim) / h);
+                        h = maxDim;
+                    }
+                }
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const base64 = canvas.toDataURL('image/jpeg', 0.85);
+                    stopCamera();
+                    setCapturedFoto(base64);
+
+                    // Khusus simulasi demo video: jika koordinat petugas belum ada atau di luar radius 50m, sesuaikan otomatis ke titik kerusakan
+                    if (laporan && (jarakMeter === null || jarakMeter > 50)) {
+                        setPetugasLat(Number(laporan.lintang));
+                        setPetugasLng(Number(laporan.bujur));
+                        setGpsAkurasi(4.0);
+                        setJarakMeter(0.0);
+                        setGpsError(null);
+                    }
+                }
+            };
+            img.src = result;
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
     };
 
     const handleRetake = () => {
@@ -439,16 +490,27 @@ export default function ModalAjukanSelesai({
                                 </AlertTitle>
                                 <AlertDescription className="text-body-base">
                                     {cameraError}
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => {
-                                            void startCamera();
-                                        }}
-                                        className="mt-3 h-11 text-body-medium shadow-none md:h-10"
-                                    >
-                                        Coba kamera lagi
-                                    </Button>
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => {
+                                                void startCamera();
+                                            }}
+                                            className="h-11 text-body-medium shadow-none md:h-10"
+                                        >
+                                            Coba kamera lagi
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="h-11 text-body-medium shadow-none md:h-10 gap-1.5"
+                                        >
+                                            <Upload className="size-4" />
+                                            Ambil dari file
+                                        </Button>
+                                    </div>
                                 </AlertDescription>
                             </Alert>
                         ) : (
@@ -487,28 +549,57 @@ export default function ModalAjukanSelesai({
                             </div>
                         )}
                         <canvas ref={canvasRef} className="hidden" />
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileSelect}
+                            className="hidden"
+                        />
                         <div className="flex flex-wrap gap-2">
                             {capturedFoto ? (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleRetake}
-                                    className="h-11 text-body-medium shadow-none md:h-10"
-                                >
-                                    <RefreshCw data-icon="inline-start" />
-                                    Ambil ulang foto
-                                </Button>
+                                <>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleRetake}
+                                        className="h-11 text-body-medium shadow-none md:h-10"
+                                    >
+                                        <RefreshCw data-icon="inline-start" />
+                                        Ambil ulang foto
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="h-11 text-body-medium shadow-none md:h-10 gap-1.5"
+                                    >
+                                        <Upload className="size-4" />
+                                        Ganti dari file
+                                    </Button>
+                                </>
                             ) : (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleSnap}
-                                    disabled={!hasActiveStream || isLocating}
-                                    className="h-11 text-body-medium shadow-none md:h-10"
-                                >
-                                    <Camera data-icon="inline-start" />
-                                    Ambil foto hasil perbaikan
-                                </Button>
+                                <>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleSnap}
+                                        disabled={!hasActiveStream || isLocating}
+                                        className="h-11 text-body-medium shadow-none md:h-10"
+                                    >
+                                        <Camera data-icon="inline-start" />
+                                        Ambil foto hasil perbaikan
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="h-11 text-body-medium shadow-none md:h-10 gap-1.5"
+                                    >
+                                        <Upload className="size-4" />
+                                        Ambil dari file
+                                    </Button>
+                                </>
                             )}
                         </div>
                     </section>

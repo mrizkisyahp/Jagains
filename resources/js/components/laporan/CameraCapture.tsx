@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { router } from '@inertiajs/react';
-import { Camera, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Camera, RefreshCw, AlertCircle, CheckCircle2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -13,6 +13,7 @@ interface CameraCaptureProps {
 export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: CameraCaptureProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const isMountedRef = useRef<boolean>(true);
 
@@ -120,6 +121,46 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
         onFotoCaptured(base64Data);
     };
 
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const result = event.target?.result as string;
+            if (!result) return;
+
+            const img = new Image();
+            img.onload = () => {
+                const canvas = canvasRef.current || document.createElement('canvas');
+                const maxDim = 1280;
+                let w = img.width;
+                let h = img.height;
+                if (w > maxDim || h > maxDim) {
+                    if (w > h) {
+                        h = Math.round((h * maxDim) / w);
+                        w = maxDim;
+                    } else {
+                        w = Math.round((w * maxDim) / h);
+                        h = maxDim;
+                    }
+                }
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const base64Data = canvas.toDataURL('image/jpeg', 0.85);
+                    stopCamera();
+                    onFotoCaptured(base64Data);
+                }
+            };
+            img.src = result;
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    };
+
     const handleRetake = () => {
         onFotoReset();
     };
@@ -209,17 +250,27 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
                         <div />
                     </div>
 
-                    {/* Tombol Jepret */}
-                    <div className="absolute bottom-5 inset-x-0 flex justify-center">
+                    {/* Tombol Jepret & Ambil dari File */}
+                    <div className="absolute bottom-5 inset-x-0 flex flex-wrap justify-center gap-2.5 px-4">
                         <Button
                             type="button"
                             size="lg"
                             onClick={captureSnapshot}
                             disabled={isLoadingCamera || !hasActiveStream}
-                            className="rounded-full shadow-xl h-14 px-8 gap-2.5 font-display font-semibold"
+                            className="rounded-full shadow-xl h-14 px-7 gap-2 font-display font-semibold"
                         >
                             <Camera className="size-5" />
                             Ambil Foto
+                        </Button>
+                        <Button
+                            type="button"
+                            size="lg"
+                            variant="secondary"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="rounded-full shadow-xl h-14 px-6 gap-2 font-display font-semibold bg-background/90 hover:bg-background text-foreground backdrop-blur-sm border border-border"
+                        >
+                            <Upload className="size-5" />
+                            Ambil dari File
                         </Button>
                     </div>
                 </div>
@@ -235,7 +286,17 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
                             className="w-full h-full object-cover"
                         />
                     </div>
-                    <div className="flex justify-end">
+                    <div className="flex flex-wrap justify-end gap-2">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="gap-2"
+                        >
+                            <Upload className="size-4" />
+                            Ganti dari File
+                        </Button>
                         <Button
                             type="button"
                             variant="outline"
@@ -244,7 +305,7 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
                             className="gap-2"
                         >
                             <RefreshCw className="size-4" />
-                            Ambil Ulang Foto
+                            Ambil Ulang dari Kamera
                         </Button>
                     </div>
                 </div>
@@ -257,20 +318,39 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
                     <AlertTitle>Kamera Tidak Dapat Diakses</AlertTitle>
                     <AlertDescription className="text-xs space-y-2 mt-1">
                         <p>{cameraError}</p>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={startCamera}
-                            className="mt-2 text-xs"
-                        >
-                            Coba Akses Kamera Lagi
-                        </Button>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={startCamera}
+                                className="text-xs"
+                            >
+                                Coba Akses Kamera Lagi
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="text-xs gap-1.5"
+                            >
+                                <Upload className="size-3.5" />
+                                Ambil dari File
+                            </Button>
+                        </div>
                     </AlertDescription>
                 </Alert>
             )}
 
-            {/* Hidden Canvas untuk Snapshot */}
+            {/* Hidden File Input & Canvas untuk Snapshot */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+            />
             <canvas ref={canvasRef} className="hidden" />
         </div>
     );
