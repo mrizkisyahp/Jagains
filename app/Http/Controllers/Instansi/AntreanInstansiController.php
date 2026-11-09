@@ -23,6 +23,7 @@ use App\Services\VerifikasiWargaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -254,19 +255,36 @@ class AntreanInstansiController extends Controller
     }
 
     /**
-     * Aksi Memulai Pengerjaan Fisik (FR-TIK-06).
+     * Aksi Memulai Pengerjaan Fisik (FR-TIK-06) dan Dokumentasi Foto Sebelum Pengerjaan.
      */
     public function mulaiPengerjaan(Request $request, Laporan $laporan): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'catatan' => ['nullable', 'string', 'max:256'],
+            'foto' => ['nullable', 'string'],
+            'lintang' => ['required_with:foto', 'numeric', 'between:-90,90'],
+            'bujur' => ['required_with:foto', 'numeric', 'between:-180,180'],
+            'akurasi_gps_m' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        $updated = $this->service->mulaiPengerjaan(
-            $laporan,
-            $request->user(),
-            $validated['catatan'] ?? null
-        );
+        $updated = DB::transaction(function () use ($request, $laporan, $validated) {
+            if (! empty($validated['foto'])) {
+                $this->service->unggahFotoSebelum(
+                    $laporan,
+                    $validated['foto'],
+                    (float) $validated['lintang'],
+                    (float) $validated['bujur'],
+                    isset($validated['akurasi_gps_m']) ? (float) $validated['akurasi_gps_m'] : null,
+                    $request->user()
+                );
+            }
+
+            return $this->service->mulaiPengerjaan(
+                $laporan,
+                $request->user(),
+                $validated['catatan'] ?? null
+            );
+        });
 
         if ($request->wantsJson()) {
             return response()->json([

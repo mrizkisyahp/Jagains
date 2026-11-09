@@ -26,9 +26,9 @@ export default function AuthSplitCard({
     cardMaxWidth = 'max-w-5xl',
 }: AuthSplitCardProps) {
     return (
-        <div className={cn('w-full rounded-3xl sm:rounded-[32px] bg-card border border-border/70 shadow-2xl p-3 sm:p-4 md:p-5 lg:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-stretch overflow-hidden', cardMaxWidth)}>
-            {/* Sisi Kiri - Orange Hero Card Terinspirasi Referensi */}
-            <div className="md:col-span-5 rounded-2xl sm:rounded-[26px] bg-gradient-to-br from-[#FF6B35] via-[#F1501A] to-[#D83B08] text-white p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden shadow-lg min-h-[380px] sm:min-h-[480px]">
+        <div className={cn('w-full rounded-3xl sm:rounded-[32px] bg-card border border-border/70 shadow-2xl p-4 sm:p-5 md:p-5 lg:p-6 grid grid-cols-1 md:grid-cols-12 gap-0 md:gap-6 lg:gap-8 items-stretch overflow-hidden', cardMaxWidth)}>
+            {/* Sisi Kiri - Orange Hero Card Terinspirasi Referensi (Disembunyikan pada Tampilan Mobile) */}
+            <div className="hidden md:flex md:col-span-5 rounded-2xl sm:rounded-[26px] bg-gradient-to-br from-[#FF6B35] via-[#F1501A] to-[#D83B08] text-white p-6 sm:p-8 flex-col justify-between relative overflow-hidden shadow-lg min-h-[380px] sm:min-h-[480px]">
                 {/* Efek Lingkaran Cahaya Lembut di Background */}
                 <div className="absolute -top-16 -right-16 size-48 rounded-full bg-white/10 blur-2xl pointer-events-none" />
                 <div className="absolute -bottom-16 -left-16 size-48 rounded-full bg-black/10 blur-2xl pointer-events-none" />
@@ -59,7 +59,7 @@ export default function AuthSplitCard({
             </div>
 
             {/* Sisi Kanan - Area Form Utama */}
-            <div className="md:col-span-7 flex flex-col justify-center px-2 sm:px-6 md:px-8 py-3 sm:py-5">
+            <div className="col-span-1 md:col-span-7 flex flex-col justify-center px-1 sm:px-6 md:px-8 py-2 sm:py-5">
                 <div className="w-full space-y-6">
                     {/* Brand Logo Teks Jagains Sederhana */}
                     <div>

@@ -151,6 +151,65 @@ test('unggah foto sebelum gagal jika koordinat berada di luar radius 50m', funct
     $response->assertJsonValidationErrors(['lokasi']);
 });
 
+test('instansi dapat memulai pengerjaan fisik sambil mengunggah foto sebelum pengerjaan', function () {
+    // Siapkan laporan dengan status TERJADWAL_ANGGARAN
+    $this->laporan->update(['status' => 'TERJADWAL_ANGGARAN']);
+
+    $pixelJpeg = imagecreatetruecolor(10, 10);
+    ob_start();
+    imagejpeg($pixelJpeg);
+    $base64 = 'data:image/jpeg;base64,'.base64_encode(ob_get_clean());
+    imagedestroy($pixelJpeg);
+
+    $response = $this->actingAs($this->petugas)
+        ->postJson(route('instansi.tiket.mulai', $this->laporan->id), [
+            'foto' => $base64,
+            'lintang' => -6.398000,
+            'bujur' => 106.820000,
+            'akurasi_gps_m' => 4.0,
+            'catatan' => 'Mulai pengerjaan perbaikan fisik di lokasi',
+        ]);
+
+    $response->assertStatus(200);
+    $response->assertJsonPath('sukses', true);
+
+    // Pastikan foto sebelum tersimpan di tabel lampiran
+    $this->assertDatabaseHas('lampiran', [
+        'laporan_id' => $this->laporan->id,
+        'tahap' => 'sebelum',
+        'pengguna_id' => $this->petugas->id,
+        'gps_cocok' => true,
+    ]);
+
+    // Pastikan status tiket berpindah ke DIKERJAKAN
+    expect($this->laporan->fresh()->status)->toBe('DIKERJAKAN');
+});
+
+test('memulai pengerjaan fisik dengan foto di luar radius 50m gagal dan status tetap TERJADWAL_ANGGARAN', function () {
+    $this->laporan->update(['status' => 'TERJADWAL_ANGGARAN']);
+
+    $pixelJpeg = imagecreatetruecolor(10, 10);
+    ob_start();
+    imagejpeg($pixelJpeg);
+    $base64 = 'data:image/jpeg;base64,'.base64_encode(ob_get_clean());
+    imagedestroy($pixelJpeg);
+
+    $response = $this->actingAs($this->petugas)
+        ->postJson(route('instansi.tiket.mulai', $this->laporan->id), [
+            'foto' => $base64,
+            'lintang' => -6.408000, // ~1.1 km jauhnya
+            'bujur' => 106.820000,
+            'akurasi_gps_m' => 4.0,
+            'catatan' => 'Mencoba mulai dari kejauhan',
+        ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonValidationErrors(['lokasi']);
+
+    // Status harus tetap TERJADWAL_ANGGARAN
+    expect($this->laporan->fresh()->status)->toBe('TERJADWAL_ANGGARAN');
+});
+
 test('validasi 256 karakter menolak input teks yang melebihi batas', function () {
     $teksPanjang = str_repeat('a', 257);
 
