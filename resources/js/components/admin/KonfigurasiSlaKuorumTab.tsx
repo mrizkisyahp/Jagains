@@ -513,7 +513,7 @@ export default function KonfigurasiSlaKuorumTab({
 
             {/* Modal Dialog Atur SLA */}
             <Dialog open={modalSlaBuka} onOpenChange={setModalSlaBuka}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Clock
@@ -682,7 +682,7 @@ export default function KonfigurasiSlaKuorumTab({
 
             {/* Modal Dialog Atur Kuorum */}
             <Dialog open={modalKuorumBuka} onOpenChange={setModalKuorumBuka}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Sliders

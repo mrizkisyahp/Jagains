@@ -33,7 +33,7 @@ export default function AuditorModalDetailAuditLog({
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent className="max-h-[85vh] sm:max-w-2xl lg:max-w-3xl overflow-y-auto">
+            <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                 <DialogHeader>
                     <div className="flex flex-wrap items-center gap-2">
                         <Badge

@@ -1164,7 +1164,7 @@ export default function DetailTiketPage({
                 open={!!preview}
                 onOpenChange={(open) => !open && setPreview(null)}
             >
-                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                     <DialogHeader>
                         <DialogTitle>
                             {preview?.tahap === 'awal'

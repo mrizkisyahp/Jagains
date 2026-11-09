@@ -409,7 +409,7 @@ export default function KonfigurasiRoutingTab({
 
             {/* Modal Tambah/Edit Aturan Routing */}
             <Dialog open={modalBuka} onOpenChange={setModalBuka}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                     <DialogHeader>
                         <DialogTitle>
                             {editRoutingId
@@ -577,7 +577,7 @@ export default function KonfigurasiRoutingTab({
                     !open && setConfirmHapusModal({ open: false, aturan: null })
                 }
             >
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                     <DialogHeader>
                         <DialogTitle>Hapus Aturan Routing?</DialogTitle>
                         <DialogDescription>

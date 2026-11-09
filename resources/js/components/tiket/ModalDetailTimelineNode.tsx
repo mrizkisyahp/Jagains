@@ -74,7 +74,7 @@ export default function ModalDetailTimelineNode({
 
     return (
         <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl bg-card border-border">
+            <DialogContent className="sm:max-w-2xl max-h-[90dvh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl bg-card border-border">
                 {/* Header Modal */}
                 <DialogHeader className="p-5 border-b border-border bg-muted/20 shrink-0">
                     <div className="flex flex-wrap items-center justify-between gap-2">

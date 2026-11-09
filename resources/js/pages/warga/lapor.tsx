@@ -565,7 +565,7 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
 
             {/* Modal Sukses Pembuatan Tiket */}
             <Dialog open={successModalOpen} onOpenChange={(open) => { if (!open) handleCloseSuccessModal(); }}>
-                <DialogContent className="sm:max-w-md text-center py-6">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8 text-center">
                     <DialogHeader className="flex flex-col items-center">
                         <div className="size-12 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 mb-2">
                             <CheckCircle2 className="size-7" />

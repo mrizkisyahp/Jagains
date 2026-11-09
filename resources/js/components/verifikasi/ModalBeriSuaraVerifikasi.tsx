@@ -295,7 +295,7 @@ export default function ModalBeriSuaraVerifikasi({
 
     return (
         <Dialog open={open} onOpenChange={(v) => (!v ? handleClose() : null)}>
-            <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-background p-5 sm:p-6 shadow-lg">
+            <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                 <DialogHeader className="space-y-1.5 pb-3 border-b border-border">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 text-caption-xs text-muted-foreground">

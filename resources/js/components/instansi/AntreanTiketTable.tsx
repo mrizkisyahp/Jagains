@@ -436,7 +436,7 @@ export default function AntreanTiketTable({
                     if (!open) setInspectedItem(null);
                 }}
             >
-                <DialogContent className="max-h-[90dvh] overflow-y-auto p-6 sm:max-w-2xl sm:p-8">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                     <DialogHeader>
                         <DialogTitle className="pr-6 text-display-sm font-display">
                             Ringkasan tiket

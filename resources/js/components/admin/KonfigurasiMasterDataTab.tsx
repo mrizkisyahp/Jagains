@@ -914,7 +914,7 @@ export default function KonfigurasiMasterDataTab({
                 open={modalInstansiBuka}
                 onOpenChange={setModalInstansiBuka}
             >
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                     <DialogHeader>
                         <DialogTitle>
                             {editInstansiId
@@ -1064,7 +1064,7 @@ export default function KonfigurasiMasterDataTab({
                 open={modalKategoriBuka}
                 onOpenChange={setModalKategoriBuka}
             >
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                     <DialogHeader>
                         <DialogTitle>
                             {editKategoriId
@@ -1175,7 +1175,7 @@ export default function KonfigurasiMasterDataTab({
 
             {/* Modal Tambah/Edit Wilayah */}
             <Dialog open={modalWilayahBuka} onOpenChange={setModalWilayahBuka}>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                     <DialogHeader>
                         <DialogTitle>
                             {editWilayahId

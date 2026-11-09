@@ -420,7 +420,7 @@ export default function AntreanRoutingPage({
                 open={!!selectedTiket}
                 onOpenChange={(open) => !open && tutupModalDisposisi()}
             >
-                <DialogContent className="max-w-lg">
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Building2

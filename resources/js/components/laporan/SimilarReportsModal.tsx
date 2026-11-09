@@ -52,7 +52,7 @@ export default function SimilarReportsModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto overflow-x-hidden w-full min-w-0">
+            <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8 w-full min-w-0">
                 <DialogHeader className="min-w-0">
                     <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500">
                         <AlertCircle className="size-5 shrink-0" />

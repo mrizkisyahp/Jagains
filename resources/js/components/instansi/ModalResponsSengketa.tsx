@@ -104,7 +104,7 @@ export default function ModalResponsSengketa({
                 if (!value) handleClose();
             }}
         >
-            <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-3xl sm:p-8">
+            <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                 <DialogHeader>
                     <DialogTitle className="pr-6 text-display-sm font-display font-semibold">
                         Respons sengketa warga
