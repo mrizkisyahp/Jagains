@@ -256,23 +256,21 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
     };
 
     return (
-        <div className="w-full space-y-6 pb-12">
-            {/* Header Halaman (Sesuai Konvensi Admin / Auditor / Instansi) */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
+        <InternalLayout title="Tambah Laporan" breadcrumb="Warga > Tambah Laporan" fullWidth>
+            <div className="w-full space-y-6 pb-20">
+            {/* Header Halaman (Pertahankan Sisa Kuota Sesuai Permintaan) */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-2">
                 <div>
-                    <h1 className="font-display text-display-xs font-semibold tracking-tight text-foreground sm:text-display-sm">
-                        Lapor Kerusakan Fasilitas
+                    <h1 className="font-display text-display-xs font-bold tracking-tight text-foreground sm:text-display-sm">
+                        Tambah Laporan Baru
                     </h1>
-                    <p className="text-body-sm text-muted-foreground mt-0.5">
-                        Transparan, terlacak SLA, dan diverifikasi langsung oleh kuorum warga setempat.
-                    </p>
                 </div>
                 <div className="flex items-center gap-2 self-start sm:self-auto">
-                    <span className="text-body-sm text-muted-foreground">Sisa Kuota:</span>
+                    <span className="text-body-sm text-muted-foreground font-medium">Sisa Kuota:</span>
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger className="cursor-help inline-flex items-center">
-                                <Badge variant={kuota.sisa_kuota > 0 ? 'secondary' : 'destructive'} className="font-mono gap-1.5 px-2.5 py-0.5 text-caption-xs font-semibold">
+                                <Badge variant={kuota.sisa_kuota > 0 ? 'secondary' : 'destructive'} className="font-mono gap-1.5 px-3 py-1 text-caption-xs font-semibold rounded-full border">
                                     <Clock className="size-3.5" />
                                     {kuota.sisa_kuota} / 5 per Jam
                                 </Badge>
@@ -287,7 +285,7 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
 
             {/* Peringatan Jika Kuota Habis (FR-LAP-04 & P-17) */}
             {!kuota.diizinkan && (
-                <Alert variant="destructive" className="rounded-lg">
+                <Alert variant="destructive" className="rounded-2xl">
                     <AlertCircle className="size-4" />
                     <AlertDescription className="space-y-1 text-body-sm">
                         <p className="font-semibold">Batas Pelaporan Tercapai</p>
@@ -298,260 +296,273 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                 </Alert>
             )}
 
-            {/* Wizard Stepper Progress Bar */}
-            <div className="grid grid-cols-3 gap-2.5">
-                <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-colors cursor-pointer ${
-                        step === 1
-                            ? 'border-primary bg-primary/10 text-primary font-semibold shadow-2xs'
-                            : 'border-border bg-card text-muted-foreground hover:bg-muted/50'
-                    }`}
-                >
-                    <div className={`size-6 rounded-full flex items-center justify-center text-caption-xs font-bold ${
-                        foto ? 'bg-emerald-600 text-white' : step === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                    }`}>
-                        {foto ? <CheckCircle2 className="size-3.5" /> : '1'}
-                    </div>
-                    <span className="text-body-sm font-semibold truncate">1. Foto Kamera</span>
-                </button>
+            {/* Segmented Step Bar (3 Tahap Sesuai Wireframe: Foto, Titik Lokasi, Detail) */}
+            <div className="w-full rounded-2xl bg-muted/60 p-1.5 border border-border/40">
+                <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                        type="button"
+                        onClick={() => setStep(1)}
+                        className={`flex items-center justify-center py-3 px-4 rounded-xl text-body-sm transition-all cursor-pointer ${
+                            step === 1
+                                ? 'bg-card text-foreground shadow-xs font-bold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/40 font-medium'
+                        }`}
+                    >
+                        Foto
+                    </button>
 
-                <button
-                    type="button"
-                    disabled={!canProceedFromStep1}
-                    onClick={() => canProceedFromStep1 && setStep(2)}
-                    className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-colors ${
-                        step === 2
-                            ? 'border-primary bg-primary/10 text-primary font-semibold shadow-2xs'
-                            : 'border-border bg-card text-muted-foreground disabled:opacity-50 cursor-pointer'
-                    }`}
-                >
-                    <div className={`size-6 rounded-full flex items-center justify-center text-caption-xs font-bold ${
-                        kelurahanNama ? 'bg-emerald-600 text-white' : step === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                    }`}>
-                        {kelurahanNama ? <CheckCircle2 className="size-3.5" /> : '2'}
-                    </div>
-                    <span className="text-body-sm font-semibold truncate">2. Titik Peta</span>
-                </button>
+                    <button
+                        type="button"
+                        disabled={!canProceedFromStep1}
+                        onClick={() => canProceedFromStep1 && setStep(2)}
+                        className={`flex items-center justify-center py-3 px-4 rounded-xl text-body-sm transition-all ${
+                            step === 2
+                                ? 'bg-card text-foreground shadow-xs font-bold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/40 font-medium disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer'
+                        }`}
+                    >
+                        Titik Lokasi
+                    </button>
 
-                <button
-                    type="button"
-                    disabled={!canProceedFromStep2}
-                    onClick={() => canProceedFromStep2 && setStep(3)}
-                    className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-colors ${
-                        step === 3
-                            ? 'border-primary bg-primary/10 text-primary font-semibold shadow-2xs'
-                            : 'border-border bg-card text-muted-foreground disabled:opacity-50 cursor-pointer'
-                    }`}
-                >
-                    <div className={`size-6 rounded-full flex items-center justify-center text-caption-xs font-bold ${
-                        step === 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                    }`}>
-                        3
-                    </div>
-                    <span className="text-body-sm font-semibold truncate">3. Detail Aduan</span>
-                </button>
+                    <button
+                        type="button"
+                        disabled={!canProceedFromStep2}
+                        onClick={() => canProceedFromStep2 && setStep(3)}
+                        className={`flex items-center justify-center py-3 px-4 rounded-xl text-body-sm transition-all ${
+                            step === 3
+                                ? 'bg-card text-foreground shadow-xs font-bold'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/40 font-medium disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer'
+                        }`}
+                    >
+                        Detail
+                    </button>
+                </div>
             </div>
 
-            {/* Konten Wizard */}
-            <Card className="border border-border shadow-xs rounded-xl">
-                <CardContent className="p-4 sm:p-6 lg:p-8 space-y-6">
-                    {/* TAHAP 1: KAMERA LANGSUNG */}
-                    {step === 1 && (
-                        <div className="space-y-6">
-                            <CameraCapture
-                                foto={foto}
-                                onFotoCaptured={(data) => setFoto(data)}
-                                onFotoReset={() => setFoto(null)}
-                            />
+            {/* Konten Tahapan Formulir */}
+            <div>
+                {/* TAHAP 1: FOTO KAMERA SESUAI WIREFRAME */}
+                {step === 1 && (
+                    <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-6 shadow-xs">
+                        <CameraCapture
+                            foto={foto}
+                            onFotoCaptured={(data) => setFoto(data)}
+                            onFotoReset={() => setFoto(null)}
+                            onNextStep={() => setStep(2)}
+                        />
+                    </div>
+                )}
 
-                            <div className="flex justify-end pt-2 border-t border-border">
-                                <Button
-                                    type="button"
-                                    onClick={() => setStep(2)}
-                                    disabled={!canProceedFromStep1}
-                                    className="gap-2"
-                                >
-                                    Lanjut ke Penentuan Titik Lokasi
-                                    <ArrowRight className="size-4" />
-                                </Button>
-                            </div>
+                {/* TAHAP 2: TITIK LOKASI SESUAI WIREFRAME */}
+                {step === 2 && (
+                    <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-6 shadow-xs">
+                        <div className="space-y-1">
+                            <h2 className="font-display text-title-lg sm:text-display-xs font-bold text-foreground">
+                                Pilih Titik Lokasi
+                            </h2>
+                            <p className="text-body-sm text-muted-foreground">
+                                Pilih titik lokasi dengan menekan tombol cari GPS atau menitikkan secara manual di peta
+                            </p>
                         </div>
-                    )}
 
-                    {/* TAHAP 2: LOKASI PETA & GPS */}
-                    {step === 2 && (
-                        <div className="space-y-6">
-                            {isMounted ? (
-                                <Suspense
-                                    fallback={
-                                        <div className="h-[460px] w-full flex items-center justify-center bg-muted/20 rounded-2xl text-muted-foreground gap-2">
-                                            <Loader2 className="size-6 animate-spin text-primary" />
-                                            <span className="text-body-sm font-medium">Memuat peta lokasi...</span>
-                                        </div>
-                                    }
-                                >
-                                    <LocationPickerMap
-                                        lintang={lintang}
-                                        bujur={bujur}
-                                        akurasiGpsM={akurasiGpsM}
-                                        lokasiSumber={lokasiSumber}
-                                        kelurahanNama={kelurahanNama}
-                                        onChangeLocation={handleLocationChange}
-                                    />
-                                </Suspense>
-                            ) : (
-                                <div className="h-[460px] w-full flex items-center justify-center bg-muted/20 rounded-2xl text-muted-foreground gap-2">
-                                    <Loader2 className="size-6 animate-spin text-primary" />
-                                    <span className="text-body-sm font-medium">Memuat peta lokasi...</span>
+                        {isMounted ? (
+                            <Suspense
+                                fallback={
+                                    <div className="aspect-[16/10] sm:aspect-[16/9] max-h-[580px] w-full flex items-center justify-center bg-zinc-950 rounded-3xl text-white gap-2">
+                                        <Loader2 className="size-6 animate-spin text-primary" />
+                                        <span className="text-body-sm font-medium">Memuat peta lokasi...</span>
+                                    </div>
+                                }
+                            >
+                                <LocationPickerMap
+                                    lintang={lintang}
+                                    bujur={bujur}
+                                    akurasiGpsM={akurasiGpsM}
+                                    lokasiSumber={lokasiSumber}
+                                    kelurahanNama={kelurahanNama}
+                                    onChangeLocation={handleLocationChange}
+                                    onPrevStep={() => setStep(1)}
+                                    onNextStep={() => setStep(3)}
+                                    canProceed={canProceedFromStep2}
+                                />
+                            </Suspense>
+                        ) : (
+                            <div className="aspect-[16/10] sm:aspect-[16/9] max-h-[580px] w-full flex items-center justify-center bg-zinc-950 rounded-3xl text-white gap-2">
+                                <Loader2 className="size-6 animate-spin text-primary" />
+                                <span className="text-body-sm font-medium">Memuat peta lokasi...</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* TAHAP 3: DETAIL ADUAN SESUAI WIREFRAME */}
+                {step === 3 && (
+                    <div className="space-y-6">
+                        <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-6 shadow-xs">
+                            {/* Header Section */}
+                            <div className="space-y-1">
+                                <h2 className="font-display text-title-lg sm:text-display-xs font-bold text-foreground">
+                                    Isi Formulir Detail Laporan
+                                </h2>
+                                <p className="text-body-sm text-muted-foreground">
+                                    Isi formulir detail laporan secara jelas dan ringkas
+                                </p>
+                            </div>
+
+                            {/* Baris 1: Pratinjau Foto (Kiri) & Info Wilayah / Koordinat (Kanan) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                {/* Kiri: Foto Thumbnail */}
+                                <div className="relative overflow-hidden rounded-2xl bg-black aspect-[16/10] sm:aspect-[16/9] w-full flex items-center justify-center border border-border/50 shadow-sm">
+                                    {foto ? (
+                                        <img
+                                            src={foto}
+                                            alt="Bukti Foto Kerusakan"
+                                            className="size-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-zinc-500 font-display font-semibold">Foto</span>
+                                    )}
                                 </div>
-                            )}
 
-                            <div className="flex items-center justify-between pt-2 border-t border-border">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setStep(1)}
-                                    className="gap-2"
-                                >
-                                    <ArrowLeft className="size-4" />
-                                    Kembali ke Foto
-                                </Button>
-                                <Button
-                                    type="button"
-                                    onClick={() => setStep(3)}
-                                    disabled={!canProceedFromStep2}
-                                    className="gap-2"
-                                >
-                                    Lanjut ke Rincian Kerusakan
-                                    <ArrowRight className="size-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
+                                {/* Kanan: Wilayah Lokasi & Koordinat Lokasi */}
+                                <div className="space-y-5 pt-1">
+                                    <div className="space-y-1">
+                                        <h3 className="text-body-sm font-bold text-foreground">
+                                            Wilayah Lokasi
+                                        </h3>
+                                        <p className="text-body-sm text-muted-foreground leading-relaxed">
+                                            {kelurahanNama || 'Belum terdeteksi'}
+                                        </p>
+                                    </div>
 
-                    {/* TAHAP 3: DETAIL ADUAN */}
-                    {step === 3 && (
-                        <div className="space-y-6">
-                            {/* Kategori Kerusakan */}
-                            <div className="space-y-2">
-                                <Label htmlFor="kategori" className="text-body-medium font-semibold text-foreground">
-                                    Kategori Fasilitas Publik <span className="text-destructive">*</span>
-                                </Label>
-                                <Select value={kategoriId} onValueChange={(val) => setKategoriId(val ?? '')}>
-                                    <SelectTrigger id="kategori" className="w-full h-11 text-body-base">
-                                        <span className="flex-1 text-left text-body-sm">
-                                            {kategoriList.find((k) => String(k.id) === kategoriId)?.nama || (
-                                                <span className="text-muted-foreground">-- Pilih Kategori Fasilitas Publik --</span>
-                                            )}
-                                        </span>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {kategoriList.map((kat) => (
-                                            <SelectItem key={kat.id} value={String(kat.id)} className="text-body-sm">
-                                                {kat.nama}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    <div className="space-y-1">
+                                        <h3 className="text-body-sm font-bold text-foreground">
+                                            Koordinat Lokasi
+                                        </h3>
+                                        <p className="text-body-sm font-mono text-muted-foreground">
+                                            {lintang.toFixed(6)}, {bujur.toFixed(6)}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Tingkat Keparahan (SRS AS-06, default: sedang) */}
-                            <div className="space-y-2">
-                                <Label className="text-body-medium font-semibold text-foreground">Tingkat Keparahan</Label>
-                                <div className="grid grid-cols-3 gap-2.5">
-                                    {(['ringan', 'sedang', 'berat'] as const).map((level) => (
-                                        <button
-                                            key={level}
-                                            type="button"
-                                            onClick={() => setKeparahan(level)}
-                                            className={`h-11 rounded-xl border text-body-sm font-semibold capitalize transition-all cursor-pointer ${
-                                                keparahan === level
-                                                    ? 'border-primary bg-primary text-primary-foreground shadow-xs'
-                                                    : 'border-border bg-card text-foreground hover:bg-muted/60'
-                                            }`}
+                            {/* Baris 2: Kategori Kerusakan (Kiri) & Tingkat Keparahan (Kanan) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                {/* Kiri: Kategori Kerusakan */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="kategori" className="text-body-sm font-bold text-foreground">
+                                        Kategori Kerusakan
+                                    </Label>
+                                    <Select value={kategoriId} onValueChange={(val) => setKategoriId(val ?? '')}>
+                                        <SelectTrigger
+                                            id="kategori"
+                                            className="w-full h-11 rounded-xl bg-muted/50 border-border/60 text-body-sm px-4"
                                         >
-                                            {level}
-                                        </button>
-                                    ))}
+                                            <span className="flex-1 text-left">
+                                                {kategoriList.find((k) => String(k.id) === kategoriId)?.nama || (
+                                                    <span className="text-muted-foreground">-- Pilih Kategori Kerusakan --</span>
+                                                )}
+                                            </span>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {kategoriList.map((kat) => (
+                                                <SelectItem key={kat.id} value={String(kat.id)} className="text-body-sm">
+                                                    {kat.nama}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Kanan: Tingkat Keparahan */}
+                                <div className="space-y-2">
+                                    <Label className="text-body-sm font-bold text-foreground">
+                                        Tingkat Keparahan
+                                    </Label>
+                                    <div className="w-full h-11 rounded-xl bg-muted/60 p-1 border border-border/40 grid grid-cols-3 gap-1">
+                                        {(['ringan', 'sedang', 'berat'] as const).map((level) => (
+                                            <button
+                                                key={level}
+                                                type="button"
+                                                onClick={() => setKeparahan(level)}
+                                                className={`h-9 rounded-lg text-body-sm capitalize transition-all cursor-pointer flex items-center justify-center ${
+                                                    keparahan === level
+                                                        ? 'bg-foreground text-background shadow-sm font-bold'
+                                                        : 'text-zinc-600 dark:text-zinc-400 hover:text-foreground hover:bg-background/50 font-medium'
+                                                }`}
+                                            >
+                                                {level}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Uraian Keterangan Kerusakan */}
+                            {/* Baris 3: Keterangan Detail Kerusakan */}
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center">
-                                    <Label htmlFor="keterangan" className="text-body-medium font-semibold text-foreground">
-                                        Keterangan Detail Kerusakan <span className="text-destructive">*</span>
+                                    <Label htmlFor="keterangan" className="text-body-sm font-bold text-foreground">
+                                        Keterangan Detail Kerusakan
                                     </Label>
-                                    <span className={`text-caption-xs ${keterangan.trim().length >= 10 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-destructive font-medium'}`}>
+                                    <span
+                                        className={`text-caption-xs ${
+                                            keterangan.trim().length >= 10
+                                                ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                                                : 'text-muted-foreground font-medium'
+                                        }`}
+                                    >
                                         {keterangan.trim().length >= 10
-                                            ? `✓ ${keterangan.length}/256 karakter (min. 10)`
+                                            ? `✓ ${keterangan.length}/256 karakter`
                                             : `Minimal 10 karakter (${keterangan.length}/256)`}
                                     </span>
                                 </div>
                                 <Textarea
                                     id="keterangan"
-                                    rows={4}
+                                    rows={5}
                                     maxLength={256}
-                                    placeholder="Jelaskan kondisi kerusakan fisik di lokasi secara rinci, patokan jalan, atau dampak terhadap warga sekitar (maks. 256 karakter)..."
+                                    placeholder="Isi rincian kondisi kerusakan fisik di lokasi secara rinci..."
                                     value={keterangan}
                                     onChange={(e) => setKeterangan(e.target.value)}
-                                    className="resize-none text-body-base rounded-xl"
+                                    className="resize-none text-body-sm rounded-2xl bg-muted/30 border-border/60 p-4 focus-visible:ring-1"
                                 />
                             </div>
-
-                            {/* Ringkasan Metadata Aduan */}
-                            <div className="p-4 rounded-xl border border-border bg-muted/40 text-body-sm space-y-2">
-                                <div className="flex items-center justify-between text-muted-foreground">
-                                    <span>Wilayah Target:</span>
-                                    <span className="font-semibold text-foreground text-right">{kelurahanNama}</span>
-                                </div>
-                                <div className="flex items-center justify-between text-muted-foreground">
-                                    <span>Koordinat Titik:</span>
-                                    <span className="font-mono text-foreground">{lintang.toFixed(6)}, {bujur.toFixed(6)}</span>
-                                </div>
-                                <div className="flex items-center justify-between text-muted-foreground">
-                                    <span>Bukti Foto:</span>
-                                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Tersimpan dari Kamera</span>
-                                </div>
-                            </div>
-
-                            {/* Aksi Navigasi & Kirim */}
-                            <div className="flex items-center justify-between pt-2 border-t border-border">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setStep(2)}
-                                    disabled={isSubmitting || isCheckingSimilar}
-                                    className="gap-2"
-                                >
-                                    <ArrowLeft className="size-4" />
-                                    Kembali ke Titik Peta
-                                </Button>
-                                <Button
-                                    type="button"
-                                    onClick={handleReviewAndSubmit}
-                                    disabled={!canProceedFromStep3 || isSubmitting || isCheckingSimilar || !kuota.diizinkan}
-                                    className="gap-2 font-semibold px-6"
-                                >
-                                    {isCheckingSimilar || isSubmitting ? (
-                                        <>
-                                            <Loader2 className="size-4 animate-spin" />
-                                            {isCheckingSimilar ? 'Memeriksa Aduan Serupa...' : 'Mencatat Tiket...'}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Send className="size-4" />
-                                            Kirim Laporan Aduan
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
                         </div>
-                    )}
-                </CardContent>
-            </Card>
+
+                        {/* Bottom Action Bar Sesuai Wireframe: Di Luar Kartu */}
+                        <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-2">
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => setStep(2)}
+                                disabled={isSubmitting || isCheckingSimilar}
+                                className="w-full sm:w-auto h-11 px-5 rounded-2xl bg-muted/80 hover:bg-muted text-foreground font-semibold text-body-sm shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-101 active:scale-99"
+                            >
+                                <ArrowLeft className="size-4" />
+                                <span>Kembali Untuk Pilih Lokasi</span>
+                            </Button>
+
+                            <Button
+                                type="button"
+                                onClick={handleReviewAndSubmit}
+                                disabled={!canProceedFromStep3 || isSubmitting || isCheckingSimilar || !kuota.diizinkan}
+                                className="w-full sm:w-auto h-11 px-6 rounded-2xl bg-muted/80 hover:bg-muted text-foreground font-bold text-body-sm shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-transform hover:scale-101 active:scale-99 disabled:opacity-40"
+                            >
+                                {isCheckingSimilar || isSubmitting ? (
+                                    <>
+                                        <Loader2 className="size-4 animate-spin" />
+                                        <span>{isCheckingSimilar ? 'Memeriksa Aduan Serupa...' : 'Mencatat Tiket...'}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Send className="size-4" />
+                                        <span>Kirim Laporan</span>
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+                </div>
 
             {/* Modal Aduan Serupa (FR-LAP-05) */}
             <SimilarReportsModal
@@ -602,12 +613,7 @@ export default function LaporKerusakanPage({ kategoriList, kuota }: LaporKerusak
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+            </div>
+        </InternalLayout>
     );
 }
-
-LaporKerusakanPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Laporkan Kerusakan" breadcrumb="Warga > Laporkan Kerusakan">
-        {page}
-    </InternalLayout>
-);

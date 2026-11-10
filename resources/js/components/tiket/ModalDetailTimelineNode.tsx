@@ -76,7 +76,7 @@ export default function ModalDetailTimelineNode({
         <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
             <DialogContent className="sm:max-w-2xl max-h-[90dvh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl bg-card border-border">
                 {/* Header Modal */}
-                <DialogHeader className="p-5 border-b border-border bg-muted/20 shrink-0">
+                <DialogHeader className="p-5 pr-14 sm:pr-16 border-b border-border bg-muted/20 shrink-0">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                             <InstansiStatusBadge status={item.status_baru} />
@@ -84,7 +84,7 @@ export default function ModalDetailTimelineNode({
                                 #{nomorTiket}
                             </span>
                         </div>
-                        <time className="text-caption-xs text-muted-foreground flex items-center gap-1">
+                        <time className="text-caption-xs text-muted-foreground flex items-center gap-1 shrink-0">
                             <Clock className="size-3.5" />
                             {formatDate(item.waktu)}
                         </time>
@@ -450,7 +450,7 @@ export default function ModalDetailTimelineNode({
                                                                     : 'border-muted-foreground/30 text-muted-foreground'
                                                             )}
                                                         >
-                                                            {voter.jalur === 'A' ? 'Jalur A (Kamera GPS)' : 'Jalur B (Jarak Jauh)'}
+                                                            {voter.jalur === 'A' ? 'Jarak Dekat dengan Foto' : 'Jarak Jauh'}
                                                         </Badge>
                                                     </div>
 

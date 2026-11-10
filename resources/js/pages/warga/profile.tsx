@@ -1,12 +1,22 @@
 import { useState, ReactNode } from 'react';
 import { useForm, Head } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { toast } from '@/components/ui/toast';
 import KelurahanSelector from '@/components/wilayah/kelurahan-selector';
 import InternalLayout from '@/layouts/InternalLayout';
-import { MapPin, Calendar, Clock, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { MapPin, Calendar, Clock, AlertTriangle, ShieldCheck, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ProfileProps {
@@ -30,11 +40,21 @@ interface ProfileProps {
     };
 }
 
-export default function Profile({ profil }: ProfileProps) {
+export default function Profile({ profil, flash }: ProfileProps) {
     const [isEditingKelurahan, setIsEditingKelurahan] = useState(false);
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
         kelurahan_id: profil.kelurahan_saat_ini.id || 0,
+    });
+
+    const passwordForm = useForm({
+        current_password: '',
+        password: '',
+        password_confirmation: '',
     });
 
     const handleSaveKelurahan = (e: React.FormEvent) => {
@@ -44,9 +64,36 @@ export default function Profile({ profil }: ProfileProps) {
         });
     };
 
+    const openPasswordModal = () => {
+        passwordForm.reset();
+        passwordForm.clearErrors();
+        setShowCurrentPassword(false);
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+        setIsPasswordModalOpen(true);
+    };
+
+    const closePasswordModal = () => {
+        setIsPasswordModalOpen(false);
+        passwordForm.reset();
+        passwordForm.clearErrors();
+    };
+
+    const handleSavePassword = (e: React.FormEvent) => {
+        e.preventDefault();
+        passwordForm.put('/warga/password', {
+            preserveScroll: true,
+            onSuccess: () => {
+                closePasswordModal();
+                toast.success('Kata sandi berhasil diperbarui.');
+            },
+        });
+    };
+
     return (
-        <div className="mx-auto w-full max-w-5xl space-y-6 pb-20">
-            <Head title="Profil & Wilayah - Jagains" />
+        <InternalLayout title="Profil & Wilayah" breadcrumb="Warga > Profil">
+            <div className="mx-auto w-full max-w-5xl space-y-6 pb-20">
+                <Head title="Profil & Wilayah - Jagains" />
 
             {/* Header Halaman (Sesuai Konvensi Admin / Auditor / Instansi) */}
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between pb-1">
@@ -270,12 +317,216 @@ export default function Profile({ profil }: ProfileProps) {
                     )}
                 </div>
             </section>
-        </div>
+
+            {/* Bagian 3: Keamanan & Kata Sandi */}
+            <section className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="border-b border-border px-5 py-4">
+                    <h2 className="font-display text-body-medium font-semibold text-foreground flex items-center gap-2">
+                        <KeyRound className="size-4 text-primary" />
+                        Keamanan & Kata Sandi
+                    </h2>
+                    <p className="mt-0.5 text-caption-xs text-muted-foreground">
+                        Kelola kredensial login dan perlindungan akses akun warga Anda.
+                    </p>
+                </div>
+
+                <div className="p-5">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="space-y-1">
+                            <span className="text-caption-xs font-medium text-muted-foreground block">
+                                Kata Sandi Akun
+                            </span>
+                            <p className="font-mono text-base font-bold tracking-widest text-foreground">
+                                ••••••••••••
+                            </p>
+                            <p className="text-caption-xs text-muted-foreground flex items-center gap-1.5 pt-0.5">
+                                <ShieldCheck className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                                Terlindungi enkripsi satu arah yang aman
+                            </p>
+                        </div>
+
+                        <Button
+                            variant="outline"
+                            onClick={openPasswordModal}
+                            className="h-9 shrink-0 text-caption-xs font-semibold shadow-none gap-2"
+                        >
+                            <KeyRound className="size-3.5" />
+                            Ubah Kata Sandi
+                        </Button>
+                    </div>
+                </div>
+            </section>
+
+            {/* Modal Dialog Ubah Kata Sandi */}
+            <Dialog open={isPasswordModalOpen} onOpenChange={(open) => !open && closePasswordModal()}>
+                <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 font-display text-display-xs font-semibold text-foreground">
+                            <KeyRound className="size-5 text-primary" aria-hidden="true" />
+                            <span>Ubah Kata Sandi Akun</span>
+                        </DialogTitle>
+                        <DialogDescription className="text-body-sm text-muted-foreground">
+                            Masukkan kata sandi lama Anda untuk verifikasi, lalu tentukan kata sandi baru minimal 8 karakter.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleSavePassword} className="space-y-4 pt-1">
+                        {/* Kata Sandi Saat Ini */}
+                        <div className="space-y-1.5">
+                            <label
+                                htmlFor="modal_current_password"
+                                className="text-body-sm font-medium text-foreground block"
+                            >
+                                Kata Sandi Saat Ini <span className="text-destructive">*</span>
+                            </label>
+                            <div className="relative">
+                                <Input
+                                    id="modal_current_password"
+                                    type={showCurrentPassword ? 'text' : 'password'}
+                                    value={passwordForm.data.current_password}
+                                    onChange={(e) =>
+                                        passwordForm.setData('current_password', e.target.value)
+                                    }
+                                    placeholder="Masukkan kata sandi saat ini"
+                                    className="pr-10"
+                                    required
+                                    disabled={passwordForm.processing}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus:outline-hidden"
+                                    tabIndex={-1}
+                                    aria-label={showCurrentPassword ? 'Sembunyikan kata sandi saat ini' : 'Tampilkan kata sandi saat ini'}
+                                >
+                                    {showCurrentPassword ? (
+                                        <EyeOff className="size-4" />
+                                    ) : (
+                                        <Eye className="size-4" />
+                                    )}
+                                </button>
+                            </div>
+                            {passwordForm.errors.current_password && (
+                                <p className="text-caption-xs text-destructive">
+                                    {passwordForm.errors.current_password}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Kata Sandi Baru */}
+                        <div className="space-y-1.5">
+                            <label
+                                htmlFor="modal_password"
+                                className="text-body-sm font-medium text-foreground block"
+                            >
+                                Kata Sandi Baru <span className="text-destructive">*</span>
+                            </label>
+                            <div className="relative">
+                                <Input
+                                    id="modal_password"
+                                    type={showNewPassword ? 'text' : 'password'}
+                                    value={passwordForm.data.password}
+                                    onChange={(e) =>
+                                        passwordForm.setData('password', e.target.value)
+                                    }
+                                    placeholder="Minimal 8 karakter"
+                                    className="pr-10"
+                                    required
+                                    disabled={passwordForm.processing}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus:outline-hidden"
+                                    tabIndex={-1}
+                                    aria-label={showNewPassword ? 'Sembunyikan kata sandi baru' : 'Tampilkan kata sandi baru'}
+                                >
+                                    {showNewPassword ? (
+                                        <EyeOff className="size-4" />
+                                    ) : (
+                                        <Eye className="size-4" />
+                                    )}
+                                </button>
+                            </div>
+                            {passwordForm.errors.password && (
+                                <p className="text-caption-xs text-destructive">
+                                    {passwordForm.errors.password}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Konfirmasi Kata Sandi Baru */}
+                        <div className="space-y-1.5">
+                            <label
+                                htmlFor="modal_password_confirmation"
+                                className="text-body-sm font-medium text-foreground block"
+                            >
+                                Konfirmasi Kata Sandi Baru <span className="text-destructive">*</span>
+                            </label>
+                            <div className="relative">
+                                <Input
+                                    id="modal_password_confirmation"
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    value={passwordForm.data.password_confirmation}
+                                    onChange={(e) =>
+                                        passwordForm.setData('password_confirmation', e.target.value)
+                                    }
+                                    placeholder="Ulangi kata sandi baru Anda"
+                                    className="pr-10"
+                                    required
+                                    disabled={passwordForm.processing}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus:outline-hidden"
+                                    tabIndex={-1}
+                                    aria-label={showConfirmPassword ? 'Sembunyikan konfirmasi kata sandi' : 'Tampilkan konfirmasi kata sandi'}
+                                >
+                                    {showConfirmPassword ? (
+                                        <EyeOff className="size-4" />
+                                    ) : (
+                                        <Eye className="size-4" />
+                                    )}
+                                </button>
+                            </div>
+                            {passwordForm.errors.password_confirmation && (
+                                <p className="text-caption-xs text-destructive">
+                                    {passwordForm.errors.password_confirmation}
+                                </p>
+                            )}
+                        </div>
+
+                        <p className="text-caption-xs text-muted-foreground">
+                            Kata sandi harus terdiri dari minimal 8 karakter dan berbeda dari kata sandi saat ini.
+                        </p>
+
+                        <DialogFooter className="pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={closePasswordModal}
+                                disabled={passwordForm.processing}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="default"
+                                disabled={
+                                    passwordForm.processing ||
+                                    !passwordForm.data.current_password ||
+                                    !passwordForm.data.password ||
+                                    !passwordForm.data.password_confirmation
+                                }
+                            >
+                                {passwordForm.processing ? 'Menyimpan...' : 'Simpan Kata Sandi'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+            </div>
+        </InternalLayout>
     );
 }
-
-Profile.layout = (page: ReactNode) => (
-    <InternalLayout title="Profil & Wilayah" breadcrumb="Warga > Profil">
-        {page}
-    </InternalLayout>
-);

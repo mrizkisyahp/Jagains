@@ -12,6 +12,7 @@ use App\Models\Laporan;
 use App\Services\BatasLaporanService;
 use App\Services\DeteksiLaporanSerupaService;
 use App\Services\LaporanService;
+use App\Services\PetaLaporanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -106,7 +107,7 @@ class LaporanWargaController extends Controller
     /**
      * Menampilkan daftar riwayat laporan dan dukungan yang diajukan oleh warga.
      */
-    public function tampilkanRiwayat(Request $request): Response
+    public function tampilkanRiwayat(Request $request, PetaLaporanService $petaService): Response
     {
         $userId = $request->user()->id;
 
@@ -120,8 +121,9 @@ class LaporanWargaController extends Controller
             ->withCount('dukungan')
             ->latest('id')
             ->get()
-            ->map(function ($lap) {
+            ->map(function ($lap) use ($petaService) {
                 $foto = $lap->lampiran->first();
+                $evaluasiSla = $petaService->tentukanKondisiSla($lap);
 
                 return [
                     'id' => $lap->id,
@@ -130,12 +132,18 @@ class LaporanWargaController extends Controller
                     'keterangan' => $lap->keterangan,
                     'keparahan' => $lap->keparahan,
                     'status' => $lap->status,
+                    'kategori_id' => $lap->kategori_id,
                     'kategori_nama' => $lap->kategori?->nama,
+                    'instansi_id' => $lap->instansi_id,
                     'instansi_nama' => $lap->instansi?->nama,
+                    'kelurahan_id' => $lap->kelurahan_id,
+                    'kecamatan_id' => $lap->kelurahan?->induk_id,
+                    'kota_id' => $lap->kelurahan?->induk?->induk_id,
                     'wilayah_nama' => $lap->kelurahan ? "Kel. {$lap->kelurahan->nama}, Kec. {$lap->kelurahan->induk?->nama}" : null,
                     'kota_nama' => $lap->kelurahan?->induk?->induk?->nama,
                     'foto_url' => $foto ? asset('storage/'.$foto->path) : null,
                     'jumlah_dukungan' => $lap->dukungan_count,
+                    'kondisi_sla' => $evaluasiSla['kondisi'],
                     'sla_tahap' => $lap->sla_tahap,
                     'sla_jatuh_tempo' => $lap->sla_jatuh_tempo ? $lap->sla_jatuh_tempo->translatedFormat('d M Y, H:i') : null,
                     'dibuat_pada' => $lap->created_at->diffForHumans(),
@@ -154,12 +162,13 @@ class LaporanWargaController extends Controller
             }])
             ->latest('id')
             ->get()
-            ->map(function ($duk) {
+            ->map(function ($duk) use ($petaService) {
                 $lap = $duk->laporan;
                 if (! $lap) {
                     return null;
                 }
                 $foto = $lap->lampiran->first();
+                $evaluasiSla = $petaService->tentukanKondisiSla($lap);
 
                 return [
                     'id' => $lap->id,
@@ -167,12 +176,18 @@ class LaporanWargaController extends Controller
                     'judul' => $lap->judul,
                     'keterangan' => $lap->keterangan,
                     'status' => $lap->status,
+                    'kategori_id' => $lap->kategori_id,
                     'kategori_nama' => $lap->kategori?->nama,
+                    'instansi_id' => $lap->instansi_id,
                     'instansi_nama' => $lap->instansi?->nama,
+                    'kelurahan_id' => $lap->kelurahan_id,
+                    'kecamatan_id' => $lap->kelurahan?->induk_id,
+                    'kota_id' => $lap->kelurahan?->induk?->induk_id,
                     'wilayah_nama' => $lap->kelurahan ? "Kel. {$lap->kelurahan->nama}, Kec. {$lap->kelurahan->induk?->nama}" : null,
                     'kota_nama' => $lap->kelurahan?->induk?->induk?->nama,
                     'foto_url' => $foto ? asset('storage/'.$foto->path) : null,
                     'jumlah_dukungan' => $lap->dukungan_count,
+                    'kondisi_sla' => $evaluasiSla['kondisi'],
                     'didukung_pada' => $duk->created_at->diffForHumans(),
                 ];
             })
@@ -182,6 +197,7 @@ class LaporanWargaController extends Controller
         return Inertia::render('warga/riwayat', [
             'laporanList' => $laporanList,
             'dukunganList' => $dukunganList,
+            'masterFilter' => $petaService->ambilMasterFilter(),
         ]);
     }
 }

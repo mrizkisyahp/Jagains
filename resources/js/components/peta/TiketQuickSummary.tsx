@@ -141,14 +141,14 @@ export default function TiketQuickSummary({ tiket, onClose, className }: TiketQu
 
                 {/* Konten Utama Card: Judul, Lokasi, Status, Dukungan */}
                 <div className="p-4 sm:p-5 space-y-3.5">
-                    {/* Status SLA */}
-                    <div className="flex items-center justify-between gap-2">
-                        <Badge variant={badgeConfig.variant} className="text-caption-xs font-semibold gap-1.5 px-2.5 py-0.5">
+                    {/* Status SLA & Nomor Tiket */}
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <Badge variant={badgeConfig.variant} className="text-caption-xs font-semibold gap-1.5 px-2.5 py-0.5 shrink-0">
                             {badgeConfig.icon}
                             <span>{badgeConfig.label}</span>
                         </Badge>
-                        <span className="font-mono text-caption-xs font-semibold text-muted-foreground">
-                            {tiket.nomor_tiket}
+                        <span className="font-mono text-caption-xs font-semibold text-muted-foreground whitespace-nowrap">
+                            #{tiket.nomor_tiket}
                         </span>
                     </div>
 

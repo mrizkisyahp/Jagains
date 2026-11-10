@@ -15,6 +15,8 @@ export interface TitikLaporanPeta {
     instansi_nama: string | null;
     kecamatan_id: number;
     kecamatan_nama: string;
+    kota_id?: number | null;
+    kota_nama?: string | null;
     kelurahan_nama: string;
     status: string;
     keparahan: 'ringan' | 'sedang' | 'berat';
@@ -34,6 +36,15 @@ export interface TitikLaporanPeta {
 export interface MasterFilterItem {
     id: number;
     nama: string;
+    induk_id?: number;
+    kota_nama?: string;
+    total_laporan?: number;
+}
+
+export interface MasterFilterStatusItem {
+    value: string;
+    label: string;
+    grup: string;
 }
 
 export interface MasterFilterStatistik {
@@ -53,6 +64,8 @@ export interface MasterFilterStatistik {
 export interface MasterFilterPeta {
     kategori: MasterFilterItem[];
     kecamatan: MasterFilterItem[];
+    kota?: MasterFilterItem[];
+    status?: MasterFilterStatusItem[];
     instansi: MasterFilterItem[];
     statistik: MasterFilterStatistik;
 }
@@ -60,6 +73,8 @@ export interface MasterFilterPeta {
 export interface PetaFilterState {
     kategori_id: number | null;
     kecamatan_id: number | null;
+    kota_id?: number | null;
+    status: string | null;
     kondisi_sla: KondisiSla | null;
     instansi_id: number | null;
     rentang_waktu: number | null;

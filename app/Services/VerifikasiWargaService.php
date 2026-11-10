@@ -44,10 +44,11 @@ class VerifikasiWargaService
                 },
                 'rondeVerifikasi.lampiranSesudah',
                 'beritaAcara' => function ($q) {
-                    $q->latest('versi')->limit(1);
+                    $q->orderByDesc('versi');
                 },
+                'beritaAcara.instansi:id,nama,singkatan',
                 'lampiran' => function ($q) {
-                    $q->where('tahap', 'awal')->limit(1);
+                    $q->where('tahap', 'awal');
                 },
             ])
             ->where('status', 'MENUNGGU_VERIFIKASI')
@@ -135,6 +136,28 @@ class VerifikasiWargaService
     }
 
     /**
+     * Menghitung total tiket verifikasi di kelurahan warga untuk badge tab 'perlu_suara' dan 'semua'.
+     *
+     * @return array{perlu_suara: int, semua: int}
+     */
+    public function hitungStatistikAntrean(User $user): array
+    {
+        $base = Laporan::query()
+            ->where('status', 'MENUNGGU_VERIFIKASI')
+            ->where('kelurahan_id', $user->kelurahan_id);
+
+        $totalSemua = (clone $base)->count();
+        $totalPerluSuara = (clone $base)->whereDoesntHave('rondeVerifikasi.verifikasiWarga', function ($q) use ($user) {
+            $q->where('pengguna_id', $user->id);
+        })->count();
+
+        return [
+            'perlu_suara' => $totalPerluSuara,
+            'semua' => $totalSemua,
+        ];
+    }
+
+    /**
      * Mengambil detail satu tiket beserta informasi ronde verifikasi untuk halaman detail tiket / dialog verifikasi.
      */
     public function ambilDetailVerifikasi(User $user, string $nomorTiket): array
@@ -146,6 +169,7 @@ class VerifikasiWargaService
                 'instansi:id,nama,singkatan',
                 'lampiran' => fn ($q) => $q->orderBy('created_at'),
                 'beritaAcara' => fn ($q) => $q->orderByDesc('versi'),
+                'beritaAcara.instansi:id,nama,singkatan',
                 'rondeVerifikasi' => fn ($q) => $q->orderByDesc('nomor'),
                 'rondeVerifikasi.lampiranSesudah',
             ])

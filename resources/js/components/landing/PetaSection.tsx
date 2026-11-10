@@ -28,6 +28,8 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
     const [filters, setFilters] = useState<PetaFilterState>({
         kategori_id: null,
         kecamatan_id: null,
+        kota_id: null,
+        status: null,
         kondisi_sla: null,
         instansi_id: null,
         rentang_waktu: null,
@@ -91,6 +93,12 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
             if (filters.kecamatan_id !== null && item.kecamatan_id !== filters.kecamatan_id) {
                 return false;
             }
+            if (filters.kota_id && item.kota_id !== filters.kota_id) {
+                return false;
+            }
+            if (filters.status && item.status !== filters.status) {
+                return false;
+            }
             if (filters.kondisi_sla !== null && item.kondisi_sla !== filters.kondisi_sla) {
                 return false;
             }
@@ -109,7 +117,9 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
                 const matchNomor = item.nomor_tiket.toLowerCase().includes(query);
                 const matchJudul = item.judul.toLowerCase().includes(query);
                 const matchKelurahan = item.kelurahan_nama.toLowerCase().includes(query);
-                if (!matchNomor && !matchJudul && !matchKelurahan) {
+                const matchKecamatan = item.kecamatan_nama.toLowerCase().includes(query);
+                const matchKota = item.kota_nama?.toLowerCase().includes(query);
+                if (!matchNomor && !matchJudul && !matchKelurahan && !matchKecamatan && !matchKota) {
                     return false;
                 }
             }
@@ -121,6 +131,8 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
         setFilters({
             kategori_id: null,
             kecamatan_id: null,
+            kota_id: null,
+            status: null,
             kondisi_sla: null,
             instansi_id: null,
             rentang_waktu: null,

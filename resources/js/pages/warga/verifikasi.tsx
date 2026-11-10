@@ -39,6 +39,10 @@ interface VerifikasiPageProps {
         }>;
     };
     kategoriList: Array<{ id: number; nama: string }>;
+    counts?: {
+        perlu_suara: number;
+        semua: number;
+    };
     kelurahan: { id: number; nama: string } | null;
     filters: {
         tab?: string;
@@ -50,6 +54,7 @@ interface VerifikasiPageProps {
 export default function VerifikasiWargaPage({
     daftarTiket,
     kategoriList,
+    counts,
     kelurahan,
     filters,
 }: VerifikasiPageProps) {
@@ -105,8 +110,12 @@ export default function VerifikasiWargaPage({
     const hasFilters = Boolean(filters.q || filters.kategori_id);
 
     return (
-        <div className="mx-auto w-full max-w-7xl space-y-6 pb-20">
-            <Head title="Verifikasi Warga - Jagains" />
+        <InternalLayout
+            title="Verifikasi Hasil Perbaikan"
+            breadcrumb="Warga > Verifikasi"
+        >
+            <div className="mx-auto w-full max-w-7xl space-y-6 pb-20">
+                <Head title="Verifikasi Hasil Perbaikan - Jagains" />
 
             {/* Header Halaman (Sesuai Konvensi Admin / Auditor / Instansi) */}
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -134,6 +143,11 @@ export default function VerifikasiWargaPage({
                         >
                             <AlertCircle className="size-4" />
                             <span>Perlu Suara Anda</span>
+                            {typeof counts?.perlu_suara === 'number' && (
+                                <span className="rounded-full bg-primary/10 text-primary px-1.5 py-0.5 text-caption-xs font-semibold">
+                                    {counts.perlu_suara}
+                                </span>
+                            )}
                         </TabsTrigger>
                         <TabsTrigger
                             value="semua"
@@ -142,7 +156,7 @@ export default function VerifikasiWargaPage({
                             <CheckCircle2 className="size-4" />
                             <span>Semua Tiket Tahap Verifikasi</span>
                             <span className="rounded-full bg-muted-foreground/10 px-1.5 py-0.5 text-caption-xs font-semibold">
-                                {daftarTiket.total}
+                                {counts?.semua ?? daftarTiket.total}
                             </span>
                         </TabsTrigger>
                     </TabsList>
@@ -247,7 +261,7 @@ export default function VerifikasiWargaPage({
                         )}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {daftarTiket.data.map((tiket) => (
                             <KartuTiketVerifikasi
                                 key={tiket.id}
@@ -349,15 +363,7 @@ export default function VerifikasiWargaPage({
                     </div>
                 )}
             </Tabs>
-        </div>
+            </div>
+        </InternalLayout>
     );
 }
-
-VerifikasiWargaPage.layout = (page: ReactNode) => (
-    <InternalLayout
-        title="Verifikasi Warga"
-        breadcrumb="Warga > Verifikasi Kuorum"
-    >
-        {page}
-    </InternalLayout>
-);

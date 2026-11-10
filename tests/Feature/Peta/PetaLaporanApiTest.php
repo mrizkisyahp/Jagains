@@ -182,5 +182,41 @@ class PetaLaporanApiTest extends TestCase
         $nomorListSelesai = array_column($resSelesai->json('data'), 'nomor_tiket');
         $this->assertContains('JAG-KAT-2', $nomorListSelesai);
         $this->assertNotContains('JAG-KAT-1', $nomorListSelesai);
+
+        // Filter status 'PERLU_ROUTING'
+        $resStatus = $this->getJson('/api/peta/titik?status=PERLU_ROUTING');
+        $resStatus->assertOk();
+        $nomorListStatus = array_column($resStatus->json('data'), 'nomor_tiket');
+        $this->assertContains('JAG-KAT-1', $nomorListStatus);
+        $this->assertNotContains('JAG-KAT-2', $nomorListStatus);
+    }
+
+    public function test_master_filter_mengembalikan_daftar_status_dan_wilayah_lengkap(): void
+    {
+        $response = $this->getJson('/api/peta/master-filter');
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'status',
+            'data' => [
+                'kategori',
+                'kecamatan' => [
+                    '*' => ['id', 'nama', 'induk_id', 'kota_nama', 'total_laporan'],
+                ],
+                'kota' => [
+                    '*' => ['id', 'nama', 'total_laporan'],
+                ],
+                'status' => [
+                    '*' => ['value', 'label', 'grup'],
+                ],
+                'instansi',
+                'statistik',
+            ],
+        ]);
+
+        $statuses = array_column($response->json('data.status'), 'value');
+        $this->assertContains('PERLU_ROUTING', $statuses);
+        $this->assertContains('DIKERJAKAN', $statuses);
+        $this->assertContains('MENUNGGU_VERIFIKASI', $statuses);
+        $this->assertContains('TERTUTUP_WARGA', $statuses);
     }
 }

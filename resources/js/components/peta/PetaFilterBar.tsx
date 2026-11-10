@@ -179,7 +179,7 @@ export default function PetaFilterBar({
                             </SelectItem>
                             {masterFilter.kecamatan.map((kec) => (
                                 <SelectItem key={kec.id} value={String(kec.id)} className="text-body-sm">
-                                    Kec. {kec.nama}
+                                    Kec. {kec.nama}{kec.kota_nama ? ` (${kec.kota_nama})` : ''}
                                 </SelectItem>
                             ))}
                         </SelectContent>

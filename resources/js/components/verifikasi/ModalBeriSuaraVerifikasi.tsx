@@ -109,7 +109,7 @@ export default function ModalBeriSuaraVerifikasi({
             },
             () => {
                 setGpsLoading(false);
-                toast.error('Gagal membaca GPS. Pastikan izin lokasi aktif atau pilih Jalur B.');
+                toast.error('Gagal membaca GPS. Pastikan izin lokasi aktif atau pilih verifikasi Jarak Jauh.');
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
@@ -423,7 +423,7 @@ export default function ModalBeriSuaraVerifikasi({
                             >
                                 <div className="flex items-center justify-between">
                                     <span className="font-display text-body-sm font-semibold text-foreground">
-                                        Di Lokasi
+                                        Jarak Dekat dengan Foto
                                     </span>
                                     <Badge variant="outline" className="text-[10px] font-semibold border-primary/40 text-primary">
                                         Bobot 1.0 (Penuh)
@@ -491,7 +491,7 @@ export default function ModalBeriSuaraVerifikasi({
                                         <AlertTriangle className="size-6 text-destructive mb-1.5" />
                                         <p className="text-caption-xs text-foreground font-semibold">{cameraError}</p>
                                         <p className="text-[11px] text-muted-foreground mt-0.5">
-                                            Aktifkan izin kamera pada browser atau beralih ke Jalur B.
+                                            Aktifkan izin kamera pada browser atau beralih ke verifikasi Jarak Jauh.
                                         </p>
                                         <div className="flex flex-wrap gap-2 mt-2 justify-center">
                                             <Button
@@ -501,7 +501,7 @@ export default function ModalBeriSuaraVerifikasi({
                                                 onClick={() => setJalur('B')}
                                                 className="text-caption-xs h-7"
                                             >
-                                                Pilih Jalur B (Jarak Jauh)
+                                                Pilih Jarak Jauh (Bobot 0.5)
                                             </Button>
                                             <Button
                                                 type="button"
@@ -575,7 +575,7 @@ export default function ModalBeriSuaraVerifikasi({
 
                             {!isGeofenceValid && jarakMeter !== null && (
                                 <p className="text-[11px] text-destructive leading-tight">
-                                    Posisi GPS Anda ({jarakMeter}m) melebihi batas radius 50 meter dari titik kerusakan. Silakan gunakan Jalur B.
+                                    Posisi GPS Anda ({jarakMeter}m) melebihi batas radius 50 meter dari titik aduan. Silakan gunakan verifikasi Jarak Jauh (Bobot 0.5).
                                 </p>
                             )}
                         </div>

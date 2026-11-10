@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { MapPin, Navigation, AlertTriangle, CheckCircle } from 'lucide-react';
+import {
+    MapPin,
+    Crosshair,
+    ArrowLeft,
+    ArrowRight,
+    RefreshCw,
+    CheckCircle2,
+    AlertTriangle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -18,6 +26,9 @@ interface LocationPickerMapProps {
         sumber: 'gps' | 'manual',
         kelurahan: string | null
     ) => void;
+    onPrevStep?: () => void;
+    onNextStep?: () => void;
+    canProceed?: boolean;
 }
 
 export default function LocationPickerMap({
@@ -27,6 +38,9 @@ export default function LocationPickerMap({
     lokasiSumber,
     kelurahanNama,
     onChangeLocation,
+    onPrevStep,
+    onNextStep,
+    canProceed = true,
 }: LocationPickerMapProps) {
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
@@ -154,7 +168,9 @@ export default function LocationPickerMap({
         const initialLat = lintang || -6.402484;
         const initialLng = bujur || 106.794240;
 
-        const map = L.map(mapContainerRef.current).setView([initialLat, initialLng], 16);
+        const map = L.map(mapContainerRef.current, {
+            attributionControl: false,
+        }).setView([initialLat, initialLng], 16);
         mapInstanceRef.current = map;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -216,7 +232,15 @@ export default function LocationPickerMap({
             verifikasiTitikKelurahan(initialLat, initialLng, akurasiGpsM, lokasiSumber);
         }
 
+        // Pastikan ukuran Leaflet pas setelah dirender
+        const timer = setTimeout(() => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.invalidateSize();
+            }
+        }, 200);
+
         return () => {
+            clearTimeout(timer);
             map.remove();
             mapInstanceRef.current = null;
         };
@@ -231,78 +255,77 @@ export default function LocationPickerMap({
     ]);
 
     return (
-        <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                    <h3 className="font-display text-body-medium font-bold text-foreground">Titik Lokasi Kerusakan</h3>
-                    <p className="text-body-sm text-muted-foreground mt-0.5">
-                        Geser pin pada peta untuk menentukan posisi kerusakan secara akurat (FR-LAP-03).
-                    </p>
-                </div>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleGetGpsLocation(false)}
-                    disabled={isLocating}
-                    className="gap-2 shrink-0 border-primary/30 text-primary hover:bg-primary/5 text-body-sm h-9"
-                >
-                    <Navigation className={`size-3.5 ${isLocating ? 'animate-spin' : ''}`} />
-                    {isLocating ? 'Mendeteksi GPS...' : 'Gunakan GPS Saya'}
-                </Button>
-            </div>
+        <div className="relative overflow-hidden rounded-3xl bg-zinc-950 aspect-[16/10] sm:aspect-[16/9] max-h-[580px] w-full flex items-center justify-center shadow-md border border-border/40">
+            {/* Canvas Peta Leaflet */}
+            <div ref={mapContainerRef} className="size-full z-0" />
 
-            {/* Container Peta Leaflet */}
-            <div className="relative overflow-hidden rounded-2xl border border-border shadow-xs h-80 sm:h-96 z-0">
-                <div ref={mapContainerRef} className="w-full h-full" />
-
-                {/* Floating Info Lokasi */}
-                <div className="absolute top-3 left-3 right-3 sm:right-auto z-[400] flex flex-wrap gap-2 pointer-events-none">
-                    <div className="bg-card/95 backdrop-blur-xs border border-border/80 px-3.5 py-2 rounded-xl shadow-md text-caption-xs space-y-0.5">
-                        <div className="flex items-center gap-1.5 font-medium text-foreground">
-                            <MapPin className="size-3.5 text-destructive" />
-                            {lintang.toFixed(6)}, {bujur.toFixed(6)}
-                            <Badge variant={lokasiSumber === 'gps' ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0 h-4">
-                                {lokasiSumber.toUpperCase()}
-                            </Badge>
-                        </div>
-                        {akurasiGpsM && lokasiSumber === 'gps' && (
-                            <p className="text-caption-xs text-muted-foreground pl-5">
-                                Akurasi: ±{akurasiGpsM} meter
-                            </p>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Status Deteksi Kelurahan */}
-            <div className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-muted/40 text-body-sm">
-                <div className="flex items-center gap-2">
+            {/* Floating Top-Right Sesuai Wireframe: Teks Status & Tombol GPS */}
+            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[500] flex items-center gap-2.5 sm:gap-3 max-w-[calc(100%-4.5rem)] sm:max-w-lg">
+                <div className="min-w-0 flex-1 rounded-2xl bg-black/75 backdrop-blur-md border border-white/15 px-3.5 py-2 text-white text-caption-xs sm:text-body-sm shadow-xl font-medium">
                     {isLocating ? (
-                        <>
-                            <Navigation className="size-4 text-primary animate-spin shrink-0" />
-                            <span className="text-primary font-medium">Sedang mendeteksi posisi GPS Anda secara otomatis...</span>
-                        </>
+                        <span className="flex items-center gap-2 min-w-0">
+                            <RefreshCw className="size-3.5 animate-spin text-white shrink-0" />
+                            <span className="truncate">Mendeteksi GPS...</span>
+                        </span>
                     ) : kelurahanNama ? (
-                        <>
-                            <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                            <div>
-                                <span className="font-semibold text-foreground">Wilayah Terdeteksi: </span>
-                                <span className="text-foreground">{kelurahanNama}</span>
-                            </div>
-                        </>
-                    ) : isCheckingKelurahan ? (
-                        <span className="text-muted-foreground animate-pulse">Memeriksa batas wilayah kelurahan...</span>
-                    ) : (
-                        <>
-                            <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                            <span className="text-amber-700 dark:text-amber-400">
-                                {geoError || 'Geser pin ke dalam wilayah jangkauan layanan (Jabodetabek)'}
+                        <span className="flex items-center gap-2 min-w-0">
+                            <span className="size-2 rounded-full bg-emerald-400 shrink-0" />
+                            <span className="truncate">
+                                Lokasi: <strong className="font-semibold text-white">{kelurahanNama}</strong>
                             </span>
-                        </>
+                        </span>
+                    ) : geoError ? (
+                        <span className="text-amber-300 font-medium truncate block">{geoError}</span>
+                    ) : (
+                        <span className="text-white/90 line-clamp-2 text-caption-xs sm:text-body-sm">
+                            Lokasi tidak terdeteksi. Tekan tombol di samping untuk mengambil lokasi secara otomatis
+                        </span>
                     )}
                 </div>
+
+                <button
+                    type="button"
+                    onClick={() => handleGetGpsLocation(false)}
+                    disabled={isLocating}
+                    className="size-11 sm:size-12 shrink-0 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-950 flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                    title="Ambil Lokasi Otomatis via GPS"
+                    aria-label="Ambil Lokasi Otomatis via GPS"
+                >
+                    <Crosshair className={cn('size-6 text-zinc-950 shrink-0', isLocating && 'animate-spin')} />
+                </button>
             </div>
+
+            {/* Floating Bottom-Left Sesuai Wireframe: [ ← Kembali ke Bukti Foto ] */}
+            {onPrevStep && (
+                <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[500]">
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={onPrevStep}
+                        className="h-11 px-4 sm:px-5 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-950 font-semibold text-body-sm shadow-xl flex items-center gap-2 cursor-pointer transition-transform hover:scale-102 active:scale-98"
+                        title="Kembali ke Bukti Foto"
+                    >
+                        <ArrowLeft className="size-4 text-zinc-950" />
+                        <span>Kembali ke Bukti Foto</span>
+                    </Button>
+                </div>
+            )}
+
+            {/* Floating Bottom-Right Sesuai Wireframe: [ Selanjutnya → ] */}
+            {onNextStep && (
+                <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-[500]">
+                    <Button
+                        type="button"
+                        onClick={onNextStep}
+                        disabled={!canProceed}
+                        className="h-11 px-5 sm:px-6 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-body-sm shadow-xl flex items-center gap-2 cursor-pointer transition-transform hover:scale-102 active:scale-98 disabled:opacity-40"
+                        title={canProceed ? 'Lanjut ke Detail' : 'Tentukan titik dalam wilayah layanan'}
+                    >
+                        <span>Selanjutnya</span>
+                        <ArrowRight className="size-4 text-zinc-950" />
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }

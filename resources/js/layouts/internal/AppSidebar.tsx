@@ -13,11 +13,13 @@ import {
     LogIn,
     LogOut,
     Map,
+    MessageSquareWarning,
     Route,
     Scale,
     ShieldAlert,
     ShieldCheck,
     Sliders,
+    SquareUser,
     UserCheck,
     User as UserIcon,
     Users,
@@ -88,9 +90,10 @@ const NAVIGATION_ITEMS: Record<string, NavEntry[]> = {
     ],
     warga: [
         { label: 'Eksplorasi', href: '/peta', icon: Globe },
-        { label: 'Riwayat laporan', href: '/warga/riwayat', icon: Clock },
+        { label: 'Tambah Laporan', href: '/warga/lapor', icon: MessageSquareWarning },
+        { label: 'Riwayat Laporan', href: '/warga/riwayat', icon: Clock },
         { label: 'Verifikasi', href: '/warga/verifikasi', icon: CheckSquare },
-        { label: 'Profil & wilayah', href: '/warga/profil', icon: UserIcon },
+        { label: 'Profil', href: '/warga/profil', icon: SquareUser },
     ],
 };
 
@@ -152,6 +155,19 @@ export default function AppSidebar() {
         const currentPath = url.split('?')[0];
         if (href === '/') {
             return currentPath === '/';
+        }
+        if (currentPath.startsWith('/tiket/') && peran === 'warga') {
+            const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+            const from = searchParams?.get('from');
+            if (from === 'peta') return href === '/peta';
+            if (from === 'verifikasi') return href === '/warga/verifikasi';
+            return href === '/warga/riwayat';
+        }
+        if (currentPath.startsWith('/warga/verifikasi/') && peran === 'warga') {
+            const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+            const from = searchParams?.get('from');
+            if (from === 'verifikasi') return href === '/warga/verifikasi';
+            return href === '/warga/riwayat';
         }
         return currentPath === href || currentPath.startsWith(href + '/');
     };

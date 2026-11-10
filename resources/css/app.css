@@ -370,6 +370,38 @@
     font-weight: 600;
 }
 
+@utility text-display-xs {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    font-size: 1.1875rem;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+}
+
+@utility text-title-lg {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    font-size: 1.25rem;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+}
+
+@utility text-title-md {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    font-size: 1.125rem;
+    line-height: 1.40;
+    letter-spacing: -0.005em;
+    font-weight: 600;
+}
+
+@utility text-title-sm {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    font-size: 1.0rem;
+    line-height: 1.45;
+    letter-spacing: 0;
+    font-weight: 600;
+}
+
 @utility text-body-lg {
     font-family: 'Inter Variable', var(--font-sans);
     font-size: 1.125rem;
@@ -395,6 +427,13 @@
     font-family: 'Inter Variable', var(--font-sans);
     font-size: 0.875rem;
     line-height: 1.50;
+    font-weight: 400;
+}
+
+@utility text-body-xs {
+    font-family: 'Inter Variable', var(--font-sans);
+    font-size: 0.8125rem;
+    line-height: 1.45;
     font-weight: 400;
 }
 

@@ -647,7 +647,7 @@ export default function InstansiTiketDetail({ tiket }: { tiket: TiketDetail }) {
                                                     {item.alasan}
                                                     <span className="mt-1 block text-muted-foreground">
                                                         {date(item.waktu)} ·
-                                                        Jalur {item.jalur}
+                                                        {item.jalur === 'A' ? 'Jarak Dekat dengan Foto' : 'Jarak Jauh'}
                                                     </span>
                                                 </p>
                                             ),

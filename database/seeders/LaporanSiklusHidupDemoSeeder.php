@@ -19,6 +19,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class LaporanSiklusHidupDemoSeeder extends Seeder
@@ -721,12 +722,13 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
         $ditutup = in_array($status, ['DITOLAK', 'TERTUTUP_WARGA', 'TERTUTUP_AUDITOR'], true);
 
         [$lintang, $bujur] = $this->koordinatKelurahanAlami($kelurahan, $nomorTiket);
+        [$judul, $keterangan] = self::buatTeksLaporan($kategori->nama, $kelurahan->nama, $nomorTiket);
 
         return [
             'nomor_tiket' => $nomorTiket, 'pelapor_id' => $pelapor->id, 'kategori_id' => $kategori->id,
             'instansi_id' => $instansi?->id, 'kelurahan_id' => $kelurahan->id,
-            'judul' => "Data contoh {$nomorTiket}",
-            'keterangan' => 'Laporan contoh untuk menampilkan beban kerja dan seluruh tahap penanganan.',
+            'judul' => $judul,
+            'keterangan' => $keterangan,
             'keparahan' => 'sedang', 'lintang' => $lintang, 'bujur' => $bujur,
             'akurasi_gps_m' => 7.5, 'lokasi_sumber' => 'gps', 'status' => $status,
             'jenis_pendanaan' => $butuhTarget ? 'APBD_KOTA' : null,
@@ -738,6 +740,67 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
             'ditutup_pada' => $ditutup ? $waktu->addDays(8) : null,
             'created_at' => $waktu, 'updated_at' => $waktu->addDays(8),
         ];
+    }
+
+    /**
+     * Membuat judul dan keterangan laporan yang realistis dan alami berdasarkan kategori dan kelurahan.
+     *
+     * @return array{0: string, 1: string}
+     */
+    public static function buatTeksLaporan(string $kategoriNama, string $kelurahanNama, string $nomorTiket): array
+    {
+        $hash = crc32($nomorTiket);
+
+        $templates = match ($kategoriNama) {
+            'Jalan Berlubang' => [
+                ['Jalan Berlubang Cukup Dalam di Kel. :kel', 'Terdapat lubang sedalam kurang lebih 10-15 cm di badan jalan yang sangat membahayakan pengendara motor, terutama saat malam hari dan tergenang air hujan.'],
+                ['Aspal Ambles dan Berlubang di Dekat Persimpangan Kel. :kel', 'Aspal jalan terkikis dan berlubang lebar di lajur kiri. Banyak pengendara motor hampir tergelincir saat menghindari lubang tersebut.'],
+                ['Lubang Jalan Menganga Rawan Kecelakaan di Kel. :kel', 'Kondisi jalan berlubang cukup parah akibat lalu lintas kendaraan padat. Memerlukan penanganan penambalan hotmix secepatnya agar tidak menimbulkan korban.'],
+                ['Kerusakan Permukaan Aspal Retak dan Berlubang di Kel. :kel', 'Permukaan aspal jalan pecah-pecah dan membentuk lubang-lubang beruntun. Sangat mengganggu kelancaran arus lalu lintas warga sekitar.'],
+            ],
+            'Lampu Jalan Padam' => [
+                ['Lampu PJU Padam Mengakibatkan Jalan Lingkungan Gelap di Kel. :kel', 'Lampu jalan penerangan umum sudah mati selama beberapa malam terakhir sehingga area jalan sangat gelap gulita dan rawan tindak kejahatan.'],
+                ['Lampu Penerangan Jalan Umum Mati Total di Kel. :kel', 'Fasilitas PJU padam di jalur utama warga. Menjelang malam kondisi jalan minim penerangan dan membahayakan keselamatan pejalan kaki maupun pengendara.'],
+                ['Rumah Lampu PJU Rusak dan Mati di Kel. :kel', 'Kap lampu PJU terlihat rusak dan kabel terkelupas sehingga lampu tidak menyala sama sekali. Harap dinas terkait segera melakukan perbaikan teknis.'],
+                ['Penerangan Jalan Umum Padam Sepanjang Jalur Pemukiman Kel. :kel', 'Beberapa titik lampu penerangan jalan tidak berfungsi secara bersamaan, membuat suasana jalan malam sangat mencekam dan berbahaya.'],
+            ],
+            'Drainase Tersumbat' => [
+                ['Saluran Drainase Mampet Tersumbat Lumpur dan Sampah di Kel. :kel', 'Endapan lumpur dan tumpukan sampah plastik menyumbat saluran drainase hingga air meluap ke badan jalan setiap kali hujan turun. Mohon dilakukan pengerukan segera.'],
+                ['Got Saluran Air Meluap ke Jalan Saat Hujan Deras di Kel. :kel', 'Saluran air got pemukiman mampet dan air tidak mengalir lancar, menimbulkan genangan kotor dan bau busuk yang mengganggu warga sekitar.'],
+                ['Drainase Pemukiman Tersumbat Mengakibatkan Genangan Air di Kel. :kel', 'Gorong-gorong drainase tertimbun tanah liat dan sampah liar. Saat hujan lebat air tidak tertampung dan meluber menggenangi jalan lingkungan warga.'],
+                ['Saluran Air Beton Mampet Menimbulkan Bau Tak Sedap di Kel. :kel', 'Aliran air tersendat parah di saluran beton samping jalan. Perlu pembersihan sampah dan penggelontoran endapan lumpur secepatnya.'],
+            ],
+            'Trotoar Rusak' => [
+                ['Paving Block Trotoar Rusak dan Ambles di Jalur Pejalan Kaki Kel. :kel', 'Susunan paving block trotoar pecah dan banyak yang terlepas sehingga membuat pejalan kaki rentan tersandung dan cedera. Mohon dilakukan perbaikan.'],
+                ['Trotoar Pedestrian Hancur Terangkat Akar Pohon di Kel. :kel', 'Jalur pedestrian rusak parah dan ubin pemandu (guiding block) tuna netra banyak yang patah dan hancur. Perlu perbaikan trotoar agar aman bagi pejalan kaki dan disabilitas.'],
+                ['Guiding Block Tuna Netra dan Paving Trotoar Rusak di Kel. :kel', 'Trotoar di pinggir jalan ambles dan bergelombang akibat beban kendaraan yang parkir liar. Pejalan kaki terpaksa berjalan di badan jalan raya.'],
+                ['Trotoar Berlubang Membahayakan Pejalan Kaki di Kel. :kel', 'Ubin trotoar pecah menyisakan lubang terbuka yang sangat berbahaya bagi anak-anak dan lansia yang melintas sehari-hari.'],
+            ],
+            'Rambu Lalu Lintas Rusak' => [
+                ['Tiang Rambu Lalu Lintas Bengkok Tertabrak di Kel. :kel', 'Tiang rambu lalu lintas miring dan bengkok setelah terserempet kendaraan, membahayakan pengguna jalan yang melintas. Mohon perbaikan dan pelurusan tiang rambu.'],
+                ['Papan Rambu Petunjuk Arah Rusak dan Pudar di Kel. :kel', 'Papan rambu peringatan di tikungan jalan telah pudar dan rusak sehingga tidak terbaca oleh pengendara dari kejauhan. Perlu penggantian rambu baru.'],
+                ['Rambu Peringatan Bahaya Miring Nyaris Roboh ke Jalan di Kel. :kel', 'Rambu penunjuk keselamatan jalan roboh sebagian. Kondisi ini membingungkan pengendara dan dapat memicu kecelakaan lalu lintas.'],
+                ['Daun Rambu Lalu Lintas Terlepas dan Rusak di Kel. :kel', 'Plat daun rambu terlepas dari dudukannya akibat terpaan angin kencang dan korosi baut. Perlu pengencangan dan pemasangan plat baru.'],
+            ],
+            'Jembatan Rusak' => [
+                ['Sambungan Jembatan Rusak dan Berlubang di Akses Penghubung Kel. :kel', 'Terdapat celah retak dan lubang pada sambungan expansion joint jembatan yang menimbulkan getaran keras saat dilintasi kendaraan bermotor. Perlu pengaspalan ulang.'],
+                ['Pagar Railing Jembatan Keropos dan Patah di Kel. :kel', 'Besi pembatas pagar pengaman jembatan sudah berkarat dan patah, sangat berbahaya bagi anak-anak dan pejalan kaki yang melintas di tepi sungai.'],
+                ['Aspal Jembatan Ambles Berbahaya Bagi Pengendara di Kel. :kel', 'Konstruksi lantai jembatan mengalami keretakan dan aspal terkelupas. Perlu peninjauan teknis dan perbaikan struktural oleh dinas terkait.'],
+                ['Jembatan Lingkungan Retak Parah Butuh Penguatan Konstruksi di Kel. :kel', 'Oprit jembatan mulai turun dan retak, membahayakan kendaraan roda empat yang melintas membawa muatan logistik warga.'],
+            ],
+            default => [
+                ['Tumpukan Sampah Liar Menumpuk di Bahu Jalan Kel. :kel', 'Banyak pihak tidak bertanggung jawab membuang kantong sampah rumah tangga di pinggir jalan hingga menumpuk dan menimbulkan bau tidak sedap serta lalat. Mohon dibersihkan dan diangkut.'],
+                ['Pembuangan Sampah Ilegal di Lahan Kosong Tepi Jalan Kel. :kel', 'Lahan kosong di pinggir jalan dijadikan lokasi pembuangan sampah liar ilegal. Sampah berserakan hingga ke bahu jalan dan mengganggu kenyamanan warga sekitar.'],
+                ['Timbunan Sampah Plastik Menumpuk dan Menimbulkan Bau di Kel. :kel', 'Tumpukan sampah plastik, sisa makanan, dan limbah rumah tangga meluber ke pinggir jalan umum. Diharapkan ada pengangkutan rutin dan pemasangan plang larangan.'],
+                ['Sampah Liar Berserakan Meluber ke Badan Jalan di Kel. :kel', 'Limbah sampah yang tidak terurus mulai menutupi sebagian badan jalan dan saluran air saat angin bertiup kencang. Memerlukan tindak lanjut dinas kebersihan.'],
+            ],
+        };
+
+        $pilihan = $templates[abs($hash) % count($templates)];
+        $judul = str_replace(':kel', $kelurahanNama, $pilihan[0]);
+        $keterangan = $pilihan[1];
+
+        return [$judul, $keterangan];
     }
 
     /**
@@ -859,7 +922,33 @@ class LaporanSiklusHidupDemoSeeder extends Seeder
 
     private function lampiran(Laporan $laporan, User $pengguna, string $tahap, string $nama, CarbonImmutable $waktu): Lampiran
     {
-        return Lampiran::create(['uuid' => (string) Str::uuid(), 'laporan_id' => $laporan->id, 'pengguna_id' => $pengguna->id, 'tahap' => $tahap, 'path' => "laporan/{$laporan->nomor_tiket}/{$nama}", 'ukuran_byte' => 0, 'lebar' => 1280, 'tinggi' => 960, 'gps_cocok' => $tahap === 'awal' ? null : true, 'jarak_m' => $tahap === 'awal' ? null : 10.0, 'akurasi_m' => $tahap === 'awal' ? null : 7.5, 'created_at' => $waktu]);
+        $katId = $laporan->kategori_id ?? 1;
+        $templatePath = database_path("seeders/templates/photos/kategori_{$katId}_{$tahap}.jpg");
+        if (! file_exists($templatePath)) {
+            $templatePath = database_path("seeders/templates/photos/kategori_{$katId}_awal.jpg");
+        }
+
+        $destRel = "laporan/{$laporan->nomor_tiket}/{$nama}";
+        $ukuranByte = 0;
+        if (file_exists($templatePath)) {
+            Storage::disk('public')->put($destRel, file_get_contents($templatePath));
+            $ukuranByte = filesize($templatePath);
+        }
+
+        return Lampiran::create([
+            'uuid' => (string) Str::uuid(),
+            'laporan_id' => $laporan->id,
+            'pengguna_id' => $pengguna->id,
+            'tahap' => $tahap,
+            'path' => $destRel,
+            'ukuran_byte' => $ukuranByte,
+            'lebar' => 1280,
+            'tinggi' => 960,
+            'gps_cocok' => $tahap === 'awal' ? null : true,
+            'jarak_m' => $tahap === 'awal' ? null : 10.0,
+            'akurasi_m' => $tahap === 'awal' ? null : 7.5,
+            'created_at' => $waktu,
+        ]);
     }
 
     private function ronde(Laporan $laporan, Lampiran $foto, string $status, CarbonImmutable $waktu): RondeVerifikasi

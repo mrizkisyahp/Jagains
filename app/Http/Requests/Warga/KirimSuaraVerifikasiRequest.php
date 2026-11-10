@@ -38,6 +38,7 @@ class KirimSuaraVerifikasiRequest extends FormRequest
                 $setuju === false ? 'min:10' : '',
                 'max:256',
             ],
+            'from' => ['nullable', 'string', 'in:tiket,riwayat,verifikasi'],
         ];
     }
 

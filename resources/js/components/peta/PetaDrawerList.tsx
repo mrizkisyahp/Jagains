@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { TitikLaporanPeta, MasterFilterPeta, PetaFilterState, KondisiSla } from '@/types/peta';
 import {
     Search,
@@ -12,16 +12,14 @@ import {
     Inbox,
     Filter,
     ChevronDown,
+    Activity,
+    Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import SearchableFilterDropdown, {
+    DropdownFilterOption,
+} from '@/components/peta/SearchableFilterDropdown';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/toast';
 
@@ -41,6 +39,8 @@ interface PetaDrawerListProps {
 const DEFAULT_FILTERS: PetaFilterState = {
     kategori_id: null,
     kecamatan_id: null,
+    kota_id: null,
+    status: null,
     kondisi_sla: null,
     instansi_id: null,
     rentang_waktu: null,
@@ -50,6 +50,8 @@ const DEFAULT_FILTERS: PetaFilterState = {
 const DEFAULT_MASTER_FILTER: MasterFilterPeta = {
     kategori: [],
     kecamatan: [],
+    kota: [],
+    status: [],
     instansi: [],
     statistik: {
         total_laporan: 0,
@@ -58,13 +60,29 @@ const DEFAULT_MASTER_FILTER: MasterFilterPeta = {
     },
 };
 
-const KONDISI_SLA_OPTIONS: Array<{ value: KondisiSla | 'semua'; label: string }> = [
-    { value: 'semua', label: 'Semua Status' },
-    { value: 'dalam_sla', label: 'Dalam SLA' },
-    { value: 'hampir_lewat', label: 'Hampir Lewat' },
-    { value: 'lewat_sla', label: 'Lewat SLA' },
-    { value: 'menunggu_warga', label: 'Menunggu Warga' },
-    { value: 'selesai', label: 'Selesai' },
+const STATUS_OPTIONS: Array<{ value: string; label: string; grup: string }> = [
+    // Tahap Penanganan
+    { value: 'PERLU_ROUTING', label: 'Perlu Routing', grup: 'Tahap Penanganan' },
+    { value: 'DITERUSKAN', label: 'Diteruskan ke Dinas', grup: 'Tahap Penanganan' },
+    { value: 'DITERIMA', label: 'Diterima Dinas', grup: 'Tahap Penanganan' },
+    { value: 'DISURVEI', label: 'Selesai Survei', grup: 'Tahap Penanganan' },
+    { value: 'TERJADWAL_ANGGARAN', label: 'Terjadwal Anggaran', grup: 'Tahap Penanganan' },
+    { value: 'DIKERJAKAN', label: 'Sedang Dikerjakan', grup: 'Tahap Penanganan' },
+    // Verifikasi & Arbitrase
+    { value: 'MENUNGGU_VERIFIKASI', label: 'Menunggu Verifikasi Warga', grup: 'Verifikasi & Sengketa' },
+    { value: 'DISENGKETAKAN', label: 'Disengketakan', grup: 'Verifikasi & Sengketa' },
+    { value: 'MENUNGGU_KEPUTUSAN_AUDITOR', label: 'Menunggu Keputusan Auditor', grup: 'Verifikasi & Sengketa' },
+    { value: 'USULAN_TOLAK', label: 'Usulan Penolakan', grup: 'Verifikasi & Sengketa' },
+    // Selesai & Tutup
+    { value: 'TERTUTUP_WARGA', label: 'Ditutup Warga', grup: 'Selesai & Tutup' },
+    { value: 'TERTUTUP_AUDITOR', label: 'Ditutup Auditor', grup: 'Selesai & Tutup' },
+    { value: 'DITOLAK', label: 'Ditolak', grup: 'Selesai & Tutup' },
+];
+
+const KONDISI_SLA_OPTIONS: Array<{ value: KondisiSla; label: string }> = [
+    { value: 'dalam_sla', label: 'Dalam SLA (Aman)' },
+    { value: 'hampir_lewat', label: 'Hampir Lewat (Kritis)' },
+    { value: 'lewat_sla', label: 'Lewat Batas SLA (Terlambat)' },
 ];
 
 function getStatusBadgeStyle(kondisi: KondisiSla): string {
@@ -101,13 +119,183 @@ export default function PetaDrawerList({
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     const activeDropdownFilterCount =
+        (filters.status !== null ? 1 : 0) +
         (filters.kondisi_sla !== null ? 1 : 0) +
-        (filters.kecamatan_id !== null ? 1 : 0) +
+        (filters.kecamatan_id !== null || (filters.kota_id ?? null) !== null ? 1 : 0) +
         (filters.kategori_id !== null ? 1 : 0);
 
     const isFilterActive =
         activeDropdownFilterCount > 0 ||
         filters.search.trim() !== '';
+
+    // Label untuk badge filter aktif
+    const activeStatusLabel = useMemo(() => {
+        if (filters.status) {
+            return (
+                masterFilter?.status?.find((s) => s.value === filters.status)?.label ??
+                STATUS_OPTIONS.find((s) => s.value === filters.status)?.label ??
+                filters.status
+            );
+        }
+        if (filters.kondisi_sla) {
+            return KONDISI_SLA_OPTIONS.find((s) => s.value === filters.kondisi_sla)?.label ?? filters.kondisi_sla;
+        }
+        return null;
+    }, [filters.status, filters.kondisi_sla, masterFilter?.status]);
+
+    const activeLocationLabel = useMemo(() => {
+        if (filters.kecamatan_id) {
+            const kec = masterFilter?.kecamatan?.find((k) => k.id === filters.kecamatan_id);
+            return kec ? `Kec. ${kec.nama}` : 'Kecamatan';
+        }
+        if (filters.kota_id) {
+            const kota = masterFilter?.kota?.find((k) => k.id === filters.kota_id);
+            return kota ? kota.nama : 'Kota / Kabupaten';
+        }
+        return null;
+    }, [filters.kecamatan_id, filters.kota_id, masterFilter?.kecamatan, masterFilter?.kota]);
+
+    const activeKategoriLabel = useMemo(() => {
+        if (filters.kategori_id) {
+            return masterFilter?.kategori?.find((k) => k.id === filters.kategori_id)?.nama ?? 'Kategori';
+        }
+        return null;
+    }, [filters.kategori_id, masterFilter?.kategori]);
+
+    // Opsi Status untuk Searchable Dropdown (Fase Siklus Hidup & Batas Waktu SLA)
+    const statusDropdownOptions = useMemo<DropdownFilterOption[]>(() => {
+        const opts: DropdownFilterOption[] = [
+            { value: 'semua', label: 'Semua Status' },
+        ];
+
+        for (const s of STATUS_OPTIONS) {
+            opts.push({
+                value: s.value,
+                label: s.label,
+                group: s.grup,
+            });
+        }
+
+        for (const sla of KONDISI_SLA_OPTIONS) {
+            opts.push({
+                value: `sla:${sla.value}`,
+                label: sla.label,
+                group: 'Batas Waktu SLA',
+            });
+        }
+
+        return opts;
+    }, []);
+
+    // Opsi Wilayah / Lokasi untuk Searchable Dropdown (Grouped by Kota/Kabupaten & Kecamatan)
+    const locationDropdownOptions = useMemo<DropdownFilterOption[]>(() => {
+        const opts: DropdownFilterOption[] = [
+            { value: 'semua', label: 'Semua Lokasi' },
+        ];
+
+        const kotaList = masterFilter?.kota ?? [];
+        const kecList = masterFilter?.kecamatan ?? [];
+
+        for (const kota of kotaList) {
+            opts.push({
+                value: `kota:${kota.id}`,
+                label: kota.nama,
+                group: kota.nama,
+                sublabel: `Seluruh ${kota.nama}`,
+                count: kota.total_laporan,
+            });
+
+            const kAnak = kecList.filter((k) => k.induk_id === kota.id);
+            for (const kec of kAnak) {
+                opts.push({
+                    value: `kec:${kec.id}`,
+                    label: `Kec. ${kec.nama}`,
+                    group: kota.nama,
+                    sublabel: kota.nama,
+                    count: kec.total_laporan,
+                });
+            }
+        }
+
+        const orphanKec = kecList.filter(
+            (k) => !k.induk_id || !kotaList.some((kota) => kota.id === k.induk_id),
+        );
+        for (const kec of orphanKec) {
+            opts.push({
+                value: `kec:${kec.id}`,
+                label: `Kec. ${kec.nama}`,
+                group: kec.kota_nama || 'Wilayah Lainnya',
+                count: kec.total_laporan,
+            });
+        }
+
+        return opts;
+    }, [masterFilter?.kota, masterFilter?.kecamatan]);
+
+    // Opsi Kategori Kerusakan untuk Searchable Dropdown
+    const kategoriDropdownOptions = useMemo<DropdownFilterOption[]>(() => {
+        const opts: DropdownFilterOption[] = [
+            { value: 'semua', label: 'Semua Kategori' },
+        ];
+
+        for (const kat of masterFilter?.kategori ?? []) {
+            opts.push({
+                value: String(kat.id),
+                label: kat.nama,
+                count: kat.total_laporan,
+            });
+        }
+
+        return opts;
+    }, [masterFilter?.kategori]);
+
+    const currentStatusValue = filters.status
+        ? filters.status
+        : filters.kondisi_sla
+        ? `sla:${filters.kondisi_sla}`
+        : 'semua';
+
+    const handleStatusSelectChange = (val: string | null) => {
+        if (!val || val === 'semua') {
+            onFilterChange?.({ ...filters, status: null, kondisi_sla: null });
+        } else if (val.startsWith('sla:')) {
+            onFilterChange?.({
+                ...filters,
+                status: null,
+                kondisi_sla: val.replace('sla:', '') as KondisiSla,
+            });
+        } else {
+            onFilterChange?.({
+                ...filters,
+                status: val,
+                kondisi_sla: null,
+            });
+        }
+    };
+
+    const currentLocationValue = filters.kecamatan_id
+        ? `kec:${filters.kecamatan_id}`
+        : filters.kota_id
+        ? `kota:${filters.kota_id}`
+        : 'semua';
+
+    const handleLocationSelectChange = (val: string | null) => {
+        if (!val || val === 'semua') {
+            onFilterChange?.({ ...filters, kecamatan_id: null, kota_id: null });
+        } else if (val.startsWith('kota:')) {
+            onFilterChange?.({
+                ...filters,
+                kota_id: Number(val.replace('kota:', '')),
+                kecamatan_id: null,
+            });
+        } else if (val.startsWith('kec:')) {
+            onFilterChange?.({
+                ...filters,
+                kecamatan_id: Number(val.replace('kec:', '')),
+                kota_id: null,
+            });
+        }
+    };
 
     const handleCopy = (ticket: string) => {
         navigator.clipboard.writeText(ticket);
@@ -225,151 +413,119 @@ export default function PetaDrawerList({
                                     onResetFilter?.();
                                 }}
                                 className="h-8 gap-1 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
-                                title="Reset Filter"
+                                title="Reset Semua Filter"
                             >
                                 <RotateCcw className="size-3" />
-                                Reset
+                                Reset Semua
                             </Button>
                         )}
                     </div>
 
-                    {/* Filter Dropdowns (Muncul Setelah Tombol Filter Diklik) */}
+                    {/* Active Filter Chips / Pills (Memudahkan melihat & menghapus filter aktif) */}
+                    {isFilterActive && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                            {filters.search.trim() !== '' && (
+                                <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-[11px] text-foreground">
+                                    <Search className="size-3 text-muted-foreground" />
+                                    <span className="truncate max-w-[120px]">"{filters.search}"</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSearchInput('');
+                                            onFilterChange?.({ ...filters, search: '' });
+                                        }}
+                                        className="ml-0.5 hover:text-destructive cursor-pointer"
+                                        aria-label="Hapus filter pencarian"
+                                    >
+                                        <X className="size-3" />
+                                    </button>
+                                </span>
+                            )}
+
+                            {activeStatusLabel && (
+                                <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
+                                    <Activity className="size-3" />
+                                    <span className="truncate max-w-[150px]">{activeStatusLabel}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange?.({ ...filters, status: null, kondisi_sla: null })}
+                                        className="ml-0.5 hover:text-destructive cursor-pointer"
+                                        aria-label="Hapus filter status"
+                                    >
+                                        <X className="size-3" />
+                                    </button>
+                                </span>
+                            )}
+
+                            {activeLocationLabel && (
+                                <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-[11px] text-foreground">
+                                    <MapPin className="size-3 text-muted-foreground" />
+                                    <span className="truncate max-w-[150px]">{activeLocationLabel}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange?.({ ...filters, kecamatan_id: null, kota_id: null })}
+                                        className="ml-0.5 hover:text-destructive cursor-pointer"
+                                        aria-label="Hapus filter lokasi"
+                                    >
+                                        <X className="size-3" />
+                                    </button>
+                                </span>
+                            )}
+
+                            {activeKategoriLabel && (
+                                <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-[11px] text-foreground">
+                                    <Tag className="size-3 text-muted-foreground" />
+                                    <span className="truncate max-w-[150px]">{activeKategoriLabel}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => onFilterChange?.({ ...filters, kategori_id: null })}
+                                        className="ml-0.5 hover:text-destructive cursor-pointer"
+                                        aria-label="Hapus filter kategori"
+                                    >
+                                        <X className="size-3" />
+                                    </button>
+                                </span>
+                            )}
+                        </div>
+                    )}
+
+                    {/* 3 Select Dropdowns dalam 1 Baris (Bisa Diketik / Searchable Combobox) */}
                     {isFilterOpen && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 animate-in fade-in-50 duration-150">
-                            {/* Status Select */}
-                            <div className="w-full">
-                                <Select
-                                    value={filters.kondisi_sla ?? 'semua'}
-                                    onValueChange={(val) => {
-                                        onFilterChange?.({
-                                            ...filters,
-                                            kondisi_sla:
-                                                val && val !== 'semua'
-                                                    ? (val as KondisiSla)
-                                                    : null,
-                                        });
-                                    }}
-                                >
-                                    <SelectTrigger className="h-8 w-full rounded-lg border-border bg-background px-2.5 text-[11px] font-medium shadow-none">
-                                        <SelectValue placeholder="Semua status">
-                                            {KONDISI_SLA_OPTIONS.find(
-                                                (opt) =>
-                                                    opt.value ===
-                                                    (filters.kondisi_sla ?? 'semua'),
-                                            )?.label ?? 'Semua status'}
-                                        </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {KONDISI_SLA_OPTIONS.map((opt) => (
-                                            <SelectItem
-                                                key={opt.value}
-                                                value={opt.value}
-                                                className="text-caption-xs"
-                                            >
-                                                {opt.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                        <div className="grid grid-cols-3 gap-2 animate-in fade-in-50 duration-150">
+                            {/* 1. Status Dropdown */}
+                            <SearchableFilterDropdown
+                                value={currentStatusValue}
+                                placeholder="Semua Status"
+                                searchPlaceholder="Ketik status..."
+                                options={statusDropdownOptions}
+                                onSelect={handleStatusSelectChange}
+                                align="start"
+                            />
 
-                            {/* Kecamatan (Lokasi) Select */}
-                            <div className="w-full">
-                                <Select
-                                    value={
-                                        filters.kecamatan_id
-                                            ? String(filters.kecamatan_id)
-                                            : 'semua'
-                                    }
-                                    onValueChange={(val) => {
-                                        onFilterChange?.({
-                                            ...filters,
-                                            kecamatan_id:
-                                                val && val !== 'semua'
-                                                    ? Number(val)
-                                                    : null,
-                                        });
-                                    }}
-                                >
-                                    <SelectTrigger className="h-8 w-full rounded-lg border-border bg-background px-2.5 text-[11px] font-medium shadow-none">
-                                        <SelectValue placeholder="Semua lokasi">
-                                            {filters.kecamatan_id
-                                                ? (masterFilter?.kecamatan?.find(
-                                                      (kec) =>
-                                                          kec.id ===
-                                                          filters.kecamatan_id,
-                                                  )?.nama ?? 'Lokasi')
-                                                : 'Semua lokasi'}
-                                        </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem
-                                            value="semua"
-                                            className="text-caption-xs"
-                                        >
-                                            Semua Lokasi
-                                        </SelectItem>
-                                        {masterFilter?.kecamatan?.map((kec) => (
-                                            <SelectItem
-                                                key={kec.id}
-                                                value={String(kec.id)}
-                                                className="text-caption-xs"
-                                            >
-                                                {kec.nama}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            {/* 2. Lokasi Dropdown */}
+                            <SearchableFilterDropdown
+                                value={currentLocationValue}
+                                placeholder="Semua Lokasi"
+                                searchPlaceholder="Ketik kota / kecamatan..."
+                                options={locationDropdownOptions}
+                                onSelect={handleLocationSelectChange}
+                                align="center"
+                            />
 
-                            {/* Kategori Select */}
-                            <div className="w-full">
-                                <Select
-                                    value={
-                                        filters.kategori_id
-                                            ? String(filters.kategori_id)
-                                            : 'semua'
-                                    }
-                                    onValueChange={(val) => {
-                                        onFilterChange?.({
-                                            ...filters,
-                                            kategori_id:
-                                                val && val !== 'semua'
-                                                    ? Number(val)
-                                                    : null,
-                                        });
-                                    }}
-                                >
-                                    <SelectTrigger className="h-8 w-full rounded-lg border-border bg-background px-2.5 text-[11px] font-medium shadow-none">
-                                        <SelectValue placeholder="Semua kategori">
-                                            {filters.kategori_id
-                                                ? (masterFilter?.kategori?.find(
-                                                      (kat) =>
-                                                          kat.id ===
-                                                          filters.kategori_id,
-                                                  )?.nama ?? 'Kategori')
-                                                : 'Semua kategori'}
-                                        </SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem
-                                            value="semua"
-                                            className="text-caption-xs"
-                                        >
-                                            Semua Kategori
-                                        </SelectItem>
-                                        {masterFilter?.kategori?.map((kat) => (
-                                            <SelectItem
-                                                key={kat.id}
-                                                value={String(kat.id)}
-                                                className="text-caption-xs"
-                                            >
-                                                {kat.nama}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            {/* 3. Kategori Dropdown */}
+                            <SearchableFilterDropdown
+                                value={filters.kategori_id ? String(filters.kategori_id) : 'semua'}
+                                placeholder="Semua Kategori"
+                                searchPlaceholder="Ketik kategori..."
+                                options={kategoriDropdownOptions}
+                                onSelect={(val) => {
+                                    onFilterChange?.({
+                                        ...filters,
+                                        kategori_id: val && val !== 'semua' ? Number(val) : null,
+                                    });
+                                }}
+                                align="end"
+                            />
                         </div>
                     )}
                 </div>

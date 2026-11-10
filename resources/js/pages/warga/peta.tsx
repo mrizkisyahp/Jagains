@@ -20,6 +20,8 @@ interface PetaPageProps {
     filterAwal?: {
         kategori_id?: string;
         kecamatan_id?: string;
+        kota_id?: string;
+        status?: string;
         kondisi_sla?: string;
         instansi_id?: string;
     };
@@ -41,6 +43,8 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
     const [filters, setFilters] = useState<PetaFilterState>({
         kategori_id: filterAwal?.kategori_id ? Number(filterAwal.kategori_id) : null,
         kecamatan_id: filterAwal?.kecamatan_id ? Number(filterAwal.kecamatan_id) : null,
+        kota_id: filterAwal?.kota_id ? Number(filterAwal.kota_id) : null,
+        status: filterAwal?.status || null,
         kondisi_sla: (filterAwal?.kondisi_sla as KondisiSla) || null,
         instansi_id: filterAwal?.instansi_id ? Number(filterAwal.instansi_id) : null,
         rentang_waktu: null,
@@ -104,22 +108,32 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
                 return false;
             }
 
-            // 2. Filter Kecamatan
+            // 2. Filter Kota
+            if (filters.kota_id && item.kota_id !== filters.kota_id) {
+                return false;
+            }
+
+            // 3. Filter Kecamatan
             if (filters.kecamatan_id !== null && item.kecamatan_id !== filters.kecamatan_id) {
                 return false;
             }
 
-            // 3. Filter Kondisi SLA
+            // 4. Filter Status
+            if (filters.status && item.status !== filters.status) {
+                return false;
+            }
+
+            // 5. Filter Kondisi SLA
             if (filters.kondisi_sla !== null && item.kondisi_sla !== filters.kondisi_sla) {
                 return false;
             }
 
-            // 4. Filter Instansi
+            // 6. Filter Instansi
             if (filters.instansi_id !== null && item.instansi_id !== filters.instansi_id) {
                 return false;
             }
 
-            // 5. Filter Rentang Waktu (hari)
+            // 7. Filter Rentang Waktu (hari)
             if (filters.rentang_waktu !== null) {
                 const createdAt = new Date(item.created_at).getTime();
                 const batasWaktu = Date.now() - filters.rentang_waktu * 24 * 60 * 60 * 1000;
@@ -128,13 +142,15 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
                 }
             }
 
-            // 6. Pencarian Teks
+            // 8. Pencarian Teks
             if (filters.search.trim() !== '') {
                 const query = filters.search.toLowerCase();
                 const matchNomor = item.nomor_tiket.toLowerCase().includes(query);
                 const matchJudul = item.judul.toLowerCase().includes(query);
                 const matchKelurahan = item.kelurahan_nama?.toLowerCase().includes(query);
-                if (!matchNomor && !matchJudul && !matchKelurahan) {
+                const matchKecamatan = item.kecamatan_nama?.toLowerCase().includes(query);
+                const matchKota = item.kota_nama?.toLowerCase().includes(query);
+                if (!matchNomor && !matchJudul && !matchKelurahan && !matchKecamatan && !matchKota) {
                     return false;
                 }
             }
@@ -147,6 +163,8 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
         setFilters({
             kategori_id: null,
             kecamatan_id: null,
+            kota_id: null,
+            status: null,
             kondisi_sla: null,
             instansi_id: null,
             rentang_waktu: null,
@@ -154,8 +172,12 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
         });
     };
 
+    const handleSelectTiket = (tiket: TitikLaporanPeta | null) => {
+        setSelectedTiket(tiket);
+    };
+
     return (
-        <>
+        <InternalLayout title="Eksplorasi" breadcrumb="Warga > Eksplorasi" fullWidth noPadding>
             <Head title="Eksplorasi - Jagains" />
 
             <div className="relative h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background">
@@ -194,7 +216,7 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
                         <PetaCanvas
                             titikList={filteredTitik}
                             selectedTiket={selectedTiket}
-                            onSelectTiket={setSelectedTiket}
+                            onSelectTiket={handleSelectTiket}
                             isLoading={isLoading}
                             className="h-full w-full rounded-none border-none shadow-none"
                         />
@@ -210,7 +232,7 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
                 <PetaDrawerList
                     titikList={filteredTitik}
                     selectedTiket={selectedTiket}
-                    onSelectTiket={(tiket) => setSelectedTiket(tiket)}
+                    onSelectTiket={handleSelectTiket}
                     onClose={() => setIsDrawerOpen(false)}
                     onToggle={() => setIsDrawerOpen((prev) => !prev)}
                     isOpen={isDrawerOpen}
@@ -226,12 +248,6 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
                     onClose={() => setSelectedTiket(null)}
                 />
             </div>
-        </>
+        </InternalLayout>
     );
 }
-
-PetaLaporanPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Eksplorasi" breadcrumb="Warga > Eksplorasi" fullWidth noPadding>
-        {page}
-    </InternalLayout>
-);

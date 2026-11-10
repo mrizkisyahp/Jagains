@@ -386,11 +386,25 @@ class InstansiTiketService
                 'waktu' => now(),
             ]);
 
-            DB::table('laporan')->where('id', $laporan->id)->update([
+            $slaUpdates = [
                 'status' => 'DIKERJAKAN',
-                'sla_riwayat_id' => $riwayat->id,
                 'updated_at' => now(),
-            ]);
+            ];
+
+            if ($laporan->sla_tahap !== null) {
+                $slaUpdates['sla_riwayat_id'] = $riwayat->id;
+            } else {
+                $targetDate = $laporan->tanggal_target ? Carbon::parse($laporan->tanggal_target) : now()->addDays(7);
+                $totalDays = max(1, (int) now()->diffInDays($targetDate));
+                $slaUpdates['sla_tahap'] = 'PELAKSANAAN';
+                $slaUpdates['sla_riwayat_id'] = $riwayat->id;
+                $slaUpdates['sla_mulai_pada'] = now();
+                $slaUpdates['sla_batas'] = $totalDays;
+                $slaUpdates['sla_satuan'] = 'hari_kalender';
+                $slaUpdates['sla_jatuh_tempo'] = $targetDate->toDateString();
+            }
+
+            DB::table('laporan')->where('id', $laporan->id)->update($slaUpdates);
 
             return $laporan->fresh(['kategori', 'kelurahan', 'instansi']);
         });

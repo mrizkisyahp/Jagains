@@ -51,7 +51,7 @@ export default function TiketKuorumVerifikasiCard({ kuorum }: TiketKuorumVerifik
                             Kuorum Verifikasi Warga — Ronde {kuorum.nomor_ronde}
                         </h3>
                         <p className="text-[11px] text-muted-foreground">
-                            Persetujuan warga kelurahan dengan sistem bobot Jalur A (foto kamera & GPS) dan Jalur B.
+                            Persetujuan warga kelurahan dengan sistem bobot Jarak Dekat dengan Foto (1.0) dan Jarak Jauh (0.5).
                         </p>
                     </div>
                 </div>
@@ -127,7 +127,7 @@ export default function TiketKuorumVerifikasiCard({ kuorum }: TiketKuorumVerifik
                             <div key={idx} className="rounded-lg bg-card p-2 border border-border/60 text-xs space-y-1">
                                 <p className="text-muted-foreground italic">&ldquo;{item.alasan}&rdquo;</p>
                                 <div className="flex items-center justify-between text-[10px] text-muted-foreground/80">
-                                    <span>Jalur {item.jalur} (Bobot {item.jalur === 'A' ? '1.0' : '0.5'})</span>
+                                    <span>{item.jalur === 'A' ? 'Jarak Dekat' : 'Jarak Jauh'} (Bobot {item.jalur === 'A' ? '1.0' : '0.5'})</span>
                                     <span>{new Date(item.waktu).toLocaleDateString('id-ID')}</span>
                                 </div>
                             </div>

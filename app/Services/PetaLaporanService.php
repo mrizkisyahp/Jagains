@@ -10,6 +10,7 @@ use App\Models\Wilayah;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PetaLaporanService
 {
@@ -36,7 +37,8 @@ class PetaLaporanService
                 'kategori:id,nama',
                 'instansi:id,nama',
                 'kelurahan:id,nama,induk_id',
-                'kelurahan.induk:id,nama',
+                'kelurahan.induk:id,nama,induk_id',
+                'kelurahan.induk.induk:id,nama',
                 'lampiran:id,laporan_id,path,tahap',
             ])
             ->withCount('dukungan')
@@ -64,12 +66,25 @@ class PetaLaporanService
             $query->where('kategori_id', (int) $filters['kategori_id']);
         }
 
+        // Filter Kota (melalui induk_id kecamatan)
+        if (! empty($filters['kota_id'])) {
+            $kotaId = (int) $filters['kota_id'];
+            $query->whereHas('kelurahan.induk', function ($q) use ($kotaId) {
+                $q->where('induk_id', $kotaId);
+            });
+        }
+
         // Filter Kecamatan (melalui induk_id kelurahan)
         if (! empty($filters['kecamatan_id'])) {
             $kecamatanId = (int) $filters['kecamatan_id'];
             $query->whereHas('kelurahan', function ($q) use ($kecamatanId) {
                 $q->where('induk_id', $kecamatanId);
             });
+        }
+
+        // Filter Status Laporan (Siklus Hidup Tiket)
+        if (! empty($filters['status'])) {
+            $query->where('status', (string) $filters['status']);
         }
 
         // Filter Instansi Penanggung Jawab
@@ -115,6 +130,8 @@ class PetaLaporanService
                 'instansi_nama' => $laporan->instansi?->nama,
                 'kecamatan_id' => $laporan->kelurahan?->induk_id ?? 0,
                 'kecamatan_nama' => $laporan->kelurahan?->induk?->nama ?? 'Kota Depok',
+                'kota_id' => $laporan->kelurahan?->induk?->induk_id,
+                'kota_nama' => $laporan->kelurahan?->induk?->induk?->nama ?? 'Kota Depok',
                 'kelurahan_nama' => $laporan->kelurahan?->nama ?? '',
                 'status' => $laporan->status,
                 'keparahan' => $laporan->keparahan,
@@ -290,15 +307,70 @@ class PetaLaporanService
             ->orderBy('nama')
             ->get();
 
-        // Ambil kecamatan di bawah Kota Depok (induk_id = 1 atau nama induk Kota Depok)
+        // Hitung sebaran laporan per kecamatan untuk memprioritaskan wilayah aktif
+        $laporanPerKecamatan = DB::table('laporan')
+            ->join('wilayah as kel', 'kel.id', '=', 'laporan.kelurahan_id')
+            ->where('laporan.disembunyikan', false)
+            ->groupBy('kel.induk_id')
+            ->selectRaw('kel.induk_id as kecamatan_id, count(laporan.id) as total')
+            ->pluck('total', 'kecamatan_id');
+
+        // Ambil seluruh kecamatan (Depok, Jakarta, Bodetabek)
         $kecamatan = Wilayah::where('tingkat', 'kecamatan')
-            ->where(function ($q) {
-                $q->where('induk_id', 1)
-                    ->orWhereHas('induk', fn ($indukQuery) => $indukQuery->where('nama', 'ilike', '%Depok%'));
-            })
+            ->with('induk:id,nama')
+            ->select(['id', 'nama', 'induk_id'])
+            ->orderBy('nama')
+            ->get()
+            ->map(function ($kec) use ($laporanPerKecamatan) {
+                return [
+                    'id' => $kec->id,
+                    'nama' => $kec->nama,
+                    'induk_id' => $kec->induk_id,
+                    'kota_nama' => $kec->induk?->nama ?? 'Wilayah',
+                    'total_laporan' => (int) ($laporanPerKecamatan[$kec->id] ?? 0),
+                ];
+            });
+
+        // Hitung sebaran laporan per kota/kabupaten
+        $laporanPerKota = DB::table('laporan')
+            ->join('wilayah as kel', 'kel.id', '=', 'laporan.kelurahan_id')
+            ->join('wilayah as kec', 'kec.id', '=', 'kel.induk_id')
+            ->where('laporan.disembunyikan', false)
+            ->groupBy('kec.induk_id')
+            ->selectRaw('kec.induk_id as kota_id, count(laporan.id) as total')
+            ->pluck('total', 'kota_id');
+
+        $kota = Wilayah::where('tingkat', 'kota')
             ->select(['id', 'nama'])
             ->orderBy('nama')
-            ->get();
+            ->get()
+            ->map(function ($k) use ($laporanPerKota) {
+                return [
+                    'id' => $k->id,
+                    'nama' => $k->nama,
+                    'total_laporan' => (int) ($laporanPerKota[$k->id] ?? 0),
+                ];
+            });
+
+        // Daftar status resmi sesuai seeder siklus hidup laporan
+        $status = [
+            // Tahap Penanganan
+            ['value' => 'PERLU_ROUTING', 'label' => 'Perlu Routing', 'grup' => 'Tahap Penanganan'],
+            ['value' => 'DITERUSKAN', 'label' => 'Diteruskan ke Dinas', 'grup' => 'Tahap Penanganan'],
+            ['value' => 'DITERIMA', 'label' => 'Diterima Dinas', 'grup' => 'Tahap Penanganan'],
+            ['value' => 'DISURVEI', 'label' => 'Selesai Survei', 'grup' => 'Tahap Penanganan'],
+            ['value' => 'TERJADWAL_ANGGARAN', 'label' => 'Terjadwal Anggaran', 'grup' => 'Tahap Penanganan'],
+            ['value' => 'DIKERJAKAN', 'label' => 'Sedang Dikerjakan', 'grup' => 'Tahap Penanganan'],
+            // Verifikasi & Arbitrase
+            ['value' => 'MENUNGGU_VERIFIKASI', 'label' => 'Menunggu Verifikasi Warga', 'grup' => 'Verifikasi & Sengketa'],
+            ['value' => 'DISENGKETAKAN', 'label' => 'Disengketakan', 'grup' => 'Verifikasi & Sengketa'],
+            ['value' => 'MENUNGGU_KEPUTUSAN_AUDITOR', 'label' => 'Menunggu Keputusan Auditor', 'grup' => 'Verifikasi & Sengketa'],
+            ['value' => 'USULAN_TOLAK', 'label' => 'Usulan Penolakan', 'grup' => 'Verifikasi & Sengketa'],
+            // Selesai & Ditutup
+            ['value' => 'TERTUTUP_WARGA', 'label' => 'Ditutup Warga', 'grup' => 'Selesai & Tutup'],
+            ['value' => 'TERTUTUP_AUDITOR', 'label' => 'Ditutup Auditor', 'grup' => 'Selesai & Tutup'],
+            ['value' => 'DITOLAK', 'label' => 'Ditolak', 'grup' => 'Selesai & Tutup'],
+        ];
 
         $instansi = Instansi::select(['id', 'nama'])
             ->orderBy('nama')
@@ -356,6 +428,8 @@ class PetaLaporanService
         return [
             'kategori' => $kategori,
             'kecamatan' => $kecamatan,
+            'kota' => $kota,
+            'status' => $status,
             'instansi' => $instansi,
             'statistik' => [
                 'total_laporan' => $totalLaporan,

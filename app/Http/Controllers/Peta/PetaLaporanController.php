@@ -40,6 +40,8 @@ class PetaLaporanController extends Controller
             'filterAwal' => [
                 'kategori_id' => $request->query('kategori_id'),
                 'kecamatan_id' => $request->query('kecamatan_id'),
+                'kota_id' => $request->query('kota_id'),
+                'status' => $request->query('status'),
                 'kondisi_sla' => $request->query('kondisi_sla'),
                 'instansi_id' => $request->query('instansi_id'),
             ],
@@ -55,6 +57,8 @@ class PetaLaporanController extends Controller
         $filters = [
             'kategori_id' => $request->query('kategori_id') ? (int) $request->query('kategori_id') : null,
             'kecamatan_id' => $request->query('kecamatan_id') ? (int) $request->query('kecamatan_id') : null,
+            'kota_id' => $request->query('kota_id') ? (int) $request->query('kota_id') : null,
+            'status' => $request->query('status'),
             'kondisi_sla' => $request->query('kondisi_sla'),
             'instansi_id' => $request->query('instansi_id') ? (int) $request->query('instansi_id') : null,
             'rentang_waktu' => $request->query('rentang_waktu') ? (int) $request->query('rentang_waktu') : null,

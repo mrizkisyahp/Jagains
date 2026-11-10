@@ -1,5 +1,4 @@
-import { ReactNode } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Bell, CheckCheck, Clock, ExternalLink, Inbox } from 'lucide-react';
 import InternalLayout from '@/layouts/InternalLayout';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,17 @@ interface NotifikasiPageProps {
 }
 
 export default function NotifikasiIndexPage({ notifikasi }: NotifikasiPageProps) {
+    const { auth } = usePage<{ auth?: { user?: { peran?: string } | null } }>().props;
+    const peran = auth?.user?.peran;
+    const rolePrefix =
+        peran === 'admin'
+            ? 'Admin'
+            : peran === 'auditor'
+            ? 'Auditor'
+            : peran === 'instansi'
+            ? 'Instansi'
+            : 'Warga';
+
     const unreadCount = notifikasi.data.filter((n) => !n.dibaca_pada).length;
 
     const tandaiDibaca = async (id: number, nomorTiket?: string) => {
@@ -56,8 +66,12 @@ export default function NotifikasiIndexPage({ notifikasi }: NotifikasiPageProps)
     };
 
     return (
-        <div className="space-y-6 max-w-4xl mx-auto pb-12">
-            <Head title="Pusat Notifikasi" />
+        <InternalLayout
+            title="Pusat Notifikasi"
+            breadcrumb={`${rolePrefix} > Notifikasi`}
+        >
+            <div className="space-y-6 max-w-4xl mx-auto pb-12">
+                <Head title="Pusat Notifikasi" />
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
@@ -200,12 +214,7 @@ export default function NotifikasiIndexPage({ notifikasi }: NotifikasiPageProps)
                     </div>
                 </div>
             )}
-        </div>
+            </div>
+        </InternalLayout>
     );
 }
-
-NotifikasiIndexPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Pusat Notifikasi" breadcrumb="Akun > Notifikasi">
-        {page}
-    </InternalLayout>
-);

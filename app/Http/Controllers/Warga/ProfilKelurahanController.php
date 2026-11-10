@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Warga;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Warga\GantiKelurahanRequest;
+use App\Http\Requests\Warga\GantiPasswordWargaRequest;
+use App\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -63,5 +67,30 @@ class ProfilKelurahanController extends Controller
         ]);
 
         return back()->with('success', 'Kelurahan domisili Anda berhasil dipindahkan. Perubahan ini tercatat untuk periode 90 hari ke depan.');
+    }
+
+    /**
+     * Memproses penggantian kata sandi akun warga.
+     */
+    public function gantiPassword(GantiPasswordWargaRequest $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        DB::transaction(function () use ($user, $request) {
+            $user->update([
+                'password' => Hash::make($request->input('password')),
+            ]);
+
+            AuditLog::create([
+                'pelaku_id' => $user->id,
+                'aksi' => 'GANTI_KATA_SANDI',
+                'objek_tipe' => 'User',
+                'objek_id' => $user->id,
+                'alasan' => 'Penggantian kata sandi mandiri oleh warga.',
+                'waktu' => now(),
+            ]);
+        });
+
+        return back()->with('success', 'Kata sandi akun Anda berhasil diperbarui.');
     }
 }

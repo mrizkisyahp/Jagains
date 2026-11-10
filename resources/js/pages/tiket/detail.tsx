@@ -17,9 +17,10 @@ import {
     Share2,
     Shield,
     ShieldAlert,
-    ShieldCheck,
     ThumbsUp,
     ZoomIn,
+    Copy,
+    Check,
 } from 'lucide-react';
 import type { TiketDetail, LampiranFoto, RiwayatStatusItem } from '@/types/tiket';
 import type { User } from '@/types/auth';
@@ -40,11 +41,12 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Toaster, toast } from '@/components/ui/toast';
+import { cn } from '@/lib/utils';
 import ModalLaporKonten from '@/components/tiket/ModalLaporKonten';
 import ModalKonfirmasiLogin from '@/components/tiket/ModalKonfirmasiLogin';
 import ModalBukaIdentitasPelapor from '@/components/admin/ModalBukaIdentitasPelapor';
 import ModalBeriSuaraVerifikasi from '@/components/verifikasi/ModalBeriSuaraVerifikasi';
-import ModalDetailTimelineNode from '@/components/tiket/ModalDetailTimelineNode';
+import TiketRiwayatStatusTimeline from '@/components/tiket/TiketRiwayatStatusTimeline';
 
 const LocationMap = lazy(
     () => import('@/components/instansi/InstansiLocationMap'),
@@ -137,7 +139,19 @@ export default function DetailTiketPage({
     const [laporModalOpen, setLaporModalOpen] = useState(false);
     const [modalIdentitasOpen, setModalIdentitasOpen] = useState(false);
     const [modalVerifikasiOpen, setModalVerifikasiOpen] = useState(false);
-    const [selectedTimelineItem, setSelectedTimelineItem] = useState<RiwayatStatusItem | null>(null);
+    const [copiedTicket, setCopiedTicket] = useState(false);
+    const [activePhotoTab, setActivePhotoTab] = useState<'awal' | 'sesudah'>('awal');
+
+    const handleCopyTicket = async () => {
+        try {
+            await navigator.clipboard.writeText(tiket.nomor_tiket);
+            setCopiedTicket(true);
+            setTimeout(() => setCopiedTicket(false), 2000);
+            toast.success('Nomor Tiket Disalin', `Nomor #${tiket.nomor_tiket} telah disalin ke papan klip.`);
+        } catch {
+            toast.error('Gagal Menyalin', 'Tidak dapat menyalin nomor tiket.');
+        }
+    };
 
     const documentPages = Math.max(1, Math.ceil(tiket.berita_acara.length / 3));
 
@@ -247,6 +261,25 @@ export default function DetailTiketPage({
         setLaporModalOpen(true);
     };
 
+    // Handler Navigasi Beri Suara Verifikasi Warga (FR-VER-01 s/d FR-VER-04)
+    const handleBeriSuara = () => {
+        if (!currentUser) {
+            setLoginActionDesc('memberikan suara verifikasi');
+            setLoginModalOpen(true);
+            return;
+        }
+
+        if (currentUser.peran !== 'warga') {
+            toast.warning(
+                'Aksi Dibatasi',
+                'Hanya akun warga yang dapat memberikan suara verifikasi.',
+            );
+            return;
+        }
+
+        router.visit(`/warga/verifikasi/${tiket.nomor_tiket}?from=tiket`);
+    };
+
     const getBackNavigation = (user: User | null | undefined) => {
         if (!user) {
             return {
@@ -274,7 +307,7 @@ export default function DetailTiketPage({
             default:
                 return {
                     href: '/warga/riwayat',
-                    label: 'Riwayat aduan',
+                    label: 'Kembali ke Riwayat Laporan',
                 };
         }
     };
@@ -282,14 +315,14 @@ export default function DetailTiketPage({
     const getRoleBreadcrumb = (peran: string, nomorTiket: string) => {
         switch (peran) {
             case 'admin':
-                return `Admin / Moderasi & Routing / #${nomorTiket}`;
+                return `Admin > Moderasi & Routing > #${nomorTiket}`;
             case 'auditor':
-                return `Auditor / Pengawasan Arbitrase / #${nomorTiket}`;
+                return `Auditor > Pengawasan Arbitrase > #${nomorTiket}`;
             case 'instansi':
-                return `Instansi / Antrean tiket / #${nomorTiket}`;
+                return `Instansi > Antrean Tiket > #${nomorTiket}`;
             case 'warga':
             default:
-                return `Warga / Detail Tiket / #${nomorTiket}`;
+                return `Warga > Riwayat Laporan > #${nomorTiket}`;
         }
     };
 
@@ -469,56 +502,17 @@ export default function DetailTiketPage({
     const backNav = getBackNavigation(currentUser);
 
     const mainTicketContent = (
-        <div className="space-y-6">
-            {/* Top Toolbar: Kembali & Bagikan */}
-            <div className="flex items-center justify-between gap-3">
+        <div className="space-y-8 pb-16">
+            {/* Navigasi Kembali Sesuai Wireframe */}
+            <div className="flex items-center justify-between">
                 <Button
                     variant="ghost"
-                    className="h-11 px-0 text-body-sm md:h-9"
+                    className="h-9 px-0 text-body-sm hover:bg-transparent hover:text-foreground text-muted-foreground gap-1.5 cursor-pointer font-medium"
                     render={<Link href={backNav.href} />}
                 >
                     <ArrowLeft className="size-4" />
-                    <span>{backNav.label}</span>
+                    <span>Kembali</span>
                 </Button>
-
-                <div className="flex items-center gap-2">
-                    {validLocation && (
-                        <Button
-                            variant="ghost"
-                            className="hidden h-9 gap-1.5 text-body-sm text-primary hover:text-primary sm:inline-flex"
-                            render={
-                                <Link
-                                    href={`/peta?fokus=${encodeURIComponent(tiket.nomor_tiket)}`}
-                                />
-                            }
-                        >
-                            <MapPin className="size-4" />
-                            <span>Pusatkan di peta</span>
-                        </Button>
-                    )}
-                    <Button
-                        variant="outline"
-                        className="h-11 shadow-none md:h-9"
-                        onClick={share}
-                        title="Bagikan Tautan Tiket"
-                        aria-label="Bagikan Tautan Tiket"
-                    >
-                        <Share2 className="size-4" />
-                        <span className="hidden sm:inline">Bagikan</span>
-                    </Button>
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        className="h-11 shadow-none md:h-9 text-muted-foreground hover:text-destructive hover:border-destructive/40"
-                        onClick={handleOpenLaporKonten}
-                        title="Laporkan Pelanggaran Konten"
-                        aria-label="Laporkan Pelanggaran Konten"
-                    >
-                        <Flag className="size-4 text-destructive" />
-                        <span className="hidden sm:inline">Laporkan</span>
-                    </Button>
-                </div>
             </div>
 
             {/* Banner Khusus RBAC Internal */}
@@ -526,7 +520,7 @@ export default function DetailTiketPage({
 
             {/* Banner Status Laporan Disembunyikan oleh Tim Moderasi */}
             {tiket.disembunyikan ? (
-                <div className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+                <div className="space-y-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center">
                     <EyeOff className="mx-auto size-8 text-destructive" />
                     <h2 className="text-body-base font-semibold text-destructive">
                         Konten Laporan Disembunyikan oleh Tim Moderasi
@@ -547,615 +541,259 @@ export default function DetailTiketPage({
                 </div>
             ) : (
                 <>
-                    {/* Header Tiket Bersih Bergaya Instansi */}
-                    <header className="space-y-4 border-b border-border pb-5">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <span className="mr-2 text-body-sm font-mono text-muted-foreground">
-                                #{tiket.nomor_tiket}
-                            </span>
-                            <InstansiStatusBadge status={tiket.status} />
-                            <Badge
-                                variant="outline"
-                                className="h-auto py-1 text-caption-xs"
+                    {/* Header Tiket Sesuai Wireframe */}
+                    <div className="space-y-4 border-b border-border/80 pb-6">
+                        {/* Baris 1: Judul Laporan (Kiri) & ID Tiket + Salin (Kanan) */}
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-display max-w-3xl leading-snug">
+                                {tiket.judul}
+                            </h1>
+
+                            <button
+                                type="button"
+                                onClick={handleCopyTicket}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground text-caption-xs sm:text-body-sm font-mono font-medium transition-colors cursor-pointer self-start sm:self-auto shrink-0 shadow-2xs"
+                                title="Klik untuk salin nomor tiket"
                             >
-                                Tingkat {tiket.keparahan}
-                            </Badge>
+                                <span>#{tiket.nomor_tiket}</span>
+                                {copiedTicket ? (
+                                    <Check className="size-3.5 text-emerald-500" />
+                                ) : (
+                                    <Copy className="size-3.5" />
+                                )}
+                            </button>
                         </div>
 
-                        <h1 className="max-w-4xl text-2xl leading-snug font-semibold tracking-tight text-foreground">
-                            {tiket.judul}
-                        </h1>
-
-                        <dl className="grid gap-x-6 gap-y-4 text-body-sm sm:grid-cols-2 lg:grid-cols-4">
-                            {[
-                                [
-                                    'Instansi terkait',
-                                    tiket.instansi_nama ?? 'Belum ditetapkan',
-                                ],
-                                ['Kategori', tiket.kategori_nama],
-                                [
-                                    'Lokasi',
-                                    `Kel. ${tiket.kelurahan_nama}, Kec. ${tiket.kecamatan_nama}`,
-                                ],
-                                [
-                                    'Tanggal laporan',
-                                    formatDate(tiket.created_at),
-                                ],
-                            ].map(([label, value]) => (
-                                <div key={label}>
-                                    <dt className="mb-1 text-muted-foreground">
-                                        {label}
-                                    </dt>
-                                    <dd className="font-medium text-foreground">
-                                        {value}
-                                    </dd>
-                                </div>
-                            ))}
-                        </dl>
-
-                        {tiket.keterangan && (
-                            <p className="max-w-4xl text-body-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
-                                {tiket.keterangan}
-                            </p>
-                        )}
-                    </header>
-
-                    {/* Grid Utama 2 Kolom (Konten & Sidebar Metadata) */}
-                    <div className="grid items-start gap-6 lg:grid-cols-3">
-                        {/* Kolom Kiri: Bukti Foto, Berita Acara, Riwayat Penanganan, Pengalihan */}
-                        <div className="min-w-0 space-y-6 lg:col-span-2">
-                            {/* Bukti Foto Sebelum & Sesudah */}
-                            <section
-                                aria-labelledby="bukti-title"
-                                className="space-y-3"
-                            >
-                                <h3
-                                    id="bukti-title"
-                                    className="text-body-base font-semibold text-foreground"
-                                >
-                                    Bukti foto
-                                </h3>
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <EvidencePhoto
-                                        key={tiket.foto_awal?.url ?? 'awal'}
-                                        photo={tiket.foto_awal}
-                                        title="Sebelum perbaikan"
-                                        description="Foto kondisi awal laporan akan ditampilkan di sini."
-                                        onPreview={setPreview}
-                                    />
-                                    <EvidencePhoto
-                                        key={
-                                            tiket.foto_sesudah?.url ?? 'sesudah'
-                                        }
-                                        photo={tiket.foto_sesudah}
-                                        title="Sesudah perbaikan"
-                                        description="Foto hasil perbaikan tersedia setelah petugas mengajukan penyelesaian."
-                                        onPreview={setPreview}
-                                    />
-                                </div>
-                            </section>
-
-                            {/* Berita Acara Pengerjaan */}
-                            <section
-                                aria-labelledby="dokumen-title"
-                                className="space-y-3"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <h3
-                                        id="dokumen-title"
-                                        className="text-body-base font-semibold text-foreground"
-                                    >
-                                        Berita acara
-                                    </h3>
-                                    <span className="text-body-sm text-muted-foreground">
-                                        {tiket.berita_acara.length} versi
-                                    </span>
-                                </div>
-
-                                {tiket.berita_acara.length ? (
-                                    <div className="divide-y divide-border rounded-lg border border-border bg-card">
-                                        {tiket.berita_acara
-                                            .slice(
-                                                (documentPage - 1) * 3,
-                                                documentPage * 3,
-                                            )
-                                            .map((ba) => (
-                                                <details
-                                                    key={ba.id}
-                                                    className="group px-4 py-3"
-                                                >
-                                                    <summary className="cursor-pointer text-body-sm font-medium focus-visible:outline-2 focus-visible:outline-ring">
-                                                        <span>
-                                                            Berita acara · Versi{' '}
-                                                            {ba.versi}
-                                                        </span>
-                                                        <span className="mt-1 block text-caption-xs font-normal text-muted-foreground">
-                                                            {formatDate(
-                                                                ba.created_at,
-                                                            )}{' '}
-                                                            · {ba.instansi_nama}
-                                                        </span>
-                                                    </summary>
-                                                    <dl className="mt-4 space-y-3 border-t border-border/50 pt-3 text-body-sm">
-                                                        {[
-                                                            [
-                                                                'Kegiatan',
-                                                                ba.kegiatan,
-                                                            ],
-                                                            ['Hasil', ba.hasil],
-                                                            [
-                                                                'Hambatan',
-                                                                ba.hambatan,
-                                                            ],
-                                                        ]
-                                                            .filter(
-                                                                ([, value]) =>
-                                                                    value,
-                                                            )
-                                                            .map(
-                                                                ([
-                                                                    label,
-                                                                    value,
-                                                                ]) => (
-                                                                    <div
-                                                                        key={
-                                                                            label
-                                                                        }
-                                                                    >
-                                                                        <dt className="font-medium text-foreground">
-                                                                            {
-                                                                                label
-                                                                            }
-                                                                        </dt>
-                                                                        <dd className="mt-1 whitespace-pre-wrap text-muted-foreground">
-                                                                            {
-                                                                                value
-                                                                            }
-                                                                        </dd>
-                                                                    </div>
-                                                                ),
-                                                            )}
-                                                    </dl>
-                                                </details>
-                                            ))}
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border p-6 text-center">
-                                        <FileText className="size-7 text-muted-foreground" />
-                                        <p className="text-body-sm font-medium text-foreground">
-                                            Belum ada berita acara
-                                        </p>
-                                        <p className="text-body-sm text-muted-foreground">
-                                            Catatan kegiatan dan hasil pekerjaan
-                                            akan tersedia setelah dibuat oleh
-                                            petugas.
-                                        </p>
-                                    </div>
-                                )}
-
-                                {documentPages > 1 && (
-                                    <div className="flex items-center justify-between gap-3 text-body-sm">
-                                        <span className="text-muted-foreground">
-                                            {documentPage} dari {documentPages}{' '}
-                                            halaman
-                                        </span>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                disabled={documentPage === 1}
-                                                onClick={() =>
-                                                    setDocumentPage(
-                                                        (p) => p - 1,
-                                                    )
-                                                }
-                                            >
-                                                Sebelumnya
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                disabled={
-                                                    documentPage ===
-                                                    documentPages
-                                                }
-                                                onClick={() =>
-                                                    setDocumentPage(
-                                                        (p) => p + 1,
-                                                    )
-                                                }
-                                            >
-                                                Berikutnya
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
-                            </section>
-
-                            {/* Riwayat Penanganan Status */}
-                            <section
-                                aria-labelledby="riwayat-title"
-                                className="space-y-4"
-                            >
-                                <h3
-                                    id="riwayat-title"
-                                    className="text-body-base font-semibold text-foreground"
-                                >
-                                    Riwayat penanganan
-                                </h3>
-                                <ol className="ml-2 border-l border-border">
-                                    {tiket.riwayat_status.map((item) => (
-                                        <li
-                                            key={item.id}
-                                            className="relative pb-5 pl-5 before:absolute before:top-2 before:-left-1 before:size-2 before:rounded-full before:bg-muted-foreground"
-                                        >
-                                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                                <InstansiStatusBadge
-                                                    status={item.status_baru}
-                                                />
-                                                <time className="text-body-sm text-muted-foreground">
-                                                    {new Date(
-                                                        item.waktu,
-                                                    ).toLocaleString('id-ID')}
-                                                </time>
-                                            </div>
-                                            <p className="mt-2 text-body-sm text-muted-foreground">
-                                                {item.instansi_nama ??
-                                                    (item.peran_pelaku ===
-                                                    'sistem'
-                                                        ? 'Sistem Jagains'
-                                                        : `Petugas ${item.peran_pelaku}`)}
-                                            </p>
-                                            {item.catatan && (
-                                                <p className="mt-1 text-body-sm whitespace-pre-wrap text-foreground">
-                                                    {formatInstansiMessage(
-                                                        item.catatan,
-                                                    )}
-                                                </p>
-                                            )}
-                                            {item.has_detail && (
-                                                <div className="mt-3">
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => setSelectedTimelineItem(item)}
-                                                        className="h-8 gap-1.5 rounded-lg border-primary/30 bg-primary/5 text-caption-xs font-semibold text-primary hover:bg-primary/10 hover:border-primary/50"
-                                                    >
-                                                        <FileText className="size-3.5" />
-                                                        <span>Lihat detail</span>
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </li>
-                                    ))}
-                                </ol>
-                                {!tiket.riwayat_status.length && (
-                                    <p className="text-body-sm text-muted-foreground">
-                                        Belum ada riwayat penanganan.
-                                    </p>
-                                )}
-                            </section>
-
-                            {/* Riwayat Pengalihan Instansi (Jika Ada) */}
-                            {tiket.pengalihan.length > 0 && (
-                                <section className="space-y-3">
-                                    <h3 className="text-body-base font-semibold text-foreground">
-                                        Riwayat pengalihan
-                                    </h3>
-                                    <div className="divide-y divide-border rounded-lg border border-border bg-card p-4">
-                                        {tiket.pengalihan.map((item) => (
-                                            <div
-                                                key={item.id}
-                                                className="py-3 text-body-sm first:pt-0 last:pb-0"
-                                            >
-                                                <p className="font-medium text-foreground">
-                                                    {item.instansi_asal} &rarr;{' '}
-                                                    {item.instansi_tujuan}
-                                                </p>
-                                                <p className="mt-1 text-caption-xs text-muted-foreground">
-                                                    {formatDate(item.waktu)} ·{' '}
-                                                    {item.alasan}
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </section>
-                            )}
-                        </div>
-
-                        {/* Kolom Kanan: Peta, Batas SLA, Dukungan, Kuorum, Auditor, Privasi */}
-                        <aside className="min-w-0 space-y-5">
-                            {/* Lokasi Laporan */}
-                            <section className="overflow-hidden rounded-lg border border-border bg-card">
-                                <div className="flex items-center gap-2 border-b border-border px-4 py-3 text-body-sm font-semibold text-foreground">
-                                    <MapPin className="size-4 text-primary" />
-                                    <span>Lokasi laporan</span>
-                                </div>
-                                {validLocation ? (
-                                    <Suspense
-                                        fallback={
-                                            <Skeleton className="h-56 w-full rounded-none" />
-                                        }
-                                    >
-                                        <LocationMap
-                                            latitude={latitude}
-                                            longitude={longitude}
-                                        />
-                                    </Suspense>
-                                ) : (
-                                    <p className="p-5 text-body-sm text-muted-foreground">
-                                        Titik lokasi belum tersedia.
-                                    </p>
-                                )}
-                                <div className="space-y-1 p-4 text-body-sm">
-                                    <p className="font-medium text-foreground">
-                                        Kel. {tiket.kelurahan_nama}
-                                    </p>
-                                    <p className="text-muted-foreground">
-                                        Kec. {tiket.kecamatan_nama}
-                                    </p>
-                                    {validLocation && (
-                                        <p className="text-caption-xs font-mono text-muted-foreground">
-                                            {latitude.toFixed(6)},{' '}
-                                            {longitude.toFixed(6)}
-                                        </p>
-                                    )}
-                                    <div className="mt-3 flex flex-col gap-1.5 border-t border-border/50 pt-2">
-                                        {validLocation && (
-                                            <a
-                                                href={`https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=17/${latitude}/${longitude}`}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="inline-flex items-center gap-1.5 text-body-sm text-primary hover:underline"
-                                            >
-                                                <Compass className="size-3.5" />
-                                                <span>
-                                                    Buka di OpenStreetMap
-                                                </span>
-                                            </a>
-                                        )}
-                                        <Link
-                                            href={`/peta?fokus=${encodeURIComponent(tiket.nomor_tiket)}`}
-                                            className="inline-flex items-center gap-1.5 text-body-sm text-primary hover:underline"
-                                        >
-                                            <Navigation className="size-3.5" />
-                                            <span>
-                                                Pusatkan di Peta Kota Depok
-                                            </span>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </section>
-
-                            {/* Batas Waktu Layanan (SLA) */}
-                            <div className="rounded-lg border border-border bg-card p-4">
-                                <p className="text-body-sm font-medium text-foreground">
-                                    Batas waktu layanan
-                                </p>
+                        {/* Baris 2: Badge Status (Kiri) & Tombol Aksi (Kanan) */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+                            {/* Badges Status */}
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
                                 <Badge
-                                    variant={
-                                        tiket.kondisi_sla === 'lewat_sla'
-                                            ? 'sla-late'
-                                            : tiket.kondisi_sla ===
-                                                'hampir_lewat'
-                                              ? 'sla-warn'
-                                              : tiket.kondisi_sla ===
-                                                  'dalam_sla'
-                                                ? 'sla-safe'
-                                                : 'outline'
-                                    }
-                                    className="mt-2 h-auto max-w-full py-1 text-caption-xs whitespace-normal"
+                                    variant="outline"
+                                    className="h-8 px-3.5 rounded-full text-caption-xs font-semibold capitalize bg-muted/40 border-border/70"
                                 >
-                                    {tiket.sisa_sla_teks ||
-                                        'Batas waktu belum tersedia.'}
+                                    Tingkat {tiket.keparahan}
                                 </Badge>
-                            </div>
 
-                            {/* Dukungan Masyarakat */}
-                            <div className="rounded-lg border border-border bg-card p-4">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-body-sm text-muted-foreground">
-                                        Dukungan masyarakat
-                                    </p>
-                                    <p className="text-xl font-semibold text-foreground tabular-nums">
-                                        {tiket.total_dukungan}
-                                    </p>
-                                </div>
+                                <InstansiStatusBadge status={tiket.status} />
 
-                                {(!currentUser ||
-                                    currentUser.peran === 'warga') && (
-                                    <Button
-                                        type="button"
+                                {tiket.sisa_sla_teks ? (
+                                    <Badge
                                         variant={
-                                            tiket.sudah_didukung
-                                                ? 'default'
-                                                : 'outline'
+                                            tiket.kondisi_sla === 'lewat_sla'
+                                                ? 'sla-late'
+                                                : tiket.kondisi_sla === 'hampir_lewat'
+                                                  ? 'sla-warn'
+                                                  : tiket.kondisi_sla === 'dalam_sla'
+                                                    ? 'sla-safe'
+                                                    : 'outline'
                                         }
-                                        size="sm"
-                                        disabled={loadingDukungan}
-                                        onClick={handleToggleDukungan}
-                                        className="mt-3 w-full gap-2 text-xs font-semibold"
+                                        className="h-8 px-3.5 rounded-full text-caption-xs font-medium"
                                     >
-                                        <ThumbsUp className="size-3.5" />
-                                        <span>
-                                            {tiket.sudah_didukung
-                                                ? 'Telah Anda Dukung'
-                                                : 'Dukung Laporan Ini'}
-                                        </span>
-                                    </Button>
+                                        {tiket.sisa_sla_teks}
+                                    </Badge>
+                                ) : (
+                                    tiket.instansi_nama && (
+                                        <Badge variant="outline" className="h-8 px-3.5 rounded-full text-caption-xs font-medium text-muted-foreground border-border/70">
+                                            {tiket.instansi_nama}
+                                        </Badge>
+                                    )
                                 )}
                             </div>
 
-                            {/* Verifikasi Warga (Kuorum) */}
-                            {tiket.kuorum_verifikasi && (
-                                <section className="space-y-3 rounded-lg border border-border bg-card p-4 text-body-sm">
-                                    <h3 className="font-semibold text-foreground">
-                                        Verifikasi warga
-                                    </h3>
-                                    <p className="text-caption-xs text-muted-foreground">
-                                        Ronde{' '}
-                                        {tiket.kuorum_verifikasi.nomor_ronde} ·{' '}
-                                        {tiket.kuorum_verifikasi.total_pemilih}{' '}
-                                        pemilih
-                                    </p>
-                                    <dl className="space-y-2 text-caption-xs">
-                                        {[
-                                            [
-                                                'Target bobot',
-                                                tiket.kuorum_verifikasi
-                                                    .target_k,
-                                            ],
-                                            [
-                                                'Bobot setuju',
-                                                tiket.kuorum_verifikasi
-                                                    .suara_setuju_bobot,
-                                            ],
-                                            [
-                                                'Bobot menolak',
-                                                tiket.kuorum_verifikasi
-                                                    .suara_tolak_bobot,
-                                            ],
-                                            [
-                                                'Hasil',
-                                                tiket.kuorum_verifikasi.hasil ??
-                                                    'Belum diputuskan',
-                                            ],
-                                        ].map(([label, value]) => (
-                                            <div
-                                                key={label}
-                                                className="flex justify-between gap-3"
-                                            >
-                                                <dt className="text-muted-foreground">
-                                                    {label}
-                                                </dt>
-                                                <dd className="font-medium text-foreground">
-                                                    {value}
-                                                </dd>
-                                            </div>
-                                        ))}
-                                    </dl>
-                                    {tiket.kuorum_verifikasi.batas_waktu && (
-                                        <p className="text-caption-xs text-muted-foreground">
-                                            Batas verifikasi:{' '}
-                                            {formatDate(
-                                                tiket.kuorum_verifikasi
-                                                    .batas_waktu,
-                                            )}
-                                        </p>
-                                    )}
+                            {/* Tombol Aksi Kanan: Dukung, Bagikan, Lapor */}
+                            <div className="flex items-center gap-2 self-start sm:self-auto">
+                                <Button
+                                    type="button"
+                                    variant={tiket.sudah_didukung ? 'default' : 'outline'}
+                                    size="sm"
+                                    disabled={loadingDukungan}
+                                    onClick={handleToggleDukungan}
+                                    className="h-9 px-3.5 rounded-xl gap-2 text-caption-xs sm:text-body-sm font-semibold cursor-pointer shadow-xs"
+                                    title={tiket.sudah_didukung ? 'Batalkan dukungan' : 'Dukung laporan ini'}
+                                >
+                                    <ThumbsUp className={cn('size-4', tiket.sudah_didukung && 'fill-current')} />
+                                    <span className="font-semibold">{tiket.total_dukungan.toLocaleString('id-ID')}</span>
+                                </Button>
 
-                                    {tiket.kuorum_verifikasi.alasan_penolakan.map(
-                                        (item, index) => (
-                                            <p
-                                                key={index}
-                                                className="border-t border-border pt-2 text-caption-xs text-foreground"
-                                            >
-                                                {item.alasan}
-                                                <span className="mt-1 block text-muted-foreground">
-                                                    {formatDate(item.waktu)} ·
-                                                    Jalur {item.jalur}
-                                                </span>
-                                            </p>
-                                        ),
-                                    )}
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={share}
+                                    className="size-9 p-0 rounded-xl cursor-pointer"
+                                    title="Bagikan Tautan Tiket"
+                                    aria-label="Bagikan Tautan Tiket"
+                                >
+                                    <Share2 className="size-4" />
+                                </Button>
 
-                                    {tiket.status === 'MENUNGGU_VERIFIKASI' && (
-                                        <Button
-                                            type="button"
-                                            size="sm"
-                                            onClick={() => {
-                                                if (!currentUser) {
-                                                    setLoginActionDesc(
-                                                        'memberikan suara verifikasi',
-                                                    );
-                                                    setLoginModalOpen(true);
-                                                    return;
-                                                }
-                                                setModalVerifikasiOpen(true);
-                                            }}
-                                            className="mt-2 w-full gap-1.5 rounded-xl bg-purple-600 text-xs font-semibold text-white hover:bg-purple-700"
-                                        >
-                                            <ShieldCheck className="size-4" />
-                                            <span>
-                                                Beri Suara Verifikasi Kuorum
-                                            </span>
-                                        </Button>
-                                    )}
-                                </section>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleOpenLaporKonten}
+                                    className="size-9 p-0 rounded-xl text-muted-foreground hover:text-destructive hover:border-destructive/40 cursor-pointer"
+                                    title="Laporkan Pelanggaran Konten"
+                                    aria-label="Laporkan Pelanggaran Konten"
+                                >
+                                    <Flag className="size-4 text-destructive" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Section Media & Metadata (3 Kolom Sesuai Wireframe: Peta | Foto | Detail) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                        {/* Kolom 1: Peta Lokasi */}
+                        <div className="relative overflow-hidden rounded-2xl bg-zinc-950 aspect-[4/3] w-full border border-border/50 shadow-sm flex items-center justify-center">
+                            {validLocation ? (
+                                <Suspense fallback={<Skeleton className="size-full rounded-2xl" />}>
+                                    <LocationMap
+                                        latitude={latitude}
+                                        longitude={longitude}
+                                        className="size-full rounded-2xl h-full min-h-full"
+                                    />
+                                </Suspense>
+                            ) : (
+                                <span className="text-zinc-500 font-display font-semibold text-body-sm">Peta</span>
+                            )}
+                        </div>
+
+                        {/* Kolom 2: Bukti Foto Kerusakan */}
+                        <div className="relative overflow-hidden rounded-2xl bg-zinc-950 aspect-[4/3] w-full border border-border/50 shadow-sm flex items-center justify-center group">
+                            {tiket.foto_awal ? (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setPreview(
+                                            activePhotoTab === 'sesudah' && tiket.foto_sesudah
+                                                ? tiket.foto_sesudah
+                                                : tiket.foto_awal,
+                                        )
+                                    }
+                                    className="size-full relative block focus-visible:outline-2 focus-visible:outline-ring cursor-pointer"
+                                    aria-label="Perbesar foto bukti"
+                                >
+                                    <img
+                                        src={
+                                            activePhotoTab === 'sesudah' && tiket.foto_sesudah
+                                                ? tiket.foto_sesudah.url
+                                                : tiket.foto_awal.url
+                                        }
+                                        alt="Bukti Foto Kerusakan"
+                                        className="size-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                    />
+                                    <span className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-xl bg-black/70 backdrop-blur-md px-2.5 py-1 text-caption-xs text-white shadow-md">
+                                        <ZoomIn className="size-3.5" />
+                                        <span>Perbesar</span>
+                                    </span>
+                                </button>
+                            ) : (
+                                <span className="text-zinc-500 font-display font-semibold text-body-sm">Foto</span>
                             )}
 
-                            {/* Catatan Keputusan Auditor Independen */}
-                            {tiket.catatan_auditor.length > 0 && (
-                                <section className="space-y-3 rounded-lg border border-border bg-card p-4 text-body-sm">
-                                    <h3 className="font-semibold text-foreground">
-                                        Catatan Auditor
-                                    </h3>
-                                    {tiket.catatan_auditor.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="space-y-1.5 border-t border-border pt-3 text-caption-xs"
-                                        >
-                                            <p className="font-medium text-foreground">
-                                                {(
-                                                    {
-                                                        PERINTAH: 'Perintah',
-                                                        KERJAKAN_ULANG:
-                                                            'Kerjakan ulang',
-                                                        TUTUP: 'Penutupan',
-                                                        SETUJU_TOLAK:
-                                                            'Penolakan disetujui',
-                                                        TOLAK_USULAN:
-                                                            'Usulan ditolak',
-                                                    } as Record<string, string>
-                                                )[item.jenis] ??
-                                                    item.jenis
-                                                        .replaceAll('_', ' ')
-                                                        .toLowerCase()}
-                                            </p>
-                                            <p className="text-muted-foreground">
-                                                {formatDate(item.waktu)}
-                                            </p>
-                                            {item.alasan && (
-                                                <p className="text-foreground">
-                                                    {formatInstansiMessage(
-                                                        item.alasan,
-                                                    )}
-                                                </p>
-                                            )}
-                                            {item.perintah && (
-                                                <p className="text-foreground">
-                                                    {formatInstansiMessage(
-                                                        item.perintah,
-                                                    )}
-                                                </p>
-                                            )}
-                                            {item.tenggat && (
-                                                <p className="font-medium text-foreground">
-                                                    Tenggat:{' '}
-                                                    {formatDate(item.tenggat)}
-                                                </p>
-                                            )}
-                                        </div>
-                                    ))}
-                                </section>
-                            )}
-
-                            {/* Kartu Jaminan Privasi Zero-Knowledge (BR-AKN-01) */}
-                            <div className="space-y-1.5 rounded-lg border border-border bg-muted/20 p-4 text-caption-xs leading-relaxed text-muted-foreground">
-                                <div className="flex items-center gap-1.5 font-medium text-foreground">
-                                    <Lock className="size-3 text-primary" />
-                                    <span>Privasi Zero-Knowledge Terjamin</span>
+                            {/* Toggle Foto Awal vs Sesudah jika laporan sudah selesai diperbaiki */}
+                            {tiket.foto_awal && tiket.foto_sesudah && (
+                                <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-xl bg-black/70 backdrop-blur-md p-1 border border-white/10 text-[11px]">
+                                    <button
+                                        type="button"
+                                        onClick={() => setActivePhotoTab('awal')}
+                                        className={cn(
+                                            'px-2 py-0.5 rounded-lg font-semibold transition-all cursor-pointer',
+                                            activePhotoTab === 'awal'
+                                                ? 'bg-white text-zinc-950 shadow-xs'
+                                                : 'text-white/70 hover:text-white',
+                                        )}
+                                    >
+                                        Sebelum
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setActivePhotoTab('sesudah')}
+                                        className={cn(
+                                            'px-2 py-0.5 rounded-lg font-semibold transition-all cursor-pointer',
+                                            activePhotoTab === 'sesudah'
+                                                ? 'bg-white text-zinc-950 shadow-xs'
+                                                : 'text-white/70 hover:text-white',
+                                        )}
+                                    >
+                                        Sesudah
+                                    </button>
                                 </div>
-                                <p>
-                                    Sesuai prinsip <strong>BR-AKN-01</strong>,
-                                    nama, email, serta identitas pelapor dan
-                                    pendukung dienkripsi mutlak dan tidak
-                                    dipublikasikan pada lembar publik ini.
+                            )}
+                        </div>
+
+                        {/* Kolom 3: Rincian Metadata */}
+                        <div className="flex flex-col justify-between py-1 space-y-4 rounded-2xl border border-border/60 bg-card p-5 sm:p-6 shadow-2xs">
+                            <div className="space-y-1">
+                                <h3 className="text-body-sm font-bold text-foreground">
+                                    Tanggal Pelaporan
+                                </h3>
+                                <p className="text-body-sm text-muted-foreground">
+                                    {formatDate(tiket.created_at)}
                                 </p>
                             </div>
-                        </aside>
+
+                            <div className="space-y-1">
+                                <h3 className="text-body-sm font-bold text-foreground">
+                                    Lokasi
+                                </h3>
+                                <p className="text-body-sm text-muted-foreground leading-relaxed">
+                                    Kel. {tiket.kelurahan_nama}, Kec. {tiket.kecamatan_nama}, Kota Depok
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <h3 className="text-body-sm font-bold text-foreground">
+                                    Kategori Kerusakan
+                                </h3>
+                                <p className="text-body-sm text-muted-foreground">
+                                    {tiket.kategori_nama}
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <h3 className="text-body-sm font-bold text-foreground">
+                                    Instansi Terkait
+                                </h3>
+                                <p className="text-body-sm text-muted-foreground">
+                                    {tiket.instansi_nama || 'Belum ditetapkan'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
+
+                    {/* Section Keterangan Detail Kerusakan */}
+                    <section className="space-y-3">
+                        <h2 className="font-display text-title-md sm:text-title-lg font-bold text-foreground">
+                            Keterangan Detail Kerusakan
+                        </h2>
+                        <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-2xs">
+                            <p className="text-body-sm sm:text-body-base leading-relaxed whitespace-pre-wrap text-foreground/90">
+                                {tiket.keterangan || 'Tidak ada keterangan tambahan.'}
+                            </p>
+                        </div>
+                    </section>
+
+                    {/* Section Lini Masa Laporan (Timeline Vertikal Sesuai Referensi & Urutan Kronologis Descending) */}
+                    <section className="space-y-4 pt-2">
+                        <h2 className="font-display text-title-md sm:text-title-lg font-bold text-foreground">
+                            Lini Masa Laporan
+                        </h2>
+
+                        <TiketRiwayatStatusTimeline
+                            riwayatStatus={tiket.riwayat_status}
+                            pengalihan={tiket.pengalihan}
+                            tiketStatus={tiket.status}
+                            nomorTiket={tiket.nomor_tiket}
+                            onBeriSuara={handleBeriSuara}
+                            onPreviewPhoto={(photo) => setPreview(photo)}
+                        />
+                    </section>
+
+
+
                 </>
             )}
 
@@ -1209,14 +847,6 @@ export default function DetailTiketPage({
                 tiket={tiket as any}
                 onSuccess={() => router.reload()}
             />
-
-            <ModalDetailTimelineNode
-                open={!!selectedTimelineItem}
-                onClose={() => setSelectedTimelineItem(null)}
-                item={selectedTimelineItem}
-                nomorTiket={tiket.nomor_tiket}
-                onPreviewPhoto={setPreview}
-            />
         </div>
     );
 
@@ -1224,11 +854,13 @@ export default function DetailTiketPage({
     if (currentUser) {
         return (
             <InternalLayout
-                title={`Tiket #${tiket.nomor_tiket}`}
-                breadcrumb={getRoleBreadcrumb(
-                    currentUser.peran,
-                    tiket.nomor_tiket,
-                )}
+                title={`Detail Laporan: #${tiket.nomor_tiket}`}
+                breadcrumb={
+                    currentUser.peran === 'warga'
+                        ? `Warga > Riwayat Laporan > #${tiket.nomor_tiket}`
+                        : getRoleBreadcrumb(currentUser.peran, tiket.nomor_tiket)
+                }
+                fullWidth
             >
                 <Head>
                     <title>{`Tiket ${tiket.nomor_tiket}: ${tiket.judul} — Jagains`}</title>

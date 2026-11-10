@@ -28,8 +28,10 @@ class VerifikasiWargaController extends Controller
         $daftarTiket = $this->verifikasiService->ambilAntreanVerifikasi(
             $user,
             $request->only(['tab', 'q', 'kategori_id']),
-            perPage: 9
+            perPage: 6
         );
+
+        $counts = $this->verifikasiService->hitungStatistikAntrean($user);
 
         $kategoriList = Kategori::query()
             ->where('aktif', true)
@@ -39,6 +41,7 @@ class VerifikasiWargaController extends Controller
         return Inertia::render('warga/verifikasi', [
             'daftarTiket' => $daftarTiket,
             'kategoriList' => $kategoriList,
+            'counts' => $counts,
             'kelurahan' => $user->kelurahan ? [
                 'id' => $user->kelurahan->id,
                 'nama' => $user->kelurahan->nama,
@@ -48,13 +51,20 @@ class VerifikasiWargaController extends Controller
     }
 
     /**
-     * Mengambil data detail verifikasi tiket untuk modal voting (API/JSON).
+     * Menampilkan halaman proses verifikasi aduan warga atau data JSON jika diminta (FR-VER-02, FR-VER-07).
      */
     public function show(Request $request, string $nomorTiket)
     {
         $detail = $this->verifikasiService->ambilDetailVerifikasi($request->user(), $nomorTiket);
 
-        return response()->json($detail);
+        if ($request->wantsJson() && ! $request->header('X-Inertia')) {
+            return response()->json($detail);
+        }
+
+        return Inertia::render('warga/verifikasi-proses', [
+            'detail' => $detail,
+            'from' => $request->query('from'),
+        ]);
     }
 
     /**
@@ -70,6 +80,15 @@ class VerifikasiWargaController extends Controller
             $request->validated()
         );
 
-        return back()->with('sukses', $hasil['pesan']);
+        $from = $request->input('from') ?? $request->query('from');
+        if ($from === 'tiket') {
+            return redirect()->route('tiket.detail', $nomorTiket)->with('sukses', $hasil['pesan']);
+        }
+
+        if ($from === 'riwayat') {
+            return redirect()->route('warga.riwayat')->with('sukses', $hasil['pesan']);
+        }
+
+        return redirect()->route('warga.verifikasi')->with('sukses', $hasil['pesan']);
     }
 }

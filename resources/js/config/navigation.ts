@@ -22,10 +22,10 @@ export const NAVIGATION_CONFIG: Record<PeranUser, NavItem[]> = {
         { title: 'Profil dinas', href: '/instansi/profil', roles: ['instansi'] },
     ],
     warga: [
-        { title: 'Peta laporan', href: '/peta', roles: ['warga'] },
-        { title: 'Lapor kerusakan', href: '/warga/lapor', roles: ['warga'] },
-        { title: 'Riwayat laporan', href: '/warga/riwayat', roles: ['warga'] },
+        { title: 'Eksplorasi', href: '/peta', roles: ['warga'] },
+        { title: 'Tambah Laporan', href: '/warga/lapor', roles: ['warga'] },
+        { title: 'Riwayat Laporan', href: '/warga/riwayat', roles: ['warga'] },
         { title: 'Verifikasi', href: '/warga/verifikasi', roles: ['warga'] },
-        { title: 'Profil & wilayah', href: '/warga/profil', roles: ['warga'] },
+        { title: 'Profil', href: '/warga/profil', roles: ['warga'] },
     ],
 };

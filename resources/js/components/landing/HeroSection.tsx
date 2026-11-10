@@ -65,6 +65,8 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
     const [filters, setFilters] = useState<PetaFilterState>({
         kategori_id: null,
         kecamatan_id: null,
+        kota_id: null,
+        status: null,
         kondisi_sla: null,
         instansi_id: null,
         rentang_waktu: null,
@@ -158,6 +160,8 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
         setFilters({
             kategori_id: null,
             kecamatan_id: null,
+            kota_id: null,
+            status: null,
             kondisi_sla: null,
             instansi_id: null,
             rentang_waktu: null,

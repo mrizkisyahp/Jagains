@@ -1,16 +1,34 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { router } from '@inertiajs/react';
-import { Camera, RefreshCw, AlertCircle, CheckCircle2, Upload } from 'lucide-react';
+import {
+    Camera,
+    RefreshCw,
+    AlertCircle,
+    CheckCircle2,
+    Upload,
+    SwitchCamera,
+    Flashlight,
+    RotateCcw,
+    ArrowRight,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
+import { toast } from '@/components/ui/toast';
 
 interface CameraCaptureProps {
     foto: string | null;
     onFotoCaptured: (base64Foto: string) => void;
     onFotoReset: () => void;
+    onNextStep?: () => void;
 }
 
-export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: CameraCaptureProps) {
+export default function CameraCapture({
+    foto,
+    onFotoCaptured,
+    onFotoReset,
+    onNextStep,
+}: CameraCaptureProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -20,6 +38,8 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
     const [hasActiveStream, setHasActiveStream] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [isLoadingCamera, setIsLoadingCamera] = useState(false);
+    const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+    const [isTorchOn, setIsTorchOn] = useState(false);
 
     /**
      * Menghentikan semua tracks kamera dan melepaskan akses hardware browser.
@@ -41,12 +61,13 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
         }
 
         setHasActiveStream(false);
+        setIsTorchOn(false);
     }, []);
 
     /**
      * Memulai akses kamera jika tab sedang dilihat dan belum ada foto yang diambil.
      */
-    const startCamera = useCallback(async () => {
+    const startCamera = useCallback(async (preferredFacing: 'environment' | 'user' = facingMode) => {
         if (streamRef.current && streamRef.current.active) {
             return;
         }
@@ -64,14 +85,13 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
 
             const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: { ideal: 'environment' }, // Utamakan kamera belakang pada ponsel
+                    facingMode: { ideal: preferredFacing },
                     width: { ideal: 1280 },
                     height: { ideal: 720 },
                 },
                 audio: false,
             });
 
-            // Jika selama proses inisialisasi tab diminimalkan, komponen unmounted, atau foto sudah terisi
             if (!isMountedRef.current || document.hidden || foto) {
                 mediaStream.getTracks().forEach((track) => track.stop());
                 return;
@@ -100,7 +120,36 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
                 setIsLoadingCamera(false);
             }
         }
-    }, [foto]);
+    }, [facingMode, foto]);
+
+    const toggleFacingMode = async () => {
+        const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+        setFacingMode(nextMode);
+        stopCamera();
+        await startCamera(nextMode);
+    };
+
+    const toggleTorch = async () => {
+        if (!streamRef.current) return;
+        const track = streamRef.current.getVideoTracks()[0];
+        if (!track) return;
+
+        try {
+            const capabilities = (typeof track.getCapabilities === 'function' ? track.getCapabilities() : {}) as { torch?: boolean };
+            if (capabilities && capabilities.torch) {
+                const nextTorch = !isTorchOn;
+                await (track as unknown as { applyConstraints: (c: unknown) => Promise<void> }).applyConstraints({
+                    advanced: [{ torch: nextTorch }],
+                });
+                setIsTorchOn(nextTorch);
+                toast.success('Lampu Kilat', nextTorch ? 'Lampu kilat dinyalakan' : 'Lampu kilat dimatikan');
+            } else {
+                toast.info('Lampu Kilat / Senter', 'Lampu kilat tidak didukung pada kamera perangkat ini.');
+            }
+        } catch {
+            toast.info('Lampu Kilat / Senter', 'Tidak dapat mengubah pengaturan lampu kilat.');
+        }
+    };
 
     const captureSnapshot = () => {
         if (!videoRef.current || !canvasRef.current) return;
@@ -168,12 +217,10 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
     useEffect(() => {
         isMountedRef.current = true;
 
-        // Inisialisasi awal saat komponen dimuat dan tab sedang aktif
         if (!foto && !document.hidden) {
             startCamera();
         }
 
-        // Hentikan kamera jika tab berpindah atau browser diminimalkan (Page Visibility API)
         const handleVisibilityChange = () => {
             if (document.hidden) {
                 stopCamera();
@@ -188,7 +235,6 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
             stopCamera();
         };
 
-        // Hentikan kamera secara proaktif ketika Inertia SPA mulai berpindah halaman
         const unregisterInertiaStart = router.on('start', () => {
             stopCamera();
         });
@@ -208,123 +254,163 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
     }, [foto, startCamera, stopCamera]);
 
     return (
-        <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                    <h3 className="font-display text-body-medium font-bold text-foreground">Foto Bukti Kamera Langsung</h3>
-                    <p className="text-body-sm text-muted-foreground mt-0.5">
-                        Wajib diambil langsung dari kamera aplikasi di lokasi kerusakan. Galeri/file upload dilarang (ST-16).
-                    </p>
-                </div>
-                {foto && (
-                    <span className="self-start sm:self-auto inline-flex items-center gap-1.5 text-caption-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
-                        <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-400" /> Foto Tersimpan
-                    </span>
-                )}
+        <div className="space-y-6">
+            {/* Header Bagian Sesuai Wireframe */}
+            <div>
+                <h2 className="font-display text-title-lg sm:text-display-xs font-bold text-foreground">
+                    Ambil Foto Bukti
+                </h2>
+                <p className="text-body-sm text-muted-foreground mt-1">
+                    Ambil foto bukti dengan menekan tombol kamera
+                </p>
             </div>
 
-            {/* Viewfinder Kamera Aktif */}
+            {/* Viewfinder Kamera Sesuai Wireframe (Persegi Panjang Hitam + Tombol Vertikal Kanan) */}
             {!foto && !cameraError && (
-                <div className="relative overflow-hidden rounded-2xl border border-border bg-slate-950 aspect-[4/3] max-w-3xl mx-auto flex items-center justify-center shadow-inner">
+                <div className="relative overflow-hidden rounded-3xl bg-black aspect-[16/10] sm:aspect-[16/9] max-h-[580px] w-full flex items-center justify-center shadow-md border border-border/40">
                     <video
                         ref={videoRef}
                         autoPlay
                         playsInline
                         muted
-                        className="w-full h-full object-cover"
+                        className="size-full object-cover"
                         onLoadedMetadata={() => {
                             videoRef.current?.play().catch(() => {});
                         }}
                     />
 
-                    {/* Overlay Grid Kamera */}
-                    <div className="absolute inset-0 pointer-events-none grid grid-cols-3 grid-rows-3 opacity-20">
-                        <div className="border-r border-b border-white" />
-                        <div className="border-r border-b border-white" />
-                        <div className="border-b border-white" />
-                        <div className="border-r border-b border-white" />
-                        <div className="border-r border-b border-white" />
-                        <div className="border-b border-white" />
-                        <div className="border-r border-white" />
-                        <div className="border-r border-white" />
-                        <div />
-                    </div>
+                    {/* State Memuat Aliran Kamera */}
+                    {isLoadingCamera && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/80 text-white gap-2 font-medium text-body-sm z-10">
+                            <RefreshCw className="size-5 animate-spin" />
+                            <span>Menghubungkan kamera...</span>
+                        </div>
+                    )}
 
-                    {/* Tombol Jepret & Ambil dari File */}
-                    <div className="absolute bottom-5 inset-x-0 flex flex-wrap justify-center gap-2.5 px-4">
-                        <Button
+                    {/* Fallback teks tengah jika kamera belum streaming */}
+                    {!hasActiveStream && !isLoadingCamera && (
+                        <div className="absolute inset-0 flex items-center justify-center text-zinc-500 font-display font-semibold text-title-md">
+                            Kamera
+                        </div>
+                    )}
+
+                    {/* Floating Control Strip Vertikal di Sisi Kanan (Sesuai Wireframe) */}
+                    <div className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-5 sm:gap-6 z-20">
+                        {/* 1. Ikon Atas: Putar / Ganti Kamera Depan/Belakang */}
+                        <button
                             type="button"
-                            size="lg"
+                            onClick={toggleFacingMode}
+                            disabled={isLoadingCamera}
+                            className="size-11 sm:size-12 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center transition-all cursor-pointer border border-white/20 hover:scale-105 active:scale-95 disabled:opacity-40 shadow-md"
+                            title="Putar Kamera (Depan / Belakang)"
+                            aria-label="Putar Kamera"
+                        >
+                            <SwitchCamera className="size-5 sm:size-6" />
+                        </button>
+
+                        {/* 2. Tombol Tengah: Shutter Capture Squircle Putih dengan Ikon Kamera */}
+                        <button
+                            type="button"
                             onClick={captureSnapshot}
                             disabled={isLoadingCamera || !hasActiveStream}
-                            className="rounded-full shadow-xl h-14 px-7 gap-2 font-display font-semibold"
+                            className="size-14 sm:size-16 rounded-2xl bg-white text-zinc-950 flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-40"
+                            title="Ambil Foto Bukti"
+                            aria-label="Ambil Foto Bukti"
                         >
-                            <Camera className="size-5" />
-                            Ambil Foto
-                        </Button>
-                        <Button
+                            <Camera className="size-7 sm:size-8 text-black" />
+                        </button>
+
+                        {/* 3. Ikon Bawah: Flashlight / Senter Gawai */}
+                        <button
                             type="button"
-                            size="lg"
-                            variant="secondary"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="rounded-full shadow-xl h-14 px-6 gap-2 font-display font-semibold bg-background/90 hover:bg-background text-foreground backdrop-blur-sm border border-border"
+                            onClick={toggleTorch}
+                            disabled={isLoadingCamera || !hasActiveStream}
+                            className={cn(
+                                'size-11 sm:size-12 rounded-full backdrop-blur-md flex items-center justify-center transition-all cursor-pointer border border-white/20 hover:scale-105 active:scale-95 disabled:opacity-40 shadow-md',
+                                isTorchOn ? 'bg-amber-400 text-black shadow-lg' : 'bg-black/40 hover:bg-black/60 text-white',
+                            )}
+                            title="Lampu Kilat / Senter"
+                            aria-label="Lampu Kilat / Senter"
                         >
-                            <Upload className="size-5" />
-                            Ambil dari File
-                        </Button>
+                            <Flashlight className="size-5 sm:size-6" />
+                        </button>
                     </div>
+
+                    {/* Alternatif Unggah Berkas di Pojok Kiri Bawah Viewfinder */}
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute bottom-4 left-4 z-20 flex items-center gap-2 rounded-xl bg-black/50 hover:bg-black/70 px-3.5 py-2 text-caption-xs font-semibold text-white/90 hover:text-white backdrop-blur-md border border-white/10 transition-colors cursor-pointer"
+                        title="Unggah Foto dari Galeri / Berkas"
+                    >
+                        <Upload className="size-3.5" />
+                        <span>Unggah Foto</span>
+                    </button>
                 </div>
             )}
 
-            {/* Tampilan Hasil Foto */}
+            {/* Tampilan Pratinjau Jika Foto Sudah Terambil (Sesuai Wireframe) */}
             {foto && (
-                <div className="space-y-3">
-                    <div className="relative overflow-hidden rounded-xl border border-border bg-slate-900 aspect-[4/3] max-w-3xl mx-auto flex items-center justify-center">
-                        <img
-                            src={foto}
-                            alt="Pratinjau Foto Kerusakan"
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-2">
+                <div className="relative overflow-hidden rounded-3xl bg-black aspect-[16/10] sm:aspect-[16/9] max-h-[580px] w-full flex items-center justify-center shadow-md border border-border/40">
+                    <img
+                        src={foto}
+                        alt="Pratinjau Foto Bukti Kerusakan"
+                        className="size-full object-cover"
+                    />
+
+                    {/* Alternatif Ganti Berkas di Pojok Kiri Bawah Pratinjau */}
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-20 flex items-center gap-2 rounded-xl bg-black/50 hover:bg-black/70 px-3.5 py-2 text-caption-xs font-semibold text-white/90 hover:text-white backdrop-blur-md border border-white/10 transition-colors cursor-pointer"
+                        title="Ganti Foto dari Berkas / Galeri"
+                    >
+                        <Upload className="size-3.5" />
+                        <span>Ganti Berkas</span>
+                    </button>
+
+                    {/* Tombol Aksi di Sudut Kanan Bawah Sesuai Wireframe: [ Ambil Ulang ] dan [ Selanjutnya → ] */}
+                    <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 flex items-center gap-2.5 sm:gap-3">
                         <Button
                             type="button"
                             variant="secondary"
-                            size="sm"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="gap-2"
-                        >
-                            <Upload className="size-4" />
-                            Ganti dari File
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
                             onClick={handleRetake}
-                            className="gap-2"
+                            className="h-11 px-4 sm:px-5 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-950 font-semibold text-body-sm shadow-xl flex items-center gap-2 cursor-pointer transition-transform hover:scale-102 active:scale-98"
+                            title="Ambil Ulang Foto"
                         >
-                            <RefreshCw className="size-4" />
-                            Ambil Ulang dari Kamera
+                            <RotateCcw className="size-4 text-zinc-950" />
+                            <span>Ambil Ulang</span>
                         </Button>
+
+                        {onNextStep && (
+                            <Button
+                                type="button"
+                                onClick={onNextStep}
+                                className="h-11 px-5 sm:px-6 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-body-sm shadow-xl flex items-center gap-2 cursor-pointer transition-transform hover:scale-102 active:scale-98"
+                                title="Lanjut ke Titik Lokasi"
+                            >
+                                <span>Selanjutnya</span>
+                                <ArrowRight className="size-4 text-zinc-950" />
+                            </Button>
+                        )}
                     </div>
                 </div>
             )}
 
-            {/* Alert Error Kamera */}
+            {/* Alert Error Kamera (Jika Izin Ditolak / Perangkat Tanpa Kamera) */}
             {cameraError && !foto && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="rounded-2xl">
                     <AlertCircle className="size-4" />
                     <AlertTitle>Kamera Tidak Dapat Diakses</AlertTitle>
-                    <AlertDescription className="text-xs space-y-2 mt-1">
+                    <AlertDescription className="text-body-sm space-y-3 mt-1">
                         <p>{cameraError}</p>
-                        <div className="flex flex-wrap gap-2 mt-2">
+                        <div className="flex flex-wrap gap-2 pt-1">
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={startCamera}
-                                className="text-xs"
+                                onClick={() => startCamera()}
+                                className="rounded-xl text-caption-xs font-semibold"
                             >
                                 Coba Akses Kamera Lagi
                             </Button>
@@ -333,17 +419,17 @@ export default function CameraCapture({ foto, onFotoCaptured, onFotoReset }: Cam
                                 variant="secondary"
                                 size="sm"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="text-xs gap-1.5"
+                                className="rounded-xl text-caption-xs font-semibold gap-1.5"
                             >
                                 <Upload className="size-3.5" />
-                                Ambil dari File
+                                <span>Pilih Foto dari Galeri</span>
                             </Button>
                         </div>
                     </AlertDescription>
                 </Alert>
             )}
 
-            {/* Hidden File Input & Canvas untuk Snapshot */}
+            {/* Input Tersembunyi untuk Pemilihan Berkas & Canvas Snapshot */}
             <input
                 ref={fileInputRef}
                 type="file"

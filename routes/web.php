@@ -67,6 +67,7 @@ Route::middleware(['auth', 'role:warga'])->group(function () {
     Route::get('/peta', [PetaLaporanController::class, 'tampilkanPeta'])->name('warga.peta');
     Route::get('/warga/profil', [ProfilKelurahanController::class, 'tampilkanProfil'])->name('warga.profil');
     Route::post('/warga/kelurahan', [ProfilKelurahanController::class, 'gantiKelurahan'])->name('warga.kelurahan.update');
+    Route::put('/warga/password', [ProfilKelurahanController::class, 'gantiPassword'])->name('warga.password.update');
     Route::get('/warga/lapor', [LaporanWargaController::class, 'tampilkanFormLapor'])->name('warga.lapor');
     Route::post('/warga/lapor', [LaporanWargaController::class, 'buatLaporan'])->name('warga.lapor.store');
     Route::post('/warga/lapor/dukung', [LaporanWargaController::class, 'dukungLaporan'])->name('warga.lapor.dukung');

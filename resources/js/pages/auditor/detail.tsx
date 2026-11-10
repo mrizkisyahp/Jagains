@@ -553,7 +553,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                                     </Badge>
                                                 )}
                                                 <span className="text-muted-foreground">
-                                                    Jalur {s.jalur} • Bobot {s.bobot}
+                                                    {s.jalur === 'A' ? 'Jarak Dekat' : 'Jarak Jauh'} • Bobot {s.bobot}
                                                 </span>
                                             </div>
                                             <span className="font-mono text-[11px] text-muted-foreground">
