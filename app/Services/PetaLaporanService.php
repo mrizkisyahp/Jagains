@@ -144,7 +144,7 @@ class PetaLaporanService
                 'lintang' => (float) $laporan->lintang,
                 'bujur' => (float) $laporan->bujur,
                 'jumlah_dukungan' => (int) ($laporan->dukungan_count ?? 0),
-                'foto_url' => $laporan->lampiran->first()?->path ? asset('storage/'.$laporan->lampiran->first()->path) : null,
+                'foto_url' => $laporan->lampiran->first()?->path ? $laporan->lampiran->first()->url : null,
                 'created_at' => $laporan->created_at?->toIso8601String() ?? now()->toIso8601String(),
             ];
         }

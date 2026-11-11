@@ -447,9 +447,7 @@ class TiketDetailService
             return null;
         }
 
-        $url = str_starts_with($lampiran->path, 'http')
-            ? $lampiran->path
-            : asset('storage/'.ltrim($lampiran->path, '/'));
+        $url = $lampiran->url;
 
         return [
             'uuid' => $lampiran->uuid,

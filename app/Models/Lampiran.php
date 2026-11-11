@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class Lampiran extends Model
 {
@@ -13,6 +15,8 @@ class Lampiran extends Model
     protected $table = 'lampiran';
 
     public $timestamps = false;
+
+    protected $appends = ['url'];
 
     protected $fillable = [
         'uuid',
@@ -40,6 +44,16 @@ class Lampiran extends Model
             'akurasi_m' => 'decimal:1',
             'created_at' => 'datetime',
         ];
+    }
+
+    /** @return Attribute<string, never> */
+    protected function url(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => str_starts_with($this->path, 'https://') || str_starts_with($this->path, 'http://')
+                ? $this->path
+                : Storage::disk('public')->url(ltrim($this->path, '/')),
+        );
     }
 
     public function laporan(): BelongsTo

@@ -216,7 +216,7 @@ class VerifikasiWargaService
                     'jalur' => $s->jalur,
                     'bobot' => (float) $s->bobot,
                     'alasan' => $s->alasan,
-                    'lampiran_foto' => $s->lampiran ? asset('storage/'.$s->lampiran->path) : null,
+                    'lampiran_foto' => $s->lampiran ? $s->lampiran->url : null,
                     'waktu' => $s->waktu?->toISOString(),
                 ];
             });

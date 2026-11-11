@@ -50,6 +50,7 @@ interface VerifikasiProsesPageProps {
                 id: number;
                 uuid: string;
                 path: string;
+                url: string;
                 tahap: string;
             }>;
             berita_acara?: Array<{
@@ -74,6 +75,7 @@ interface VerifikasiProsesPageProps {
                 lampiran_sesudah?: {
                     id: number;
                     path: string;
+                    url: string;
                 } | null;
             }>;
         };
@@ -85,6 +87,7 @@ interface VerifikasiProsesPageProps {
             lampiran_sesudah?: {
                 id: number;
                 path: string;
+                url: string;
             } | null;
         } | null;
         target_k: number;
@@ -507,10 +510,10 @@ export default function VerifikasiProsesPage({
         });
     };
 
-    const fotoAwal = laporan.lampiran?.find((l) => l.tahap === 'awal')?.path;
+    const fotoAwal = laporan.lampiran?.find((l) => l.tahap === 'awal')?.url;
     const fotoSesudah =
-        ronde_aktif?.lampiran_sesudah?.path ||
-        laporan.ronde_verifikasi?.[0]?.lampiran_sesudah?.path;
+        ronde_aktif?.lampiran_sesudah?.url ||
+        laporan.ronde_verifikasi?.[0]?.lampiran_sesudah?.url;
     const beritaAcaraDinas = laporan.berita_acara?.[0];
 
     const persentaseKuorum =
@@ -615,7 +618,7 @@ export default function VerifikasiProsesPage({
                                     onClick={() => {
                                         if (fotoAwal) {
                                             setPreviewImage({
-                                                src: `/storage/${fotoAwal}`,
+                                                src: fotoAwal,
                                                 title: 'Foto Sebelum Pengerjaan',
                                             });
                                         }
@@ -628,7 +631,7 @@ export default function VerifikasiProsesPage({
                                     {fotoAwal ? (
                                         <>
                                             <img
-                                                src={`/storage/${fotoAwal}`}
+                                                src={fotoAwal}
                                                 alt="Foto Sebelum Pengerjaan"
                                                 className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                                             />
@@ -651,7 +654,7 @@ export default function VerifikasiProsesPage({
                                     onClick={() => {
                                         if (fotoSesudah) {
                                             setPreviewImage({
-                                                src: `/storage/${fotoSesudah}`,
+                                                src: fotoSesudah,
                                                 title: 'Foto Sesudah Pengerjaan',
                                             });
                                         }
@@ -666,7 +669,7 @@ export default function VerifikasiProsesPage({
                                     {fotoSesudah ? (
                                         <>
                                             <img
-                                                src={`/storage/${fotoSesudah}`}
+                                                src={fotoSesudah}
                                                 alt="Foto Sesudah Pengerjaan"
                                                 className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                                             />

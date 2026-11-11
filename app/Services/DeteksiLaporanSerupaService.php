@@ -59,7 +59,7 @@ class DeteksiLaporanSerupaService
 
         return $kandidat->map(function (Laporan $tiket) {
             $lampiranAwal = $tiket->lampiran->first();
-            $fotoUrl = $lampiranAwal ? asset('storage/'.$lampiranAwal->path) : null;
+            $fotoUrl = $lampiranAwal ? $lampiranAwal->url : null;
 
             return [
                 'id' => $tiket->id,

@@ -146,7 +146,7 @@ class AuditorService
                     'jalur' => $s->jalur,
                     'bobot' => (float) $s->bobot,
                     'alasan' => $s->alasan,
-                    'lampiran_foto' => $s->lampiran ? asset('storage/'.$s->lampiran->path) : null,
+                    'lampiran_foto' => $s->lampiran ? $s->lampiran->url : null,
                     'waktu' => $s->waktu?->toISOString(),
                 ];
             });
@@ -190,8 +190,8 @@ class AuditorService
                 'jumlah_pengalihan' => $laporan->jumlah_pengalihan,
                 'created_at' => $laporan->created_at?->toISOString(),
             ],
-            'foto_awal' => $laporan->lampiran->where('tahap', 'awal')->map(fn ($f) => asset('storage/'.$f->path))->first(),
-            'foto_sesudah' => $ronde?->lampiranSesudah ? asset('storage/'.$ronde->lampiranSesudah->path) : null,
+            'foto_awal' => $laporan->lampiran->where('tahap', 'awal')->map(fn ($f) => $f->url)->first(),
+            'foto_sesudah' => $ronde?->lampiranSesudah ? $ronde->lampiranSesudah->url : null,
             'berita_acara' => $laporan->beritaAcara->first() ? [
                 'versi' => $laporan->beritaAcara->first()->versi,
                 'kegiatan' => $laporan->beritaAcara->first()->kegiatan,

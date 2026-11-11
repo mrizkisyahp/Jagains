@@ -55,6 +55,7 @@ export interface TiketVerifikasiItem {
         lampiran_sesudah?: {
             id: number;
             path: string;
+            url: string;
         } | null;
     }>;
     berita_acara?: Array<{
@@ -69,6 +70,7 @@ export interface TiketVerifikasiItem {
         id: number;
         tahap: string;
         path: string;
+        url: string;
     }>;
 }
 

@@ -295,11 +295,11 @@ export default function ModalBeriSuaraVerifikasi({
         tiket.instansi?.nama || (tiket as any).instansi_nama || '';
     const fotoAwalUrl =
         (tiket as any).foto_awal?.url ||
-        (tiket.lampiran?.[0] ? `/storage/${tiket.lampiran[0].path}` : null);
+        (tiket.lampiran?.[0] ? tiket.lampiran[0].url : null);
     const fotoSesudahUrl =
         (tiket as any).foto_sesudah?.url ||
         (tiket.ronde_verifikasi?.[0]?.lampiran_sesudah
-            ? `/storage/${tiket.ronde_verifikasi[0].lampiran_sesudah.path}`
+            ? tiket.ronde_verifikasi[0].lampiran_sesudah.url
             : null);
     const beritaAcaraDinas = tiket.berita_acara?.[0];
 

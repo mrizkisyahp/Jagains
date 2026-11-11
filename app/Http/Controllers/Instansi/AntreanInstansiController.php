@@ -86,7 +86,7 @@ class AntreanInstansiController extends Controller
                 'kota_nama' => $lap->kelurahan?->induk?->induk?->nama,
                 'lintang' => (float) $lap->lintang,
                 'bujur' => (float) $lap->bujur,
-                'foto_awal_url' => $fotoAwal ? asset('storage/'.$fotoAwal->path) : null,
+                'foto_awal_url' => $fotoAwal ? $fotoAwal->url : null,
                 'jumlah_pengalihan' => $lap->jumlah_pengalihan,
                 'jenis_pendanaan' => $lap->jenis_pendanaan,
                 'tanggal_target' => $lap->tanggal_target ? $lap->tanggal_target->toDateString() : null,

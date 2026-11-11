@@ -28,8 +28,8 @@ export default function KartuTiketVerifikasi({
 }: KartuTiketVerifikasiProps) {
     const { kuorum_info } = tiket;
 
-    const fotoAwal = tiket.lampiran?.[0]?.path;
-    const fotoSesudah = tiket.ronde_verifikasi?.[0]?.lampiran_sesudah?.path;
+    const fotoAwal = tiket.lampiran?.[0]?.url;
+    const fotoSesudah = tiket.ronde_verifikasi?.[0]?.lampiran_sesudah?.url;
 
     return (
         <div className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-border bg-card shadow-xs transition-all hover:border-foreground/30 hover:shadow-md">
@@ -40,7 +40,7 @@ export default function KartuTiketVerifikasi({
                     <div className="relative flex size-full items-center justify-center overflow-hidden border-r border-border/40 bg-black">
                         {fotoAwal ? (
                             <img
-                                src={`/storage/${fotoAwal}`}
+                                src={fotoAwal}
                                 alt="Foto Sebelum Perbaikan"
                                 loading="lazy"
                                 decoding="async"
@@ -73,7 +73,7 @@ export default function KartuTiketVerifikasi({
                     <div className="relative flex size-full items-center justify-center overflow-hidden bg-black">
                         {fotoSesudah ? (
                             <img
-                                src={`/storage/${fotoSesudah}`}
+                                src={fotoSesudah}
                                 alt="Foto Sesudah Dinas"
                                 loading="lazy"
                                 decoding="async"

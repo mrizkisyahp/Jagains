@@ -62,7 +62,7 @@ class BerandaWargaController extends Controller
                 'lokasi' => $laporanUnggulanRaw->kelurahan
                     ? "Kel. {$laporanUnggulanRaw->kelurahan->nama}, Kec. {$laporanUnggulanRaw->kelurahan->induk?->nama}".($laporanUnggulanRaw->kelurahan->induk?->induk?->nama ? ", {$laporanUnggulanRaw->kelurahan->induk->induk->nama}" : '')
                     : 'Jabodetabek',
-                'foto_url' => $foto ? asset('storage/'.$foto->path) : null,
+                'foto_url' => $foto ? $foto->url : null,
                 'sisa_hari_sla' => $evaluasiSla['sisa_hari'] ?? null,
                 'sisa_teks' => $evaluasiSla['sisa_teks'] ?? ($evaluasiSla['sisa_hari'] !== null ? "Sisa {$evaluasiSla['sisa_hari']} hari kerja" : 'Sesuai SLA'),
                 'kondisi_sla' => $evaluasiSla['kondisi'],
@@ -91,7 +91,7 @@ class BerandaWargaController extends Controller
                     'lokasi' => $lap->kelurahan
                         ? "Kel. {$lap->kelurahan->nama}, Kec. {$lap->kelurahan->induk?->nama}".($lap->kelurahan->induk?->induk?->nama ? ", {$lap->kelurahan->induk->induk->nama}" : '')
                         : 'Jabodetabek',
-                    'foto_url' => $foto ? asset('storage/'.$foto->path) : null,
+                    'foto_url' => $foto ? $foto->url : null,
                     'sisa_hari_sla' => $evaluasiSla['sisa_hari'] ?? null,
                     'sisa_teks' => $evaluasiSla['sisa_teks'] ?? ($evaluasiSla['sisa_hari'] !== null ? "Sisa {$evaluasiSla['sisa_hari']} hari kerja" : 'Selesai'),
                     'kondisi_sla' => $evaluasiSla['kondisi'],
