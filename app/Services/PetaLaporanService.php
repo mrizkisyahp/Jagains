@@ -17,7 +17,7 @@ class PetaLaporanService
     /**
      * Mengambil daftar titik laporan untuk ditampilkan pada peta dan drawer list.
      * Hanya mengambil laporan yang TIDAK disembunyikan oleh moderasi (FR-ADM-06).
-     * Meniadakan seluruh data identitas pelapor (Zero-Knowledge Privacy BR-AKN-01 & FR-TKT-01).
+     * Meniadakan seluruh data identitas pelapor untuk privasi publik.
      *
      * @param  array{
      *     kategori_id?: ?int,

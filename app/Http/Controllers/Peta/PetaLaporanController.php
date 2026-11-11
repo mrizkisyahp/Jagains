@@ -50,7 +50,7 @@ class PetaLaporanController extends Controller
 
     /**
      * Endpoint API JSON sebaran titik penanda laporan berstatus SLA (FR-PET-01 s/d FR-PET-03).
-     * Meniadakan seluruh data identitas pelapor untuk privasi publik (Zero-Knowledge).
+     * Meniadakan seluruh data identitas pelapor untuk privasi publik.
      */
     public function ambilDataTitik(Request $request): JsonResponse
     {

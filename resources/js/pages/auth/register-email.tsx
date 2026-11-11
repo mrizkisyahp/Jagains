@@ -8,12 +8,6 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { toast } from '@/components/ui/toast';
 import GuestLayouts from '@/layouts/GuestLayout';
 import AuthSplitCard from '@/components/auth/AuthSplitCard';
@@ -22,7 +16,6 @@ import {
     ArrowRight,
     AlertTriangle,
     CheckCircle2,
-    Info,
 } from 'lucide-react';
 
 interface RegisterEmailProps {
@@ -57,7 +50,7 @@ export default function RegisterEmail({
             <AuthSplitCard
                 heroBadge="Pendaftaran Warga"
                 heroTitle="Kawal Transparansi Fasilitas Publik Kota."
-                heroDescription="Satu warga, satu suara terverifikasi. Lindungi identitas Anda dengan enkripsi Zero-Knowledge Privacy."
+                heroDescription="Satu warga, satu suara terverifikasi. Kawal perbaikan fasilitas publik lingkungan Anda secara aman."
                 title="Daftar Akun Warga"
                 subtitle="Masukkan alamat email aktif Anda. Kami akan mengirimkan tautan verifikasi sekali pakai untuk melanjutkan."
                 footer={
@@ -83,31 +76,12 @@ export default function RegisterEmail({
                     </div>
                 }
             >
-                {/* Zero Knowledge Privacy Badge & Alert Badges */}
-                <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger className="inline-flex cursor-help items-center gap-1.5 rounded-lg border border-border/80 bg-muted/40 px-2.5 py-1 text-caption-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
-                                <span className="font-semibold text-foreground">
-                                    Zero-Knowledge Privacy
-                                </span>
-                                <Info className="size-3 text-muted-foreground" />
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-xs text-xs">
-                                Alamat email Anda dinormalisasi dan dienkripsi
-                                satu arah dengan HMAC SHA-256. Kami tidak pernah
-                                menyimpan alamat email asli di basis data kami.
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
-                    {status && (
-                        <div className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-caption-xs font-semibold text-emerald-800 dark:text-emerald-300">
-                            <CheckCircle2 className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                            <span>Tautan verifikasi terkirim</span>
-                        </div>
-                    )}
-                </div>
+                {status && (
+                    <div className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-caption-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                        <CheckCircle2 className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                        <span>Tautan verifikasi terkirim</span>
+                    </div>
+                )}
 
                 {tokenError && (
                     <div

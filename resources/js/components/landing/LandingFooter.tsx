@@ -43,7 +43,7 @@ export default function LandingFooter() {
                             className="inline-flex items-center gap-1 text-primary transition-colors hover:text-foreground"
                         >
                             <ShieldCheck className="size-3.5" />
-                            <span>Zero-Knowledge Privacy</span>
+                            <span>Kebijakan Privasi</span>
                         </Link>
                     </div>
                 </div>

@@ -42,7 +42,7 @@ export default function ModalKonfirmasiLogin({
                     </p>
                     <p>
                         Dukungan dan tindakan Anda dienkripsi secara
-                        Zero-Knowledge. Identitas Anda tidak akan pernah
+                        aman. Identitas Anda tidak akan pernah
                         dipublikasikan di halaman ini.
                     </p>
                 </div>

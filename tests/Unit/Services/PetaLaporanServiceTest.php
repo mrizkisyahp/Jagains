@@ -190,7 +190,7 @@ class PetaLaporanServiceTest extends TestCase
         $this->assertContains('JAG-TEST-0001', $nomorList);
         $this->assertNotContains('JAG-TEST-HIDDEN', $nomorList);
 
-        // Pastikan TIDAK ADA atribut pelapor_id atau pelapor dalam data titik (Zero-Knowledge)
+        // Pastikan TIDAK ADA atribut pelapor_id atau pelapor dalam data titik (Privasi Anonim)
         foreach ($titikList as $titik) {
             $this->assertArrayNotHasKey('pelapor_id', $titik);
             $this->assertArrayNotHasKey('pelapor', $titik);

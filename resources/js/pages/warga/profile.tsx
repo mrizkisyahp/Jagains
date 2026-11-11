@@ -174,7 +174,7 @@ export default function Profile({ profil, flash }: ProfileProps) {
                             </dt>
                             <dd className="text-body-sm">
                                 <span className="font-semibold text-foreground">
-                                    Zero-Knowledge Email (HMAC SHA-256)
+                                    Enkripsi Email Terlindungi (HMAC SHA-256)
                                 </span>
                                 <p className="mt-0.5 text-caption-xs text-muted-foreground">
                                     Alamat email asli diacak permanen dan tidak

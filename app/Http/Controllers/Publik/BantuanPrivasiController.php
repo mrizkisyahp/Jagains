@@ -9,7 +9,7 @@ use Inertia\Response;
 class BantuanPrivasiController extends Controller
 {
     /**
-     * Menampilkan halaman bantuan publik dan transparansi kebijakan privasi Zero-Knowledge (FR-LAN-01).
+     * Menampilkan halaman bantuan publik dan transparansi kebijakan privasi.
      */
     public function index(): Response
     {

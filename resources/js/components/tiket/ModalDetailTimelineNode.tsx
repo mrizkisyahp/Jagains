@@ -559,7 +559,7 @@ export default function ModalDetailTimelineNode({
                                 </div>
                             )}
 
-                            {/* Daftar Suara Warga (Zero-Knowledge Privacy: Warga #1, #2, dll) */}
+                            {/* Daftar Suara Warga (Anonim: Warga #1, #2, dll) */}
                             <section className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <h4 className="flex items-center gap-2 text-body-base font-semibold text-foreground">

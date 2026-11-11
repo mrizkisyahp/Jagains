@@ -94,7 +94,7 @@ export default function DashboardPage({
                             colorClass="bg-amber-500/10 text-amber-600 dark:text-amber-400"
                         />
                         <DashboardMetricCard
-                            title="Zero-Knowledge Audit"
+                            title="Audit Privasi"
                             value="100%"
                             description="Seluruh metrik agregat terhitung tanpa mengekspos data pribadi"
                             icon={ShieldCheck}

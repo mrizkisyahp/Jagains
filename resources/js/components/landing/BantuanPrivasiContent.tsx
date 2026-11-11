@@ -31,11 +31,10 @@ export default function BantuanPrivasiContent({
                     Bantuan & Kebijakan Privasi
                 </h1>
                 <p className="text-body-base leading-relaxed text-muted-foreground">
-                    Platform Jagains dirancang dengan arsitektur{' '}
-                    <strong>Zero-Knowledge Privacy</strong>. Kami membuktikan
-                    akuntabilitas pelayanan publik tanpa pernah
-                    memperjualbelikan, mengumpulkan, atau mengekspos identitas
-                    pribadi warga pelapor.
+                    Platform Jagains dirancang dengan prinsip perlindungan
+                    privasi menyeluruh. Kami membuktikan akuntabilitas pelayanan
+                    publik tanpa pernah memperjualbelikan, mengumpulkan, atau
+                    mengekspos identitas pribadi warga pelapor.
                 </p>
             </div>
 

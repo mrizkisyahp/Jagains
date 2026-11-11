@@ -16,7 +16,7 @@ class TiketDetailService
     ) {}
 
     /**
-     * Mengambil seluruh data detail tiket laporan dengan sanitasi Zero-Knowledge Privacy (BR-AKN-01).
+     * Mengambil seluruh data detail tiket laporan dengan sanitasi privasi pelapor.
      * Meniadakan nama/email pelapor, pendukung, maupun pemberi suara kuorum dari payload respons.
      *
      * @return array<string, mixed>|null
