@@ -65,6 +65,10 @@ class InstansiTiketService
                 $query->whereIn('status', ['DITERIMA', 'DISURVEI']);
             } elseif ($status === 'PENGERJAAN') {
                 $query->whereIn('status', ['TERJADWAL_ANGGARAN', 'DIKERJAKAN']);
+            } elseif ($status === 'AKTIF' || $status === 'TIKET_AKTIF') {
+                $query->whereNotIn('status', ['DITOLAK', 'TERTUTUP_WARGA', 'TERTUTUP_AUDITOR']);
+            } elseif ($status === 'SELESAI' || $status === 'TIKET_SELESAI') {
+                $query->whereIn('status', ['TERTUTUP_WARGA', 'TERTUTUP_AUDITOR']);
             } elseif ($status === 'SELESAI_VERIFIKASI') {
                 $query->whereIn('status', ['MENUNGGU_VERIFIKASI', 'TERTUTUP_WARGA', 'TERTUTUP_AUDITOR']);
             } elseif ($status === 'SENGKETA') {
@@ -85,6 +89,10 @@ class InstansiTiketService
 
         if (! empty($filters['kategori_id'])) {
             $query->where('kategori_id', $filters['kategori_id']);
+        }
+
+        if (! empty($filters['kelurahan_id'])) {
+            $query->where('kelurahan_id', $filters['kelurahan_id']);
         }
 
         // Urutan default: Urgensi SLA tercepat (paling mendesak) lebih dahulu, lalu tanggal tiket

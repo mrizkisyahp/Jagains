@@ -4,33 +4,43 @@ import Logo from '@/components/common/Logo';
 
 export default function LandingFooter() {
     return (
-        <footer className="border-t border-border bg-background py-12 sm:py-16 text-muted-foreground text-body-sm">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <footer className="border-t border-border bg-background py-12 text-body-sm text-muted-foreground sm:py-16">
+            <div className="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
                     {/* Brand & Slogan */}
                     <div className="space-y-2">
                         <Link href="/" className="flex items-center">
                             <Logo />
                         </Link>
-                        <p className="text-caption-xs text-muted-foreground max-w-sm">
-                            Platform Pengawasan & Transparansi Penanganan Fasilitas Publik Berbasis Kuorum Warga Kota Depok.
+                        <p className="max-w-sm text-caption-xs text-muted-foreground">
+                            Platform Pengawasan & Transparansi Penanganan
+                            Fasilitas Publik Berbasis Kuorum Warga Jabodetabek.
                         </p>
                     </div>
 
                     {/* Quick Links */}
                     <div className="flex flex-wrap items-center gap-6 text-caption-xs font-semibold">
-                        <Link href="/#sebaran-peta" className="hover:text-foreground transition-colors">
+                        <Link
+                            href="/#sebaran-peta"
+                            className="transition-colors hover:text-foreground"
+                        >
                             Peta Laporan
                         </Link>
-                        <Link href="/warga/lapor" className="hover:text-foreground transition-colors">
+                        <Link
+                            href="/warga/lapor"
+                            className="transition-colors hover:text-foreground"
+                        >
                             Lapor Fasilitas
                         </Link>
-                        <Link href="/login" className="hover:text-foreground transition-colors">
+                        <Link
+                            href="/login"
+                            className="transition-colors hover:text-foreground"
+                        >
                             Masuk Petugas & Warga
                         </Link>
                         <Link
                             href="/bantuan"
-                            className="hover:text-foreground transition-colors inline-flex items-center gap-1 text-primary"
+                            className="inline-flex items-center gap-1 text-primary transition-colors hover:text-foreground"
                         >
                             <ShieldCheck className="size-3.5" />
                             <span>Zero-Knowledge Privacy</span>
@@ -39,12 +49,13 @@ export default function LandingFooter() {
                 </div>
 
                 {/* Bottom Disclaimer */}
-                <div className="pt-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-caption-xs text-muted-foreground">
+                <div className="flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-6 text-caption-xs text-muted-foreground sm:flex-row">
                     <p>
-                        &copy; 2026 Pemerintah Kota Depok & Tim Jagains. Seluruh hak cipta dilindungi.
+                        &copy; 2026 Tim Jagains. Seluruh hak cipta dilindungi.
                     </p>
                     <p className="text-center sm:text-right">
-                        Dirancang sesuai UU Perlindungan Data Pribadi (UU PDP). Identitas pelapor dilindungi penuh.
+                        Dirancang sesuai UU Perlindungan Data Pribadi (UU PDP).
+                        Identitas pelapor dilindungi penuh.
                     </p>
                 </div>
             </div>

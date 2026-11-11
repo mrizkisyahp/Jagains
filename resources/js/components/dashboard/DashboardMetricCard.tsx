@@ -17,12 +17,12 @@ export default function DashboardMetricCard({
     colorClass,
 }: DashboardMetricCardProps) {
     return (
-        <Card className="p-5 sm:p-6 rounded-2xl border border-border bg-card space-y-3">
+        <Card className="space-y-3 rounded-2xl border border-border bg-card p-5 sm:p-6">
             <div className="flex items-center justify-between">
-                <span className="text-caption-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <span className="text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                     {title}
                 </span>
-                <div className={`p-2 rounded-xl ${colorClass}`}>
+                <div className={`rounded-xl p-2 ${colorClass}`}>
                     <Icon className="size-4" />
                 </div>
             </div>
@@ -30,7 +30,7 @@ export default function DashboardMetricCard({
                 <div className="font-display text-3xl font-extrabold text-foreground">
                     {value}
                 </div>
-                <p className="text-caption-xs text-muted-foreground leading-relaxed">
+                <p className="text-caption-xs leading-relaxed text-muted-foreground">
                     {description}
                 </p>
             </div>

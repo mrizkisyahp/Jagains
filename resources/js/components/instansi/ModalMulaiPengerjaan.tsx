@@ -66,7 +66,9 @@ export default function ModalMulaiPengerjaan({
     const [catatan, setCatatan] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submissionError, setSubmissionError] = useState<string | null>(null);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>(
+        {},
+    );
 
     // Rumus Haversine Distance (Meter)
     const hitungJarakHaversine = (
@@ -217,7 +219,8 @@ export default function ModalMulaiPengerjaan({
 
             const img = new Image();
             img.onload = () => {
-                const canvas = canvasRef.current || document.createElement('canvas');
+                const canvas =
+                    canvasRef.current || document.createElement('canvas');
                 const maxDim = 1280;
                 let w = img.width;
                 let h = img.height;
@@ -265,7 +268,8 @@ export default function ModalMulaiPengerjaan({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!capturedFoto || !petugasLat || !petugasLng || !isGeofenceValid) return;
+        if (!capturedFoto || !petugasLat || !petugasLng || !isGeofenceValid)
+            return;
 
         setSubmissionError(null);
         setFieldErrors({});
@@ -350,7 +354,10 @@ export default function ModalMulaiPengerjaan({
                                 Mulai Pengerjaan Fisik
                             </DialogTitle>
                             <DialogDescription className="text-body-base text-muted-foreground">
-                                Ambil foto kondisi lapangan sebelum pekerjaan dimulai sebagai dokumentasi awal. Pastikan berada dalam batas radius 50 meter dari titik kerusakan.
+                                Ambil foto kondisi lapangan sebelum pekerjaan
+                                dimulai sebagai dokumentasi awal. Pastikan
+                                berada dalam batas radius 50 meter dari titik
+                                kerusakan.
                             </DialogDescription>
                         </DialogHeader>
 
@@ -361,7 +368,12 @@ export default function ModalMulaiPengerjaan({
                                     {Object.entries(fieldErrors)
                                         .filter(
                                             ([name]) =>
-                                                !['catatan', 'foto', 'lintang', 'bujur'].includes(name),
+                                                ![
+                                                    'catatan',
+                                                    'foto',
+                                                    'lintang',
+                                                    'bujur',
+                                                ].includes(name),
                                         )
                                         .flatMap(([name, messages]) =>
                                             messages.map((message, index) => (
@@ -395,13 +407,18 @@ export default function ModalMulaiPengerjaan({
                                     disabled={isLocating}
                                     className="h-10 text-body-medium"
                                 >
-                                    <RefreshCw className="size-4" data-icon="inline-start" />
+                                    <RefreshCw
+                                        className="size-4"
+                                        data-icon="inline-start"
+                                    />
                                     Perbarui lokasi
                                 </Button>
                             </div>
                             <p className="text-body-sm text-muted-foreground">
-                                Titik kerusakan: {Number(laporan.lintang).toFixed(6)},{' '}
-                                {Number(laporan.bujur).toFixed(6)}. Batas toleransi radius 50 meter.
+                                Titik kerusakan:{' '}
+                                {Number(laporan.lintang).toFixed(6)},{' '}
+                                {Number(laporan.bujur).toFixed(6)}. Batas
+                                toleransi radius 50 meter.
                             </p>
                             {gpsError ? (
                                 <Alert variant="destructive">
@@ -420,12 +437,15 @@ export default function ModalMulaiPengerjaan({
                                 </p>
                             ) : jarakMeter === null ? (
                                 <p className="text-body-sm text-muted-foreground">
-                                    Posisi belum tersedia. Perbarui lokasi untuk memeriksa jarak.
+                                    Posisi belum tersedia. Perbarui lokasi untuk
+                                    memeriksa jarak.
                                 </p>
                             ) : (
                                 <Alert
                                     variant={
-                                        isGeofenceValid ? 'default' : 'destructive'
+                                        isGeofenceValid
+                                            ? 'default'
+                                            : 'destructive'
                                     }
                                 >
                                     {isGeofenceValid ? (
@@ -439,7 +459,8 @@ export default function ModalMulaiPengerjaan({
                                             : 'Posisi di luar batas jarak'}
                                     </AlertTitle>
                                     <AlertDescription className="text-body-base">
-                                        Jarak dari lokasi kerusakan: {jarakMeter} meter.
+                                        Jarak dari lokasi kerusakan:{' '}
+                                        {jarakMeter} meter.
                                         {!isGeofenceValid &&
                                             ' Dekati titik laporan kerusakan, lalu perbarui lokasi.'}
                                     </AlertDescription>
@@ -453,7 +474,8 @@ export default function ModalMulaiPengerjaan({
                             className="flex flex-col gap-2.5"
                         >
                             <h3 className="text-body-medium font-semibold">
-                                Foto kondisi sebelum pengerjaan <span className="text-destructive">*</span>
+                                Foto kondisi sebelum pengerjaan{' '}
+                                <span className="text-destructive">*</span>
                             </h3>
 
                             {cameraError ? (
@@ -478,8 +500,10 @@ export default function ModalMulaiPengerjaan({
                                             <Button
                                                 type="button"
                                                 variant="secondary"
-                                                onClick={() => fileInputRef.current?.click()}
-                                                className="h-10 text-body-medium shadow-none gap-1.5"
+                                                onClick={() =>
+                                                    fileInputRef.current?.click()
+                                                }
+                                                className="h-10 gap-1.5 text-body-medium shadow-none"
                                             >
                                                 <Upload className="size-4" />
                                                 Ambil dari file
@@ -504,7 +528,8 @@ export default function ModalMulaiPengerjaan({
                                                 muted
                                                 className={cn(
                                                     'size-full object-cover',
-                                                    !hasActiveStream && 'hidden',
+                                                    !hasActiveStream &&
+                                                        'hidden',
                                                 )}
                                             />
                                             {!hasActiveStream && (
@@ -541,14 +566,19 @@ export default function ModalMulaiPengerjaan({
                                             onClick={handleRetake}
                                             className="h-10 text-body-medium shadow-none"
                                         >
-                                            <RefreshCw className="size-4" data-icon="inline-start" />
+                                            <RefreshCw
+                                                className="size-4"
+                                                data-icon="inline-start"
+                                            />
                                             Ambil ulang foto
                                         </Button>
                                         <Button
                                             type="button"
                                             variant="secondary"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="h-10 text-body-medium shadow-none gap-1.5"
+                                            onClick={() =>
+                                                fileInputRef.current?.click()
+                                            }
+                                            className="h-10 gap-1.5 text-body-medium shadow-none"
                                         >
                                             <Upload className="size-4" />
                                             Ganti dari file
@@ -560,8 +590,10 @@ export default function ModalMulaiPengerjaan({
                                             type="button"
                                             variant="outline"
                                             onClick={handleSnap}
-                                            disabled={!hasActiveStream || isLocating}
-                                            className="h-10 text-body-medium shadow-none gap-1.5"
+                                            disabled={
+                                                !hasActiveStream || isLocating
+                                            }
+                                            className="h-10 gap-1.5 text-body-medium shadow-none"
                                         >
                                             <Camera className="size-4" />
                                             Ambil foto sebelum pengerjaan
@@ -569,8 +601,10 @@ export default function ModalMulaiPengerjaan({
                                         <Button
                                             type="button"
                                             variant="secondary"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="h-10 text-body-medium shadow-none gap-1.5"
+                                            onClick={() =>
+                                                fileInputRef.current?.click()
+                                            }
+                                            className="h-10 gap-1.5 text-body-medium shadow-none"
                                         >
                                             <Upload className="size-4" />
                                             Ambil dari file

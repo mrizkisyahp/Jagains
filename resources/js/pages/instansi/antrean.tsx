@@ -2,9 +2,9 @@ import { cn } from '@/lib/utils';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
-import AntreanTiketTable, {
+import AntreanTiketCards, {
     LaporanItem,
-} from '@/components/instansi/AntreanTiketTable';
+} from '@/components/instansi/AntreanTiketCards';
 import AntreanFilterBar from '@/components/instansi/AntreanFilterBar';
 import ModalTerimaTiket from '@/components/instansi/ModalTerimaTiket';
 import ModalAlihkanTiket from '@/components/instansi/ModalAlihkanTiket';
@@ -53,6 +53,7 @@ interface AntreanPageProps {
         status?: string;
         q?: string;
         kategori_id?: string | number;
+        kelurahan_id?: string | number;
         per_page?: string | number;
     };
     ringkasan: {
@@ -64,6 +65,7 @@ interface AntreanPageProps {
         sengketa: number;
     };
     kategoriList: Array<{ id: number; nama: string }>;
+    kelurahanList?: Array<{ id: number; nama: string }>;
     instansiList: Array<{ id: number; nama: string; singkatan: string }>;
     instansiSaya?: {
         id: number;
@@ -75,12 +77,13 @@ interface AntreanPageProps {
 export default function AntreanInstansiPage({
     antrean,
     filters,
-    ringkasan,
     kategoriList,
+    kelurahanList = [],
     instansiList,
 }: AntreanPageProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [loadError, setLoadError] = useState(false);
+
     const visitOptions = {
         preserveState: true,
         preserveScroll: true,
@@ -95,6 +98,7 @@ export default function AntreanInstansiPage({
             return false;
         },
     };
+
     useEffect(() => {
         if (!filters.per_page || filters.status === 'verifikasi') {
             router.get(
@@ -131,10 +135,11 @@ export default function AntreanInstansiPage({
     const [modalResponsSengketaOpen, setModalResponsSengketaOpen] =
         useState(false);
 
-    // Handler Filter Teks / Kategori
+    // Handler Filter Teks / Kategori / Lokasi
     const handleFilterChange = (newFilters: {
         q?: string;
         kategori_id?: string;
+        kelurahan_id?: string;
         status?: string;
     }) => {
         router.get(
@@ -162,8 +167,9 @@ export default function AntreanInstansiPage({
             targetPage < 1 ||
             targetPage > antrean.last_page ||
             targetPage === antrean.current_page
-        )
+        ) {
             return;
+        }
         router.get(
             antreanRoute.url(),
             {
@@ -186,6 +192,7 @@ export default function AntreanInstansiPage({
     ]
         .filter((page) => page > 0 && page <= lastPage)
         .sort((a, b) => a - b);
+
     const handlePageSizeChange = (value: string | null) => {
         if (!value) return;
         router.get(
@@ -195,7 +202,7 @@ export default function AntreanInstansiPage({
         );
     };
 
-    // Dispatcher Aksi dari Baris Tabel
+    // Dispatcher Aksi dari Kartu Laporan
     const handleTriggerAksi = (aksi: string, item: LaporanItem) => {
         setSelectedTiket(item);
         switch (aksi) {
@@ -239,54 +246,21 @@ export default function AntreanInstansiPage({
     };
 
     return (
-        <div className="flex w-full min-w-0 flex-col gap-5 pb-6">
-            <Head title="Antrean tiket" />
-            <header className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-display-sm font-display font-semibold tracking-tight">
-                            Antrean tiket
-                        </h1>
-                        <p className="mt-1 text-body-sm text-muted-foreground">
-                            Laporan masuk dari warga yang menunggu untuk ditindaklanjuti oleh instansi Anda.
-                        </p>
-                    </div>                                     
-            </header>
-            
+        <div className="flex w-full min-w-0 flex-col gap-6 pb-20">
+            <Head title="Daftar Laporan - Jagains" />
+
+            {/* Filter & Search Bar Sesuai Wireframe */}
             <AntreanFilterBar
                 key={filters.q ?? ''}
                 filters={filters}
                 kategoriList={kategoriList}
+                kelurahanList={kelurahanList}
                 onFilterChange={handleFilterChange}
                 onReset={handleResetFilters}
                 isLoading={isLoading}
             />
-            <dl
-                className="grid grid-cols-2 overflow-hidden rounded-xl border border-border bg-card sm:grid-cols-3 xl:grid-cols-6"
-                aria-label="Ringkasan tiket instansi"
-            >
-                {(
-                    [
-                        ['Semua tiket', ringkasan.semua],
-                        ['Perlu respons', ringkasan.perlu_respons],
-                        ['Survei & anggaran', ringkasan.survei_anggaran],
-                        ['Pengerjaan', ringkasan.pengerjaan],
-                        ['Verifikasi warga', ringkasan.verifikasi],
-                        ['Sengketa & audit', ringkasan.sengketa],
-                    ] as const
-                ).map(([label, count]) => (
-                    <div
-                        key={label}
-                        className="flex flex-col gap-1 border-r border-b border-border px-4 py-3 last:border-r-0 xl:border-b-0"
-                    >
-                        <dt className="text-body-sm text-muted-foreground">
-                            {label}
-                        </dt>
-                        <dd className="font-display text-2xl font-semibold text-foreground tabular-nums">
-                            {count.toLocaleString('id-ID')}
-                        </dd>
-                    </div>
-                ))}
-            </dl>
+
+            {/* Notifikasi jika load error */}
             {loadError && (
                 <Alert variant="destructive">
                     <AlertDescription>
@@ -295,165 +269,182 @@ export default function AntreanInstansiPage({
                     </AlertDescription>
                 </Alert>
             )}
+
+            {/* Daftar Kartu Laporan Sesuai Wireframe (Menggantikan Tabel) */}
             <section
-                aria-label="Daftar tiket"
+                aria-label="Daftar Laporan"
                 aria-busy={isLoading}
-                className="min-w-0 overflow-hidden rounded-xl border border-border bg-card"
+                className="min-w-0 space-y-4"
             >
-                <AntreanTiketTable
+                <AntreanTiketCards
                     items={antrean.data}
                     onAksi={handleTriggerAksi}
                     hasFilters={Boolean(
-                        filters.status || filters.q || filters.kategori_id,
+                        filters.status ||
+                        filters.q ||
+                        filters.kategori_id ||
+                        filters.kelurahan_id,
                     )}
                     onReset={handleResetFilters}
                 />
-                <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-border px-4 py-3">
-                    <div className="flex flex-wrap items-center gap-4">
-                        <p className="text-body-sm text-muted-foreground">
-                            {antrean.from ?? 0}–{antrean.to ?? 0} dari{' '}
-                            <span className="font-medium text-foreground">
-                                {antrean.total.toLocaleString('id-ID')}
-                            </span>{' '}
-                            tiket
-                        </p>
-                        <Field
-                            orientation="horizontal"
-                            className="w-auto items-center gap-2"
-                        >
-                            <FieldLabel
-                                htmlFor="jumlah-baris"
-                                className="text-body-sm font-normal text-muted-foreground"
+
+                {/* Footer Paginasi */}
+                {antrean.total > 0 && (
+                    <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-border/70 pt-4">
+                        <div className="flex flex-wrap items-center gap-4">
+                            <p className="text-body-sm text-muted-foreground">
+                                {antrean.from ?? 0}–{antrean.to ?? 0} dari{' '}
+                                <span className="font-semibold text-foreground">
+                                    {antrean.total.toLocaleString('id-ID')}
+                                </span>{' '}
+                                tiket
+                            </p>
+                            <Field
+                                orientation="horizontal"
+                                className="w-auto items-center gap-2"
                             >
-                                Baris per halaman
-                            </FieldLabel>
-                            <Select
-                                value={String(antrean.per_page)}
-                                onValueChange={handlePageSizeChange}
-                            >
-                                <SelectTrigger
-                                    id="jumlah-baris"
-                                    className="w-20 shadow-none data-[size=default]:h-11 md:data-[size=default]:h-9"
+                                <FieldLabel
+                                    htmlFor="jumlah-baris"
+                                    className="text-body-sm font-normal text-muted-foreground"
                                 >
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {[
-                                            ...new Set([
-                                                5,
-                                                10,
-                                                15,
-                                                25,
-                                                antrean.per_page,
-                                            ]),
-                                        ]
-                                            .sort((a, b) => a - b)
-                                            .map((size) => (
-                                                <SelectItem
-                                                    key={size}
-                                                    value={String(size)}
-                                                >
-                                                    {size}
-                                                </SelectItem>
-                                            ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </Field>
-                    </div>
-                    <nav
-                        aria-label="Halaman antrean tiket"
-                        className="flex items-center gap-1"
-                    >
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Halaman pertama"
-                            disabled={antrean.current_page <= 1 || isLoading}
-                            onClick={() => handlePageChange(1)}
-                            className="hidden size-11 sm:inline-flex md:size-9"
+                                    Baris:
+                                </FieldLabel>
+                                <Select
+                                    value={String(antrean.per_page)}
+                                    onValueChange={handlePageSizeChange}
+                                >
+                                    <SelectTrigger
+                                        id="jumlah-baris"
+                                        className="h-8 w-18 rounded-lg text-caption-xs shadow-none"
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {[
+                                                ...new Set([
+                                                    5,
+                                                    10,
+                                                    15,
+                                                    25,
+                                                    antrean.per_page,
+                                                ]),
+                                            ]
+                                                .sort((a, b) => a - b)
+                                                .map((size) => (
+                                                    <SelectItem
+                                                        key={size}
+                                                        value={String(size)}
+                                                    >
+                                                        {size}
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                        </div>
+
+                        {/* Kontrol Halaman Navigasi */}
+                        <nav
+                            aria-label="Halaman antrean tiket"
+                            className="flex items-center gap-1"
                         >
-                            <ChevronsLeft />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            aria-label="Halaman sebelumnya"
-                            disabled={antrean.current_page <= 1 || isLoading}
-                            onClick={() =>
-                                handlePageChange(antrean.current_page - 1)
-                            }
-                            className="size-11 shadow-none md:size-9"
-                        >
-                            <ChevronLeft />
-                        </Button>
-                        {pageNumbers.map((page, index) => (
-                            <span
-                                key={page}
-                                className={cn(
-                                    'flex items-center gap-1',
-                                    Math.abs(page - antrean.current_page) > 1 &&
-                                        'hidden sm:flex',
-                                )}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Halaman pertama"
+                                disabled={
+                                    antrean.current_page <= 1 || isLoading
+                                }
+                                onClick={() => handlePageChange(1)}
+                                className="hidden size-8 cursor-pointer rounded-lg sm:inline-flex"
                             >
-                                {index > 0 &&
-                                    page - pageNumbers[index - 1] > 1 && (
-                                        <span className="px-1 text-body-sm text-muted-foreground">
-                                            …
-                                        </span>
+                                <ChevronsLeft className="size-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                aria-label="Halaman sebelumnya"
+                                disabled={
+                                    antrean.current_page <= 1 || isLoading
+                                }
+                                onClick={() =>
+                                    handlePageChange(antrean.current_page - 1)
+                                }
+                                className="size-8 cursor-pointer rounded-lg shadow-none"
+                            >
+                                <ChevronLeft className="size-4" />
+                            </Button>
+                            {pageNumbers.map((page, index) => (
+                                <span
+                                    key={page}
+                                    className={cn(
+                                        'flex items-center gap-1',
+                                        Math.abs(page - antrean.current_page) >
+                                            1 && 'hidden sm:flex',
                                     )}
-                                <Button
-                                    variant={
-                                        page === antrean.current_page
-                                            ? 'secondary'
-                                            : 'ghost'
-                                    }
-                                    aria-current={
-                                        page === antrean.current_page
-                                            ? 'page'
-                                            : undefined
-                                    }
-                                    aria-label={`Halaman ${page}`}
-                                    disabled={isLoading}
-                                    onClick={() => handlePageChange(page)}
-                                    className="size-11 p-0 tabular-nums shadow-none md:size-9"
                                 >
-                                    {page}
-                                </Button>
-                            </span>
-                        ))}
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            aria-label="Halaman berikutnya"
-                            disabled={
-                                antrean.current_page >= lastPage || isLoading
-                            }
-                            onClick={() =>
-                                handlePageChange(antrean.current_page + 1)
-                            }
-                            className="size-11 shadow-none md:size-9"
-                        >
-                            <ChevronRight />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Halaman terakhir"
-                            disabled={
-                                antrean.current_page >= lastPage || isLoading
-                            }
-                            onClick={() => handlePageChange(lastPage)}
-                            className="hidden size-11 sm:inline-flex md:size-9"
-                        >
-                            <ChevronsRight />
-                        </Button>
-                    </nav>
-                </footer>
+                                    {index > 0 &&
+                                        page - pageNumbers[index - 1] > 1 && (
+                                            <span className="px-1 text-body-sm text-muted-foreground">
+                                                …
+                                            </span>
+                                        )}
+                                    <Button
+                                        variant={
+                                            page === antrean.current_page
+                                                ? 'secondary'
+                                                : 'ghost'
+                                        }
+                                        aria-current={
+                                            page === antrean.current_page
+                                                ? 'page'
+                                                : undefined
+                                        }
+                                        aria-label={`Halaman ${page}`}
+                                        disabled={isLoading}
+                                        onClick={() => handlePageChange(page)}
+                                        className="size-8 cursor-pointer rounded-lg p-0 text-caption-xs font-semibold tabular-nums shadow-none"
+                                    >
+                                        {page}
+                                    </Button>
+                                </span>
+                            ))}
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                aria-label="Halaman berikutnya"
+                                disabled={
+                                    antrean.current_page >= lastPage ||
+                                    isLoading
+                                }
+                                onClick={() =>
+                                    handlePageChange(antrean.current_page + 1)
+                                }
+                                className="size-8 cursor-pointer rounded-lg shadow-none"
+                            >
+                                <ChevronRight className="size-4" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Halaman terakhir"
+                                disabled={
+                                    antrean.current_page >= lastPage ||
+                                    isLoading
+                                }
+                                onClick={() => handlePageChange(lastPage)}
+                                className="hidden size-8 cursor-pointer rounded-lg sm:inline-flex"
+                            >
+                                <ChevronsRight className="size-4" />
+                            </Button>
+                        </nav>
+                    </footer>
+                )}
             </section>
 
-            {/* Modal Dialog Aksi-Aksi Operasional */}
+            {/* Modal Dialog Aksi-Aksi Operasional Tetap Utuh */}
             <ModalTerimaTiket
                 key={`ModalTerimaTiket-${selectedTiket?.id ?? 'none'}`}
                 open={modalTerimaOpen}
@@ -547,7 +538,10 @@ export default function AntreanInstansiPage({
 }
 
 AntreanInstansiPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Antrean tiket" breadcrumb="Instansi">
+    <InternalLayout
+        title="Daftar Laporan"
+        breadcrumb="Instansi > Daftar Laporan"
+    >
         {page}
     </InternalLayout>
 );

@@ -36,12 +36,14 @@ interface ModalUsulanTolakProps {
         nomor_tiket: string;
         judul: string;
     } | null;
+    onSuccess?: () => void;
 }
 
 export default function ModalUsulanTolak({
     open,
     onClose,
     laporan,
+    onSuccess,
 }: ModalUsulanTolakProps) {
     const [alasanBaku, setAlasanBaku] = useState<string>(
         'bukan_fasilitas_publik',
@@ -94,7 +96,11 @@ export default function ModalUsulanTolak({
                 );
                 onClose();
                 setKeterangan('');
-                router.reload({ only: ['antrean', 'ringkasan'] });
+                if (onSuccess) {
+                    onSuccess();
+                } else {
+                    router.reload({ only: ['antrean', 'ringkasan'] });
+                }
             } else {
                 setFieldErrors(
                     Object.fromEntries(

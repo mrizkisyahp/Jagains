@@ -19,7 +19,7 @@ class CekEskalasiSlaCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Memeriksa tiket yang melewati batas waktu SLA dan membuat eskalasi otomatis ke meja Auditor Independen (FR-ESK-01, BR-SLA-02, BR-SLA-05)';
+    protected $description = 'Memeriksa tiket yang melewati batas waktu SLA dan membuat eskalasi otomatis ke meja Auditor Independen';
 
     /**
      * Execute the console command.

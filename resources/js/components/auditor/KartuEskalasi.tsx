@@ -85,17 +85,23 @@ export default function KartuEskalasi({
                 {/* Header: Pemicu Badge & Waktu Masuk */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
                     <div className="flex items-center gap-1.5">
-                        <Badge variant={badge.variant} className="gap-1 text-caption-xs font-semibold">
+                        <Badge
+                            variant={badge.variant}
+                            className="gap-1 text-caption-xs font-semibold"
+                        >
                             <BadgeIcon className="size-3" />
                             {badge.label}
                         </Badge>
                         {eskalasi.tahap && (
-                            <Badge variant="outline" className="text-caption-xs font-normal">
+                            <Badge
+                                variant="outline"
+                                className="text-caption-xs font-normal"
+                            >
                                 Tahap {eskalasi.tahap}
                             </Badge>
                         )}
                     </div>
-                    <span className="text-caption-xs tabular-nums text-muted-foreground">
+                    <span className="text-caption-xs text-muted-foreground tabular-nums">
                         {formattedDate}
                     </span>
                 </div>
@@ -115,20 +121,20 @@ export default function KartuEskalasi({
                     <h3 className="mt-1 line-clamp-1 text-body-sm font-semibold text-foreground">
                         {laporan.judul}
                     </h3>
-                    <p className="mt-1 line-clamp-2 text-caption-sm text-muted-foreground">
+                    <p className="text-caption-sm mt-1 line-clamp-2 text-muted-foreground">
                         {laporan.keterangan}
                     </p>
                 </div>
 
                 {/* Lokasi & Instansi */}
-                <div className="mt-3 space-y-1.5 rounded-lg border border-border/60 bg-muted/30 p-2.5 text-caption-sm">
+                <div className="text-caption-sm mt-3 space-y-1.5 rounded-lg border border-border/60 bg-muted/30 p-2.5">
                     <div className="flex items-center gap-2 text-foreground">
                         <Building2 className="size-3.5 shrink-0 text-muted-foreground" />
                         <span className="truncate font-medium">
                             {laporan.instansi?.nama || 'Instansi Terkait'}
                         </span>
                         {laporan.instansi?.singkatan && (
-                            <span className="rounded bg-muted px-1.5 py-0.2 text-[10px] font-semibold text-muted-foreground">
+                            <span className="py-0.2 rounded bg-muted px-1.5 text-[10px] font-semibold text-muted-foreground">
                                 {laporan.instansi.singkatan}
                             </span>
                         )}
@@ -146,7 +152,11 @@ export default function KartuEskalasi({
                     <div className="mt-2.5 flex items-center gap-2 rounded-md border border-destructive/20 bg-destructive/10 px-2.5 py-1.5 text-caption-xs font-medium text-destructive">
                         <Clock className="size-3.5 shrink-0" />
                         <span>
-                            Terlambat <strong className="tabular-nums">{eskalasi.hari_terlambat} hari kerja</strong> dari SLA.
+                            Terlambat{' '}
+                            <strong className="tabular-nums">
+                                {eskalasi.hari_terlambat} hari kerja
+                            </strong>{' '}
+                            dari SLA.
                         </span>
                     </div>
                 )}

@@ -67,7 +67,7 @@ export default function AuditorModalDetailAuditLog({
                 <div className="space-y-4 pt-2">
                     {/* Meta Grid */}
                     <div className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-muted/30 p-4 text-caption-xs sm:grid-cols-2">
-                        <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex min-w-0 items-center gap-2">
                             <User
                                 className="size-3.5 shrink-0 text-muted-foreground"
                                 aria-hidden="true"
@@ -75,13 +75,13 @@ export default function AuditorModalDetailAuditLog({
                             <span className="text-muted-foreground">
                                 Pelaku:
                             </span>
-                            <strong className="font-semibold text-foreground truncate">
+                            <strong className="truncate font-semibold text-foreground">
                                 {log.pelaku?.username ?? 'Sistem / Anonim'}
                             </strong>
                             {log.pelaku?.peran && (
                                 <Badge
                                     variant="outline"
-                                    className="text-[10px] font-semibold uppercase shrink-0"
+                                    className="shrink-0 text-[10px] font-semibold uppercase"
                                 >
                                     {log.pelaku.peran}
                                 </Badge>
@@ -105,19 +105,19 @@ export default function AuditorModalDetailAuditLog({
                         </div>
 
                         {log.laporan && (
-                            <div className="col-span-1 flex items-center gap-2 sm:col-span-2 min-w-0">
+                            <div className="col-span-1 flex min-w-0 items-center gap-2 sm:col-span-2">
                                 <FileText
                                     className="size-3.5 shrink-0 text-muted-foreground"
                                     aria-hidden="true"
                                 />
-                                <span className="text-muted-foreground shrink-0">
+                                <span className="shrink-0 text-muted-foreground">
                                     Tiket Terkait:
                                 </span>
                                 <a
                                     href={`/tiket/${log.laporan.nomor_tiket}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="font-mono font-bold text-primary hover:underline shrink-0"
+                                    className="shrink-0 font-mono font-bold text-primary hover:underline"
                                 >
                                     {log.laporan.nomor_tiket}
                                 </a>
@@ -164,7 +164,7 @@ export default function AuditorModalDetailAuditLog({
                         </span>
                         <p className="mt-1.5 text-body-sm leading-relaxed text-foreground">
                             {log.alasan || (
-                                <span className="italic text-muted-foreground">
+                                <span className="text-muted-foreground italic">
                                     Tidak ada catatan alasan yang dilampirkan.
                                 </span>
                             )}

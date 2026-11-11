@@ -36,9 +36,9 @@ class WilayahService
     }
 
     /**
-     * Mengambil seluruh daftar kelurahan beserta hierarki kecamatan dan kotanya.
+     * Mengambil seluruh daftar kelurahan se-Jabodetabek beserta hierarki kecamatan dan kotanya.
      */
-    public function getDaftarKelurahanDepok(): array
+    public function getDaftarKelurahan(): array
     {
         return Wilayah::where('tingkat', 'kelurahan')
             ->with(['induk.induk'])
@@ -66,5 +66,13 @@ class WilayahService
                 ];
             })
             ->toArray();
+    }
+
+    /**
+     * Alias backward-compatible untuk getDaftarKelurahan.
+     */
+    public function getDaftarKelurahanDepok(): array
+    {
+        return $this->getDaftarKelurahan();
     }
 }

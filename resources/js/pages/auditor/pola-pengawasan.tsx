@@ -2,13 +2,7 @@ import { ReactNode, useMemo, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
 import { PolaPengawasanData } from '@/types/auditor';
-import {
-    ArrowRight,
-    ArrowRightLeft,
-    Building2,
-    Search,
-    X,
-} from 'lucide-react';
+import { ArrowRight, ArrowRightLeft, Building2, Search, X } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -101,8 +95,8 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                         Pola Pengawasan & Analitik Kepatuhan
                     </h2>
                     <p className="text-body-sm text-muted-foreground">
-                        Pemantauan pola pengalihan tiket antar-instansi
-                        (<em>inter-agency bounce</em>), evaluasi rasio sengketa
+                        Pemantauan pola pengalihan tiket antar-instansi (
+                        <em>inter-agency bounce</em>), evaluasi rasio sengketa
                         warga, dan riwayat intervensi putusan Auditor
                         Independen.
                     </p>
@@ -123,16 +117,12 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                                 idx < 2
                                     ? 'border-b border-border lg:border-b-0'
                                     : ''
-                            } ${
-                                idx < 3
-                                    ? 'lg:border-r lg:border-border'
-                                    : ''
-                            }`}
+                            } ${idx < 3 ? 'lg:border-r lg:border-border' : ''}`}
                         >
                             <dt className="text-caption-sm text-muted-foreground">
                                 {metric.label}
                             </dt>
-                            <dd className="text-display-sm font-display font-semibold tabular-nums text-foreground">
+                            <dd className="text-display-sm font-display font-semibold text-foreground tabular-nums">
                                 {metric.value}
                             </dd>
                             <span className="text-caption-xs text-muted-foreground">
@@ -150,9 +140,9 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                         <h3 className="text-body-medium font-semibold text-foreground">
                             Evaluasi Kepatuhan & Rasio Sengketa per Instansi
                         </h3>
-                        <p className="mt-0.5 text-caption-sm text-muted-foreground">
-                            Indikator komparatif transparansi pekerjaan fisik dan
-                            kepatuhan waktu penanganan laporan publik.
+                        <p className="text-caption-sm mt-0.5 text-muted-foreground">
+                            Indikator komparatif transparansi pekerjaan fisik
+                            dan kepatuhan waktu penanganan laporan publik.
                         </p>
                     </div>
 
@@ -188,22 +178,22 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                     <Table className="w-full">
                         <TableHeader>
                             <TableRow className="border-b border-border bg-muted/40 hover:bg-muted/40">
-                                <TableHead className="w-[32%] px-3 text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                <TableHead className="w-[32%] px-3 text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                     Instansi Pelaksana
                                 </TableHead>
-                                <TableHead className="w-[13%] px-2 text-right text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                                <TableHead className="w-[13%] px-2 text-right text-caption-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase">
                                     Tiket Selesai
                                 </TableHead>
-                                <TableHead className="w-[13%] px-2 text-right text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                                <TableHead className="w-[13%] px-2 text-right text-caption-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase">
                                     Sengketa Warga
                                 </TableHead>
-                                <TableHead className="w-[13%] px-2 text-right text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                                <TableHead className="w-[13%] px-2 text-right text-caption-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase">
                                     Rasio Sengketa
                                 </TableHead>
-                                <TableHead className="w-[14%] px-2 text-right text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                                <TableHead className="w-[14%] px-2 text-right text-caption-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase">
                                     Pelanggaran SLA
                                 </TableHead>
-                                <TableHead className="w-[15%] pr-4 pl-2 text-right text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                                <TableHead className="w-[15%] pr-4 pl-2 text-right text-caption-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase">
                                     Anggaran Tertahan
                                 </TableHead>
                             </TableRow>
@@ -218,7 +208,9 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                                         {searchQuery ? (
                                             <div className="flex flex-col items-center justify-center gap-2">
                                                 <p>
-                                                    Tidak ada instansi yang cocok dengan pencarian &quot;{searchQuery}&quot;.
+                                                    Tidak ada instansi yang
+                                                    cocok dengan pencarian
+                                                    &quot;{searchQuery}&quot;.
                                                 </p>
                                                 <Button
                                                     variant="outline"
@@ -243,8 +235,8 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                                         key={item.id}
                                         className="border-b border-border transition-colors hover:bg-muted/20"
                                     >
-                                        <TableCell className="px-3 min-w-0 font-medium text-foreground">
-                                            <div className="flex items-center gap-2 min-w-0">
+                                        <TableCell className="min-w-0 px-3 font-medium text-foreground">
+                                            <div className="flex min-w-0 items-center gap-2">
                                                 <Building2 className="size-3.5 shrink-0 text-muted-foreground" />
                                                 <span
                                                     className="truncate"
@@ -253,13 +245,13 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                                                     {item.nama}
                                                 </span>
                                                 {item.singkatan && (
-                                                    <span className="shrink-0 rounded bg-muted px-1.5 py-0.2 text-[10px] font-semibold text-muted-foreground">
+                                                    <span className="py-0.2 shrink-0 rounded bg-muted px-1.5 text-[10px] font-semibold text-muted-foreground">
                                                         {item.singkatan}
                                                     </span>
                                                 )}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="px-2 text-right font-mono tabular-nums whitespace-nowrap">
+                                        <TableCell className="px-2 text-right font-mono whitespace-nowrap tabular-nums">
                                             <span className="font-semibold text-foreground">
                                                 {item.tiket_selesai}
                                             </span>
@@ -267,7 +259,7 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                                                 /{item.total_tiket}
                                             </span>
                                         </TableCell>
-                                        <TableCell className="px-2 text-right font-mono tabular-nums text-foreground whitespace-nowrap">
+                                        <TableCell className="px-2 text-right font-mono whitespace-nowrap text-foreground tabular-nums">
                                             {item.tiket_sengketa}
                                         </TableCell>
                                         <TableCell className="px-2 text-right whitespace-nowrap">
@@ -280,10 +272,10 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                                                 {item.rasio_sengketa}%
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="px-2 text-right font-mono tabular-nums text-destructive whitespace-nowrap">
+                                        <TableCell className="px-2 text-right font-mono whitespace-nowrap text-destructive tabular-nums">
                                             {item.eskalasi_sla}
                                         </TableCell>
-                                        <TableCell className="pr-4 pl-2 text-right font-mono tabular-nums text-muted-foreground whitespace-nowrap">
+                                        <TableCell className="pr-4 pl-2 text-right font-mono whitespace-nowrap text-muted-foreground tabular-nums">
                                             {item.anggaran_tertahan}
                                         </TableCell>
                                     </TableRow>
@@ -313,7 +305,7 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                         <em>Inter-Agency Bounce</em>)
                     </h3>
                 </div>
-                <p className="mt-1 text-caption-sm leading-relaxed text-muted-foreground">
+                <p className="text-caption-sm mt-1 leading-relaxed text-muted-foreground">
                     Mendeteksi instansi asal yang kerap mengalihkan tanggung
                     jawab tiket ke instansi tujuan lain sebagai indikator
                     perlunya evaluasi aturan routing otomatis atau tupoksi.
@@ -330,9 +322,9 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                             {pengalihan.map((p, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex items-center justify-between rounded-lg border border-border bg-muted/20 p-3 text-caption-sm"
+                                    className="text-caption-sm flex items-center justify-between rounded-lg border border-border bg-muted/20 p-3"
                                 >
-                                    <div className="flex items-center gap-1.5 min-w-0">
+                                    <div className="flex min-w-0 items-center gap-1.5">
                                         <span className="truncate font-medium text-foreground">
                                             {p.asal}
                                         </span>
@@ -343,7 +335,7 @@ export default function PolaPengawasanPage({ analitik }: PolaPengawasanProps) {
                                     </div>
                                     <Badge
                                         variant="outline"
-                                        className="shrink-0 font-mono tabular-nums text-foreground"
+                                        className="shrink-0 font-mono text-foreground tabular-nums"
                                     >
                                         {p.total} kali
                                     </Badge>

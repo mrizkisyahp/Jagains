@@ -1,4 +1,12 @@
-import { ReactNode, useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import {
+    ReactNode,
+    useState,
+    useEffect,
+    useMemo,
+    useCallback,
+    lazy,
+    Suspense,
+} from 'react';
 import { Head } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
 import {
@@ -27,12 +35,17 @@ interface PetaPageProps {
     };
 }
 
-export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPageProps) {
+export default function PetaLaporanPage({
+    masterFilter,
+    filterAwal,
+}: PetaPageProps) {
     const [isMounted, setIsMounted] = useState(false);
     const [allTitik, setAllTitik] = useState<TitikLaporanPeta[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedTiket, setSelectedTiket] = useState<TitikLaporanPeta | null>(null);
+    const [selectedTiket, setSelectedTiket] = useState<TitikLaporanPeta | null>(
+        null,
+    );
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     useEffect(() => {
@@ -41,12 +54,18 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
 
     // Filter State
     const [filters, setFilters] = useState<PetaFilterState>({
-        kategori_id: filterAwal?.kategori_id ? Number(filterAwal.kategori_id) : null,
-        kecamatan_id: filterAwal?.kecamatan_id ? Number(filterAwal.kecamatan_id) : null,
+        kategori_id: filterAwal?.kategori_id
+            ? Number(filterAwal.kategori_id)
+            : null,
+        kecamatan_id: filterAwal?.kecamatan_id
+            ? Number(filterAwal.kecamatan_id)
+            : null,
         kota_id: filterAwal?.kota_id ? Number(filterAwal.kota_id) : null,
         status: filterAwal?.status || null,
         kondisi_sla: (filterAwal?.kondisi_sla as KondisiSla) || null,
-        instansi_id: filterAwal?.instansi_id ? Number(filterAwal.instansi_id) : null,
+        instansi_id: filterAwal?.instansi_id
+            ? Number(filterAwal.instansi_id)
+            : null,
         rentang_waktu: null,
         search: '',
     });
@@ -64,7 +83,9 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
             });
 
             if (!res.ok) {
-                throw new Error(`Gagal memuat data sebaran (HTTP ${res.status})`);
+                throw new Error(
+                    `Gagal memuat data sebaran (HTTP ${res.status})`,
+                );
             }
 
             const data = await res.json();
@@ -74,7 +95,9 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
                 throw new Error('Format data tidak sesuai');
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Gagal menghubungi server');
+            setError(
+                err instanceof Error ? err.message : 'Gagal menghubungi server',
+            );
         } finally {
             setIsLoading(false);
         }
@@ -91,7 +114,9 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
             const fokusTiket = urlParams.get('fokus');
             if (fokusTiket) {
                 const target = allTitik.find(
-                    (t) => t.nomor_tiket.toUpperCase() === fokusTiket.toUpperCase(),
+                    (t) =>
+                        t.nomor_tiket.toUpperCase() ===
+                        fokusTiket.toUpperCase(),
                 );
                 if (target) {
                     setSelectedTiket(target);
@@ -104,7 +129,10 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
     const filteredTitik = useMemo(() => {
         return allTitik.filter((item) => {
             // 1. Filter Kategori
-            if (filters.kategori_id !== null && item.kategori_id !== filters.kategori_id) {
+            if (
+                filters.kategori_id !== null &&
+                item.kategori_id !== filters.kategori_id
+            ) {
                 return false;
             }
 
@@ -114,7 +142,10 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
             }
 
             // 3. Filter Kecamatan
-            if (filters.kecamatan_id !== null && item.kecamatan_id !== filters.kecamatan_id) {
+            if (
+                filters.kecamatan_id !== null &&
+                item.kecamatan_id !== filters.kecamatan_id
+            ) {
                 return false;
             }
 
@@ -124,19 +155,26 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
             }
 
             // 5. Filter Kondisi SLA
-            if (filters.kondisi_sla !== null && item.kondisi_sla !== filters.kondisi_sla) {
+            if (
+                filters.kondisi_sla !== null &&
+                item.kondisi_sla !== filters.kondisi_sla
+            ) {
                 return false;
             }
 
             // 6. Filter Instansi
-            if (filters.instansi_id !== null && item.instansi_id !== filters.instansi_id) {
+            if (
+                filters.instansi_id !== null &&
+                item.instansi_id !== filters.instansi_id
+            ) {
                 return false;
             }
 
             // 7. Filter Rentang Waktu (hari)
             if (filters.rentang_waktu !== null) {
                 const createdAt = new Date(item.created_at).getTime();
-                const batasWaktu = Date.now() - filters.rentang_waktu * 24 * 60 * 60 * 1000;
+                const batasWaktu =
+                    Date.now() - filters.rentang_waktu * 24 * 60 * 60 * 1000;
                 if (createdAt < batasWaktu) {
                     return false;
                 }
@@ -145,12 +183,24 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
             // 8. Pencarian Teks
             if (filters.search.trim() !== '') {
                 const query = filters.search.toLowerCase();
-                const matchNomor = item.nomor_tiket.toLowerCase().includes(query);
+                const matchNomor = item.nomor_tiket
+                    .toLowerCase()
+                    .includes(query);
                 const matchJudul = item.judul.toLowerCase().includes(query);
-                const matchKelurahan = item.kelurahan_nama?.toLowerCase().includes(query);
-                const matchKecamatan = item.kecamatan_nama?.toLowerCase().includes(query);
+                const matchKelurahan = item.kelurahan_nama
+                    ?.toLowerCase()
+                    .includes(query);
+                const matchKecamatan = item.kecamatan_nama
+                    ?.toLowerCase()
+                    .includes(query);
                 const matchKota = item.kota_nama?.toLowerCase().includes(query);
-                if (!matchNomor && !matchJudul && !matchKelurahan && !matchKecamatan && !matchKota) {
+                if (
+                    !matchNomor &&
+                    !matchJudul &&
+                    !matchKelurahan &&
+                    !matchKecamatan &&
+                    !matchKota
+                ) {
                     return false;
                 }
             }
@@ -177,14 +227,22 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
     };
 
     return (
-        <InternalLayout title="Eksplorasi" breadcrumb="Warga > Eksplorasi" fullWidth noPadding>
+        <InternalLayout
+            title="Eksplorasi"
+            breadcrumb="Warga > Eksplorasi"
+            fullWidth
+            noPadding
+        >
             <Head title="Eksplorasi - Jagains" />
 
             <div className="relative h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-background">
                 {/* State Error & Retry Button Floating Alert */}
                 {error && (
                     <div className="absolute top-4 left-1/2 z-40 w-full max-w-md -translate-x-1/2 px-4">
-                        <Alert variant="destructive" className="rounded-xl shadow-lg">
+                        <Alert
+                            variant="destructive"
+                            className="rounded-xl shadow-lg"
+                        >
                             <AlertTriangle className="size-4" />
                             <AlertDescription className="flex items-center justify-between text-caption-xs sm:text-body-sm">
                                 <span>{error}. Data gagal dimuat.</span>
@@ -209,7 +267,9 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
                         fallback={
                             <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/20 text-muted-foreground">
                                 <RefreshCw className="size-6 animate-spin text-primary" />
-                                <span className="text-body-sm font-medium">Memuat peta interaktif...</span>
+                                <span className="text-body-sm font-medium">
+                                    Memuat peta interaktif...
+                                </span>
                             </div>
                         }
                     >
@@ -224,7 +284,9 @@ export default function PetaLaporanPage({ masterFilter, filterAwal }: PetaPagePr
                 ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/20 text-muted-foreground">
                         <RefreshCw className="size-6 animate-spin text-primary" />
-                        <span className="text-body-sm font-medium">Memuat peta interaktif...</span>
+                        <span className="text-body-sm font-medium">
+                            Memuat peta interaktif...
+                        </span>
                     </div>
                 )}
 

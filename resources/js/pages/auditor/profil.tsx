@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 import { Head, usePage } from '@inertiajs/react';
-import { CircleCheck, CirclePause, CircleX, KeyRound, Scale } from 'lucide-react';
+import {
+    CircleCheck,
+    CirclePause,
+    CircleX,
+    KeyRound,
+    Scale,
+} from 'lucide-react';
 import InternalLayout from '@/layouts/InternalLayout';
 import { Badge } from '@/components/ui/badge';
 import type { Auth } from '@/types/auth';
@@ -69,9 +75,9 @@ export default function ProfilAuditorPage() {
                         <h3 className="mt-3 text-display-xs font-display font-semibold text-foreground">
                             Majelis Auditor Independen
                         </h3>
-                        <p className="mt-1 text-caption-sm text-muted-foreground">
+                        <p className="text-caption-sm mt-1 text-muted-foreground">
                             Arbitrase Pengawasan Kebijakan Publik & Kepatuhan
-                            SLA Fasilitas Kota Depok
+                            SLA Fasilitas Publik Jabodetabek
                         </p>
                     </div>
 
@@ -91,7 +97,7 @@ export default function ProfilAuditorPage() {
                                     <dt className="text-body-sm text-muted-foreground">
                                         {label}
                                     </dt>
-                                    <dd className="text-body-sm font-medium text-foreground break-words">
+                                    <dd className="text-body-sm font-medium break-words text-foreground">
                                         {value}
                                     </dd>
                                 </div>

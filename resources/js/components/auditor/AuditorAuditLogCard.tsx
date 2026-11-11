@@ -1,6 +1,10 @@
 import { FormEvent, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { AuditLogItem, AuditLogFilterState, PaginatedData } from '@/types/audit';
+import {
+    AuditLogItem,
+    AuditLogFilterState,
+    PaginatedData,
+} from '@/types/audit';
 import { Eye, RotateCcw, Search, ShieldCheck } from 'lucide-react';
 import {
     Table,
@@ -40,9 +44,13 @@ export default function AuditorAuditLogCard({
     const [search, setSearch] = useState(filters.search ?? '');
     const [aksi, setAksi] = useState(filters.aksi ?? '');
     const [waktuMulai, setWaktuMulai] = useState(filters.waktu_mulai ?? '');
-    const [waktuSelesai, setWaktuSelesai] = useState(filters.waktu_selesai ?? '');
+    const [waktuSelesai, setWaktuSelesai] = useState(
+        filters.waktu_selesai ?? '',
+    );
 
-    const hasActiveFilter = Boolean(search || aksi || waktuMulai || waktuSelesai);
+    const hasActiveFilter = Boolean(
+        search || aksi || waktuMulai || waktuSelesai,
+    );
 
     const handleFilterSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -67,7 +75,11 @@ export default function AuditorAuditLogCard({
         setAksi('');
         setWaktuMulai('');
         setWaktuSelesai('');
-        router.get('/auditor/audit-log', {}, { preserveState: false, replace: true });
+        router.get(
+            '/auditor/audit-log',
+            {},
+            { preserveState: false, replace: true },
+        );
     };
 
     const handlePageChange = (newPage: number) => {
@@ -110,18 +122,21 @@ export default function AuditorAuditLogCard({
         if (itemAksi.includes('ROUTING') || itemAksi.includes('DISPOSISI')) {
             return 'stage-verify' as const;
         }
-        if (itemAksi.includes('GANTI_SANDI') || itemAksi.includes('BUAT_AKUN')) {
+        if (
+            itemAksi.includes('GANTI_SANDI') ||
+            itemAksi.includes('BUAT_AKUN')
+        ) {
             return 'secondary' as const;
         }
         return 'outline' as const;
     };
 
     return (
-        <div className="w-full min-w-0 rounded-xl border border-border bg-card overflow-hidden">
+        <div className="w-full min-w-0 overflow-hidden rounded-xl border border-border bg-card">
             {/* Header Card: Toolbar Pencarian & Filter Terpadu */}
             <form
                 onSubmit={handleFilterSubmit}
-                className="flex flex-wrap items-center justify-between gap-3 p-4 border-b border-border bg-card"
+                className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card p-4"
             >
                 {/* Search Input di Kiri */}
                 <div className="relative w-full sm:w-72 md:w-80">
@@ -149,12 +164,17 @@ export default function AuditorAuditLogCard({
                             }
                         >
                             <SelectTrigger className="h-9 w-full text-xs">
-                                <span className="flex-1 text-left truncate">
+                                <span className="flex-1 truncate text-left">
                                     {aksi || 'Semua Jenis Aksi'}
                                 </span>
                             </SelectTrigger>
-                            <SelectContent align="start" className="w-[220px] max-h-72">
-                                <SelectItem value="semua">Semua Jenis Aksi</SelectItem>
+                            <SelectContent
+                                align="start"
+                                className="max-h-72 w-[220px]"
+                            >
+                                <SelectItem value="semua">
+                                    Semua Jenis Aksi
+                                </SelectItem>
                                 {daftarAksi.map((item) => (
                                     <SelectItem key={item} value={item}>
                                         {item}
@@ -187,7 +207,11 @@ export default function AuditorAuditLogCard({
                     </div>
 
                     {/* Tombol Terapkan */}
-                    <Button type="submit" size="sm" className="h-9 px-3.5 text-xs font-semibold">
+                    <Button
+                        type="submit"
+                        size="sm"
+                        className="h-9 px-3.5 text-xs font-semibold"
+                    >
                         Terapkan
                     </Button>
 
@@ -212,25 +236,25 @@ export default function AuditorAuditLogCard({
                 <Table className="w-full min-w-[760px] table-fixed">
                     <TableHeader className="bg-muted/40">
                         <TableRow className="border-b border-border">
-                            <TableHead className="w-[15%] min-w-[120px] font-semibold text-foreground text-caption-xs uppercase tracking-wider">
+                            <TableHead className="w-[15%] min-w-[120px] text-caption-xs font-semibold tracking-wider text-foreground uppercase">
                                 Waktu (WIB)
                             </TableHead>
-                            <TableHead className="w-[15%] min-w-[120px] font-semibold text-foreground text-caption-xs uppercase tracking-wider">
+                            <TableHead className="w-[15%] min-w-[120px] text-caption-xs font-semibold tracking-wider text-foreground uppercase">
                                 Pelaku
                             </TableHead>
-                            <TableHead className="w-[18%] min-w-[130px] font-semibold text-foreground text-caption-xs uppercase tracking-wider">
+                            <TableHead className="w-[18%] min-w-[130px] text-caption-xs font-semibold tracking-wider text-foreground uppercase">
                                 Jenis Aksi
                             </TableHead>
-                            <TableHead className="w-[14%] min-w-[100px] font-semibold text-foreground text-caption-xs uppercase tracking-wider">
+                            <TableHead className="w-[14%] min-w-[100px] text-caption-xs font-semibold tracking-wider text-foreground uppercase">
                                 Objek / Entitas
                             </TableHead>
-                            <TableHead className="w-[14%] min-w-[110px] font-semibold text-foreground text-caption-xs uppercase tracking-wider">
+                            <TableHead className="w-[14%] min-w-[110px] text-caption-xs font-semibold tracking-wider text-foreground uppercase">
                                 Tiket Terkait
                             </TableHead>
-                            <TableHead className="w-[16%] min-w-[120px] font-semibold text-foreground text-caption-xs uppercase tracking-wider">
+                            <TableHead className="w-[16%] min-w-[120px] text-caption-xs font-semibold tracking-wider text-foreground uppercase">
                                 Alasan Tindakan
                             </TableHead>
-                            <TableHead className="w-[8%] min-w-[70px] text-right font-semibold text-foreground text-caption-xs uppercase tracking-wider">
+                            <TableHead className="w-[8%] min-w-[70px] text-right text-caption-xs font-semibold tracking-wider text-foreground uppercase">
                                 Rincian
                             </TableHead>
                         </TableRow>
@@ -266,7 +290,7 @@ export default function AuditorAuditLogCard({
                                     key={log.id}
                                     className="border-b border-border transition-colors hover:bg-muted/20"
                                 >
-                                    <TableCell className="font-mono whitespace-nowrap min-w-0">
+                                    <TableCell className="min-w-0 font-mono whitespace-nowrap">
                                         <div className="text-body-sm font-semibold text-foreground tabular-nums">
                                             {formatTanggal(log.waktu)}
                                         </div>
@@ -275,7 +299,12 @@ export default function AuditorAuditLogCard({
                                         </div>
                                     </TableCell>
                                     <TableCell className="min-w-0">
-                                        <div className="truncate text-body-sm font-semibold text-foreground" title={log.pelaku?.username ?? 'Sistem'}>
+                                        <div
+                                            className="truncate text-body-sm font-semibold text-foreground"
+                                            title={
+                                                log.pelaku?.username ?? 'Sistem'
+                                            }
+                                        >
                                             {log.pelaku?.username ?? 'Sistem'}
                                         </div>
                                         {log.pelaku?.peran && (
@@ -286,16 +315,20 @@ export default function AuditorAuditLogCard({
                                     </TableCell>
                                     <TableCell className="min-w-0">
                                         <Badge
-                                            variant={getAksiBadgeVariant(log.aksi)}
-                                            className="font-mono text-[11px] truncate max-w-full"
+                                            variant={getAksiBadgeVariant(
+                                                log.aksi,
+                                            )}
+                                            className="max-w-full truncate font-mono text-[11px]"
                                             title={log.aksi}
                                         >
                                             {log.aksi}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-caption-xs font-mono text-foreground min-w-0 truncate">
+                                    <TableCell className="min-w-0 truncate text-caption-xs font-mono text-foreground">
                                         {log.objek_tipe ? (
-                                            <span title={`${log.objek_tipe} #${log.objek_id || ''}`}>
+                                            <span
+                                                title={`${log.objek_tipe} #${log.objek_id || ''}`}
+                                            >
                                                 <strong className="font-semibold text-foreground">
                                                     {log.objek_tipe}
                                                 </strong>
@@ -306,10 +339,12 @@ export default function AuditorAuditLogCard({
                                                 )}
                                             </span>
                                         ) : (
-                                            <span className="text-muted-foreground">—</span>
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
                                         )}
                                     </TableCell>
-                                    <TableCell className="text-caption-xs font-mono min-w-0 truncate">
+                                    <TableCell className="min-w-0 truncate text-caption-xs font-mono">
                                         {log.laporan ? (
                                             <a
                                                 href={`/tiket/${log.laporan.nomor_tiket}`}
@@ -320,15 +355,19 @@ export default function AuditorAuditLogCard({
                                                 {log.laporan.nomor_tiket}
                                             </a>
                                         ) : (
-                                            <span className="text-muted-foreground">—</span>
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
                                         )}
                                     </TableCell>
                                     <TableCell
-                                        className="truncate text-body-sm text-muted-foreground min-w-0"
+                                        className="min-w-0 truncate text-body-sm text-muted-foreground"
                                         title={log.alasan ?? '-'}
                                     >
                                         {log.alasan || (
-                                            <span className="text-muted-foreground">—</span>
+                                            <span className="text-muted-foreground">
+                                                —
+                                            </span>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right whitespace-nowrap">
@@ -342,7 +381,7 @@ export default function AuditorAuditLogCard({
                                             className="h-8 gap-1 px-2.5 text-xs font-medium"
                                         >
                                             <Eye
-                                                className="size-3 text-muted-foreground shrink-0"
+                                                className="size-3 shrink-0 text-muted-foreground"
                                                 aria-hidden="true"
                                             />
                                             <span className="hidden sm:inline">

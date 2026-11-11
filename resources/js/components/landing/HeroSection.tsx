@@ -1,4 +1,11 @@
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import {
+    useState,
+    useEffect,
+    useMemo,
+    useCallback,
+    lazy,
+    Suspense,
+} from 'react';
 import {
     MasterFilterPeta,
     TitikLaporanPeta,
@@ -26,8 +33,12 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
     const [allTitik, setAllTitik] = useState<TitikLaporanPeta[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedTiket, setSelectedTiket] = useState<TitikLaporanPeta | null>(null);
-    const [masterFilterData, setMasterFilterData] = useState<MasterFilterPeta | undefined>(masterFilter);
+    const [selectedTiket, setSelectedTiket] = useState<TitikLaporanPeta | null>(
+        null,
+    );
+    const [masterFilterData, setMasterFilterData] = useState<
+        MasterFilterPeta | undefined
+    >(masterFilter);
 
     useEffect(() => {
         setIsMounted(true);
@@ -35,7 +46,11 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
 
     // Ambil master filter dari API jika belum tersedia dari prop Inertia
     useEffect(() => {
-        if (masterFilter && (masterFilter.kecamatan?.length > 0 || masterFilter.kategori?.length > 0)) {
+        if (
+            masterFilter &&
+            (masterFilter.kecamatan?.length > 0 ||
+                masterFilter.kategori?.length > 0)
+        ) {
             setMasterFilterData(masterFilter);
         } else {
             fetch('/api/peta/master-filter', {
@@ -85,7 +100,9 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
             });
 
             if (!res.ok) {
-                throw new Error(`Gagal memuat data sebaran (HTTP ${res.status})`);
+                throw new Error(
+                    `Gagal memuat data sebaran (HTTP ${res.status})`,
+                );
             }
 
             const data = await res.json();
@@ -95,7 +112,9 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                 throw new Error('Format data tidak sesuai');
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Gagal menghubungi server');
+            setError(
+                err instanceof Error ? err.message : 'Gagal menghubungi server',
+            );
         } finally {
             setIsLoading(false);
         }
@@ -112,7 +131,9 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
             const fokusTiket = urlParams.get('fokus');
             if (fokusTiket) {
                 const target = allTitik.find(
-                    (t) => t.nomor_tiket.toUpperCase() === fokusTiket.toUpperCase()
+                    (t) =>
+                        t.nomor_tiket.toUpperCase() ===
+                        fokusTiket.toUpperCase(),
                 );
                 if (target) {
                     setSelectedTiket(target);
@@ -124,30 +145,47 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
     // Filter reaktif client-side
     const filteredTitik = useMemo(() => {
         return allTitik.filter((item) => {
-            if (filters.kategori_id !== null && item.kategori_id !== filters.kategori_id) {
+            if (
+                filters.kategori_id !== null &&
+                item.kategori_id !== filters.kategori_id
+            ) {
                 return false;
             }
-            if (filters.kecamatan_id !== null && item.kecamatan_id !== filters.kecamatan_id) {
+            if (
+                filters.kecamatan_id !== null &&
+                item.kecamatan_id !== filters.kecamatan_id
+            ) {
                 return false;
             }
-            if (filters.kondisi_sla !== null && item.kondisi_sla !== filters.kondisi_sla) {
+            if (
+                filters.kondisi_sla !== null &&
+                item.kondisi_sla !== filters.kondisi_sla
+            ) {
                 return false;
             }
-            if (filters.instansi_id !== null && item.instansi_id !== filters.instansi_id) {
+            if (
+                filters.instansi_id !== null &&
+                item.instansi_id !== filters.instansi_id
+            ) {
                 return false;
             }
             if (filters.rentang_waktu !== null) {
                 const createdAt = new Date(item.created_at).getTime();
-                const batasWaktu = Date.now() - filters.rentang_waktu * 24 * 60 * 60 * 1000;
+                const batasWaktu =
+                    Date.now() - filters.rentang_waktu * 24 * 60 * 60 * 1000;
                 if (createdAt < batasWaktu) {
                     return false;
                 }
             }
             if (filters.search.trim() !== '') {
                 const query = filters.search.toLowerCase();
-                const matchNomor = item.nomor_tiket.toLowerCase().includes(query);
+                const matchNomor = item.nomor_tiket
+                    .toLowerCase()
+                    .includes(query);
                 const matchJudul = item.judul.toLowerCase().includes(query);
-                const matchKelurahan = item.kelurahan_nama.toLowerCase().includes(query);
+                const matchKelurahan = item.kelurahan_nama
+                    .toLowerCase()
+                    .includes(query);
                 if (!matchNomor && !matchJudul && !matchKelurahan) {
                     return false;
                 }
@@ -176,14 +214,19 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
         filters.search.trim() !== '';
 
     return (
-        <section id="sebaran-peta" className="relative w-full overflow-hidden bg-background">
+        <section
+            id="sebaran-peta"
+            className="relative w-full overflow-hidden bg-background"
+        >
             {/* Kanvas Peta Interaktif Leaflet (Full 1 Canvas, Edge-to-Edge tanpa rounded) */}
-            <div className="relative w-full h-[680px] sm:h-[760px] lg:h-[840px] overflow-hidden bg-muted/40">
+            <div className="relative h-[680px] w-full overflow-hidden bg-muted/40 sm:h-[760px] lg:h-[840px]">
                 {isMounted ? (
                     <Suspense
                         fallback={
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 animate-pulse text-muted-foreground gap-2">
-                                <span className="text-body-small font-medium">Memuat peta sebaran...</span>
+                            <div className="flex h-full w-full animate-pulse flex-col items-center justify-center gap-2 bg-muted/20 text-muted-foreground">
+                                <span className="text-body-small font-medium">
+                                    Memuat peta sebaran...
+                                </span>
                             </div>
                         }
                     >
@@ -192,57 +235,79 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                             selectedTiket={selectedTiket}
                             onSelectTiket={setSelectedTiket}
                             isLoading={isLoading}
-                            className="w-full h-full rounded-none border-none shadow-none"
+                            className="h-full w-full rounded-none border-none shadow-none"
                         />
                     </Suspense>
                 ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
-                        <span className="text-body-small font-medium">Memuat peta sebaran...</span>
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/20 text-muted-foreground">
+                        <span className="text-body-small font-medium">
+                            Memuat peta sebaran...
+                        </span>
                     </div>
                 )}
 
                 {/* Container Atas dengan Gradasi Putih/Background Menipis ke Bawah */}
-                <div className="absolute inset-x-0 top-0 z-20 pointer-events-none flex flex-col items-center pt-8 sm:pt-12 md:pt-14 pb-20 sm:pb-32 bg-gradient-to-b from-background via-background/90 to-transparent">
-                    <div className="w-full max-w-4xl mx-auto px-4 text-center pointer-events-auto">
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-col items-center bg-gradient-to-b from-background via-background/90 to-transparent pt-8 pb-20 sm:pt-12 sm:pb-32 md:pt-14">
+                    <div className="pointer-events-auto mx-auto w-full max-w-4xl px-4 text-center">
                         {/* Heading Sesuai Referensi Gambar */}
-                        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
+                        <h1 className="font-display text-4xl leading-[1.12] font-black tracking-tight text-foreground sm:text-5xl md:text-6xl">
                             Lapor. Pantau. Pastikan.
                         </h1>
 
                         {/* Subtitle Sesuai Referensi Gambar */}
-                        <p className="mt-3.5 sm:mt-4 text-body-base sm:text-body-large text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                            Laporkan masalah di sekitarmu, pantau janji instansi secara terbuka, dan pastikan sendiri hasilnya bersama warga.
+                        <p className="sm:text-body-large mx-auto mt-3.5 max-w-2xl text-body-base leading-relaxed text-muted-foreground sm:mt-4">
+                            Laporkan masalah di sekitarmu, pantau janji instansi
+                            secara terbuka, dan pastikan sendiri hasilnya
+                            bersama warga.
                         </p>
 
                         {/* Bilah Filter Minimalis Berbentuk Capsule Melayang */}
-                        <div className="mt-6 sm:mt-8 mx-auto w-full max-w-2xl rounded-full bg-card/95 backdrop-blur-md border border-border shadow-xl p-2 sm:p-2.5 flex items-center justify-between gap-1 sm:gap-2">
+                        <div className="mx-auto mt-6 flex w-full max-w-2xl items-center justify-between gap-1 rounded-full border border-border bg-card/95 p-2 shadow-xl backdrop-blur-md sm:mt-8 sm:gap-2 sm:p-2.5">
                             {/* 1. Filter Wilayah / Kecamatan */}
-                            <div className="flex-1 min-w-0 px-3 sm:px-4 py-1 text-left">
-                                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            <div className="min-w-0 flex-1 px-3 py-1 text-left sm:px-4">
+                                <label className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
                                     Wilayah
                                 </label>
                                 <Select
-                                    value={filters.kecamatan_id !== null ? String(filters.kecamatan_id) : 'semua'}
+                                    value={
+                                        filters.kecamatan_id !== null
+                                            ? String(filters.kecamatan_id)
+                                            : 'semua'
+                                    }
                                     onValueChange={(val) =>
                                         setFilters((prev) => ({
                                             ...prev,
-                                            kecamatan_id: val === 'semua' ? null : Number(val),
+                                            kecamatan_id:
+                                                val === 'semua'
+                                                    ? null
+                                                    : Number(val),
                                         }))
                                     }
                                 >
-                                    <SelectTrigger className="w-full h-6 border-0 shadow-none bg-transparent p-0 text-caption-xs sm:text-body-sm font-semibold text-foreground focus:ring-0 gap-1 cursor-pointer">
+                                    <SelectTrigger className="h-6 w-full cursor-pointer gap-1 border-0 bg-transparent p-0 text-caption-xs font-semibold text-foreground shadow-none focus:ring-0 sm:text-body-sm">
                                         <span className="truncate">
                                             {filters.kecamatan_id !== null
-                                                ? kecamatanList.find((k) => k.id === filters.kecamatan_id)?.nama || 'Kecamatan'
+                                                ? kecamatanList.find(
+                                                      (k) =>
+                                                          k.id ===
+                                                          filters.kecamatan_id,
+                                                  )?.nama || 'Kecamatan'
                                                 : 'Semua Wilayah'}
                                         </span>
                                     </SelectTrigger>
-                                    <SelectContent className="max-h-60 min-w-[200px] rounded-xl z-[1050]">
-                                        <SelectItem value="semua" className="text-body-sm font-medium">
+                                    <SelectContent className="z-[1050] max-h-60 min-w-[200px] rounded-xl">
+                                        <SelectItem
+                                            value="semua"
+                                            className="text-body-sm font-medium"
+                                        >
                                             Semua Wilayah
                                         </SelectItem>
                                         {kecamatanList.map((kec) => (
-                                            <SelectItem key={kec.id} value={String(kec.id)} className="text-body-sm">
+                                            <SelectItem
+                                                key={kec.id}
+                                                value={String(kec.id)}
+                                                className="text-body-sm"
+                                            >
                                                 {kec.nama}
                                             </SelectItem>
                                         ))}
@@ -250,35 +315,53 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                                 </Select>
                             </div>
 
-                            <div className="h-7 w-px bg-border/80 shrink-0" />
+                            <div className="h-7 w-px shrink-0 bg-border/80" />
 
                             {/* 2. Filter Kategori */}
-                            <div className="flex-1 min-w-0 px-3 sm:px-4 py-1 text-left">
-                                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            <div className="min-w-0 flex-1 px-3 py-1 text-left sm:px-4">
+                                <label className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
                                     Kategori
                                 </label>
                                 <Select
-                                    value={filters.kategori_id !== null ? String(filters.kategori_id) : 'semua'}
+                                    value={
+                                        filters.kategori_id !== null
+                                            ? String(filters.kategori_id)
+                                            : 'semua'
+                                    }
                                     onValueChange={(val) =>
                                         setFilters((prev) => ({
                                             ...prev,
-                                            kategori_id: val === 'semua' ? null : Number(val),
+                                            kategori_id:
+                                                val === 'semua'
+                                                    ? null
+                                                    : Number(val),
                                         }))
                                     }
                                 >
-                                    <SelectTrigger className="w-full h-6 border-0 shadow-none bg-transparent p-0 text-caption-xs sm:text-body-sm font-semibold text-foreground focus:ring-0 gap-1 cursor-pointer">
+                                    <SelectTrigger className="h-6 w-full cursor-pointer gap-1 border-0 bg-transparent p-0 text-caption-xs font-semibold text-foreground shadow-none focus:ring-0 sm:text-body-sm">
                                         <span className="truncate">
                                             {filters.kategori_id !== null
-                                                ? kategoriList.find((k) => k.id === filters.kategori_id)?.nama || 'Kategori'
+                                                ? kategoriList.find(
+                                                      (k) =>
+                                                          k.id ===
+                                                          filters.kategori_id,
+                                                  )?.nama || 'Kategori'
                                                 : 'Semua Kategori'}
                                         </span>
                                     </SelectTrigger>
-                                    <SelectContent className="max-h-60 min-w-[200px] rounded-xl z-[1050]">
-                                        <SelectItem value="semua" className="text-body-sm font-medium">
+                                    <SelectContent className="z-[1050] max-h-60 min-w-[200px] rounded-xl">
+                                        <SelectItem
+                                            value="semua"
+                                            className="text-body-sm font-medium"
+                                        >
                                             Semua Kategori
                                         </SelectItem>
                                         {kategoriList.map((kat) => (
-                                            <SelectItem key={kat.id} value={String(kat.id)} className="text-body-sm">
+                                            <SelectItem
+                                                key={kat.id}
+                                                value={String(kat.id)}
+                                                className="text-body-sm"
+                                            >
                                                 {kat.nama}
                                             </SelectItem>
                                         ))}
@@ -286,11 +369,11 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                                 </Select>
                             </div>
 
-                            <div className="h-7 w-px bg-border/80 shrink-0" />
+                            <div className="h-7 w-px shrink-0 bg-border/80" />
 
                             {/* 3. Filter Kondisi SLA (Bersih tanpa icon warna) */}
-                            <div className="flex-1 min-w-0 px-3 sm:px-4 py-1 text-left">
-                                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            <div className="min-w-0 flex-1 px-3 py-1 text-left sm:px-4">
+                                <label className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
                                     Kondisi SLA
                                 </label>
                                 <Select
@@ -298,42 +381,67 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                                     onValueChange={(val) =>
                                         setFilters((prev) => ({
                                             ...prev,
-                                            kondisi_sla: val === 'semua' ? null : (val as KondisiSla),
+                                            kondisi_sla:
+                                                val === 'semua'
+                                                    ? null
+                                                    : (val as KondisiSla),
                                         }))
                                     }
                                 >
-                                    <SelectTrigger className="w-full h-6 border-0 shadow-none bg-transparent p-0 text-caption-xs sm:text-body-sm font-semibold text-foreground focus:ring-0 gap-1 cursor-pointer">
+                                    <SelectTrigger className="h-6 w-full cursor-pointer gap-1 border-0 bg-transparent p-0 text-caption-xs font-semibold text-foreground shadow-none focus:ring-0 sm:text-body-sm">
                                         <span className="truncate">
                                             {filters.kondisi_sla === 'dalam_sla'
                                                 ? 'Aman SLA'
-                                                : filters.kondisi_sla === 'hampir_lewat'
-                                                ? 'Mendekati Batas'
-                                                : filters.kondisi_sla === 'lewat_sla'
-                                                ? 'Lewat SLA'
-                                                : filters.kondisi_sla === 'menunggu_warga'
-                                                ? 'Menunggu Verifikasi'
-                                                : filters.kondisi_sla === 'selesai'
-                                                ? 'Selesai'
-                                                : 'Semua Status'}
+                                                : filters.kondisi_sla ===
+                                                    'hampir_lewat'
+                                                  ? 'Mendekati Batas'
+                                                  : filters.kondisi_sla ===
+                                                      'lewat_sla'
+                                                    ? 'Lewat SLA'
+                                                    : filters.kondisi_sla ===
+                                                        'menunggu_warga'
+                                                      ? 'Menunggu Verifikasi'
+                                                      : filters.kondisi_sla ===
+                                                          'selesai'
+                                                        ? 'Selesai'
+                                                        : 'Semua Status'}
                                         </span>
                                     </SelectTrigger>
-                                    <SelectContent className="max-h-60 min-w-[200px] rounded-xl z-[1050]">
-                                        <SelectItem value="semua" className="text-body-sm font-medium">
+                                    <SelectContent className="z-[1050] max-h-60 min-w-[200px] rounded-xl">
+                                        <SelectItem
+                                            value="semua"
+                                            className="text-body-sm font-medium"
+                                        >
                                             Semua Status
                                         </SelectItem>
-                                        <SelectItem value="dalam_sla" className="text-body-sm">
+                                        <SelectItem
+                                            value="dalam_sla"
+                                            className="text-body-sm"
+                                        >
                                             Aman Dalam SLA
                                         </SelectItem>
-                                        <SelectItem value="hampir_lewat" className="text-body-sm">
+                                        <SelectItem
+                                            value="hampir_lewat"
+                                            className="text-body-sm"
+                                        >
                                             Mendekati Batas SLA
                                         </SelectItem>
-                                        <SelectItem value="lewat_sla" className="text-body-sm">
+                                        <SelectItem
+                                            value="lewat_sla"
+                                            className="text-body-sm"
+                                        >
                                             Lewat Batas Waktu SLA
                                         </SelectItem>
-                                        <SelectItem value="menunggu_warga" className="text-body-sm">
+                                        <SelectItem
+                                            value="menunggu_warga"
+                                            className="text-body-sm"
+                                        >
                                             Menunggu Verifikasi Warga
                                         </SelectItem>
-                                        <SelectItem value="selesai" className="text-body-sm">
+                                        <SelectItem
+                                            value="selesai"
+                                            className="text-body-sm"
+                                        >
                                             Selesai Diverifikasi
                                         </SelectItem>
                                     </SelectContent>
@@ -341,7 +449,7 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                             </div>
 
                             {/* Tombol Aksi: Reset & Search */}
-                            <div className="flex items-center gap-1.5 shrink-0 pl-1">
+                            <div className="flex shrink-0 items-center gap-1.5 pl-1">
                                 {hasActiveFilters && (
                                     <Button
                                         type="button"
@@ -355,7 +463,7 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
                                     </Button>
                                 )}
                                 <div
-                                    className="size-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm select-none"
+                                    className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm select-none"
                                     title="Pencarian Aktif"
                                 >
                                     <Search className="size-4.5" />
@@ -365,13 +473,13 @@ export default function HeroSection({ masterFilter }: HeroSectionProps) {
 
                         {/* Banner Kesalahan jika fetch titik gagal */}
                         {error && (
-                            <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-destructive/10 border border-destructive/20 px-3.5 py-1.5 text-caption-xs text-destructive">
+                            <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-1.5 text-caption-xs text-destructive">
                                 <AlertTriangle className="size-3.5" />
                                 <span>{error}</span>
                                 <button
                                     type="button"
                                     onClick={fetchTitik}
-                                    className="underline font-semibold ml-1 cursor-pointer flex items-center gap-1"
+                                    className="ml-1 flex cursor-pointer items-center gap-1 font-semibold underline"
                                 >
                                     <RefreshCw className="size-3" /> Coba Lagi
                                 </button>

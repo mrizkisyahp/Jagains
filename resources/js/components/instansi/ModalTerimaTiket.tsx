@@ -27,12 +27,14 @@ interface ModalTerimaTiketProps {
         nomor_tiket: string;
         judul: string;
     } | null;
+    onSuccess?: () => void;
 }
 
 export default function ModalTerimaTiket({
     open,
     onClose,
     laporan,
+    onSuccess,
 }: ModalTerimaTiketProps) {
     const [catatan, setCatatan] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,7 +80,11 @@ export default function ModalTerimaTiket({
                 );
                 onClose();
                 setCatatan('');
-                router.reload({ only: ['antrean', 'ringkasan'] });
+                if (onSuccess) {
+                    onSuccess();
+                } else {
+                    router.reload({ only: ['antrean', 'ringkasan'] });
+                }
             } else {
                 setFieldErrors(
                     Object.fromEntries(

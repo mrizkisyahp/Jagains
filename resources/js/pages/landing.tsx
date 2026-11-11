@@ -15,12 +15,14 @@ interface LandingPageProps {
 
 export default function LandingPage({ masterFilter }: LandingPageProps) {
     return (
-        <div className="min-h-screen bg-background text-foreground flex flex-col antialiased selection:bg-primary/20 selection:text-primary">
+        <div className="flex min-h-screen flex-col bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
             <Head>
-                <title>Jagains — Platform Pengawasan Fasilitas Publik Kota Depok</title>
+                <title>
+                    Jagains — Platform Pengawasan Fasilitas Publik Jabodetabek
+                </title>
                 <meta
                     name="description"
-                    content="Lapor kerusakan fasilitas publik di sekitarmu, pantau janji instansi secara terbuka, dan pastikan sendiri hasilnya bersama kuorum warga Kota Depok."
+                    content="Lapor kerusakan fasilitas publik di sekitarmu, pantau janji instansi secara terbuka, dan pastikan sendiri hasilnya bersama kuorum warga Jabodetabek."
                 />
             </Head>
 

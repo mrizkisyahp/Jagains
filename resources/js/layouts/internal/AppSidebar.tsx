@@ -3,16 +3,13 @@ import { type ComponentType, useState } from 'react';
 import {
     BarChart3,
     Building2,
-    ChartNoAxesCombined,
     CheckSquare,
     Clock,
-    FilePlus,
     FileText,
     Globe,
-    Inbox,
+    Home,
     LogIn,
     LogOut,
-    Map,
     MessageSquareWarning,
     Route,
     Scale,
@@ -21,7 +18,6 @@ import {
     Sliders,
     SquareUser,
     UserCheck,
-    User as UserIcon,
     Users,
 } from 'lucide-react';
 import Logo from '@/components/common/Logo';
@@ -80,17 +76,27 @@ const NAVIGATION_ITEMS: Record<string, NavEntry[]> = {
         { label: 'Profil auditor', href: '/auditor/profil', icon: UserCheck },
     ],
     instansi: [
+        { label: 'Beranda', href: '/instansi/dashboard', icon: Home },
         {
-            label: 'Dashboard kinerja',
-            href: '/instansi/dashboard',
-            icon: ChartNoAxesCombined,
+            label: 'Daftar Laporan',
+            href: '/instansi/antrean',
+            icon: MessageSquareWarning,
         },
-        { label: 'Antrean tiket', href: '/instansi/antrean', icon: Inbox },
-        { label: 'Profil dinas', href: '/instansi/profil', icon: Building2 },
+        {
+            label: 'Laporan Kualitas Kinerja',
+            href: '/instansi/kualitas-kinerja',
+            icon: BarChart3,
+        },
+        { label: 'Profil Dinas', href: '/instansi/profil', icon: Building2 },
     ],
     warga: [
+        { label: 'Beranda', href: '/warga/beranda', icon: Home },
         { label: 'Eksplorasi', href: '/peta', icon: Globe },
-        { label: 'Tambah Laporan', href: '/warga/lapor', icon: MessageSquareWarning },
+        {
+            label: 'Tambah Laporan',
+            href: '/warga/lapor',
+            icon: MessageSquareWarning,
+        },
         { label: 'Riwayat Laporan', href: '/warga/riwayat', icon: Clock },
         { label: 'Verifikasi', href: '/warga/verifikasi', icon: CheckSquare },
         { label: 'Profil', href: '/warga/profil', icon: SquareUser },
@@ -108,7 +114,7 @@ function getRoleSubtitle(user: User): string {
         case 'warga':
             return user.kelurahan?.nama
                 ? `Kel. ${user.kelurahan.nama}`
-                : 'Warga Kota Depok';
+                : 'Warga Jabodetabek';
         default:
             return 'Pengguna terdaftar';
     }
@@ -157,17 +163,26 @@ export default function AppSidebar() {
             return currentPath === '/';
         }
         if (currentPath.startsWith('/tiket/') && peran === 'warga') {
-            const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+            const searchParams =
+                typeof window !== 'undefined'
+                    ? new URLSearchParams(window.location.search)
+                    : null;
             const from = searchParams?.get('from');
             if (from === 'peta') return href === '/peta';
             if (from === 'verifikasi') return href === '/warga/verifikasi';
             return href === '/warga/riwayat';
         }
         if (currentPath.startsWith('/warga/verifikasi/') && peran === 'warga') {
-            const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+            const searchParams =
+                typeof window !== 'undefined'
+                    ? new URLSearchParams(window.location.search)
+                    : null;
             const from = searchParams?.get('from');
             if (from === 'verifikasi') return href === '/warga/verifikasi';
             return href === '/warga/riwayat';
+        }
+        if (currentPath.startsWith('/tiket/') && peran === 'instansi') {
+            return href === '/instansi/antrean';
         }
         return currentPath === href || currentPath.startsWith(href + '/');
     };

@@ -1,13 +1,25 @@
 import { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+    FieldError,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import GuestLayouts from '@/layouts/GuestLayout';
 import AuthSplitCard from '@/components/auth/AuthSplitCard';
 import KelurahanSearchDropdown from '@/components/wilayah/KelurahanSearchDropdown';
-import { CheckCircle2, Lock, User as UserIcon, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import {
+    CheckCircle2,
+    Lock,
+    User as UserIcon,
+    AlertCircle,
+    Eye,
+    EyeOff,
+} from 'lucide-react';
 
 interface RegisterCompleteProps {
     token: string;
@@ -50,13 +62,15 @@ export default function RegisterComplete({
                 subtitle="Isi username, password dan kelurahan anda untuk verifikasi hasil perbaikan fasilitas."
                 footer={
                     <p className="text-caption-xs text-muted-foreground">
-                        Sesuai aturan Jagains (P-14), kelurahan domisili dapat diubah kembali paling cepat setelah <strong>90 hari</strong>.
+                        Sesuai ketentuan Jagains, kelurahan domisili dapat
+                        diubah kembali paling cepat setelah{' '}
+                        <strong>90 hari</strong>.
                     </p>
                 }
             >
                 {/* Chip Status Email Terverifikasi Ringkas */}
                 <div className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-caption-xs font-semibold text-emerald-800 dark:text-emerald-300">
-                    <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <CheckCircle2 className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                     <span>Email Terverifikasi ({emailMasked})</span>
                 </div>
 
@@ -83,7 +97,7 @@ export default function RegisterComplete({
                                 <Input
                                     id="username"
                                     type="text"
-                                    placeholder="contoh: budi_depok"
+                                    placeholder="contoh: budi_warga"
                                     value={data.username}
                                     onChange={(e) =>
                                         setData('username', e.target.value)
@@ -100,7 +114,7 @@ export default function RegisterComplete({
                         </Field>
 
                         {/* Field 2 & 3: Kata Sandi & Konfirmasi Sandi Berdampingan */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <Field className="w-full">
                                 <FieldLabel
                                     htmlFor="password"
@@ -111,7 +125,9 @@ export default function RegisterComplete({
                                 <div className="relative">
                                     <Input
                                         id="password"
-                                        type={showPassword ? 'text' : 'password'}
+                                        type={
+                                            showPassword ? 'text' : 'password'
+                                        }
                                         placeholder="••••••••"
                                         value={data.password}
                                         onChange={(e) =>

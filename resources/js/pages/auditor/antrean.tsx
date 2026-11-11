@@ -66,9 +66,9 @@ export default function AntreanAuditorPage({
     const activeTab = filters.tab || 'semua';
     const hasActiveFilters = Boolean(
         filters.q ||
-            filters.instansi_id ||
-            filters.kategori_id ||
-            (filters.tab && filters.tab !== 'semua'),
+        filters.instansi_id ||
+        filters.kategori_id ||
+        (filters.tab && filters.tab !== 'semua'),
     );
 
     const handleTabChange = (tab: string) => {
@@ -80,7 +80,8 @@ export default function AntreanAuditorPage({
     };
 
     const handleFilterChange = (key: string, val: string | null) => {
-        const value = val === 'ALL' || val === 'semua' || val === '' ? undefined : val;
+        const value =
+            val === 'ALL' || val === 'semua' || val === '' ? undefined : val;
         router.get(
             '/auditor/antrean',
             { ...filters, [key]: value, page: 1 },
@@ -179,7 +180,7 @@ export default function AntreanAuditorPage({
                                 >
                                     <Icon className="size-3.5" />
                                     <span>{tab.label}</span>
-                                    <span className="rounded-full bg-muted px-1.5 py-0.2 text-[10px] font-semibold tabular-nums text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground">
+                                    <span className="py-0.2 rounded-full bg-muted px-1.5 text-[10px] font-semibold text-muted-foreground tabular-nums data-[state=active]:bg-background data-[state=active]:text-foreground">
                                         {tab.count}
                                     </span>
                                 </TabsTrigger>
@@ -190,9 +191,9 @@ export default function AntreanAuditorPage({
             </Tabs>
 
             {/* Card Pembungkus Antrean: Filter di Header Card, Table/Cards di Body, Paginasi di Footer */}
-            <div className="w-full min-w-0 rounded-xl border border-border bg-card overflow-hidden">
+            <div className="w-full min-w-0 overflow-hidden rounded-xl border border-border bg-card">
                 {/* Header Card: Toolbar Pencarian & Filter Horizontal */}
-                <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-b border-border bg-card">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card p-4">
                     {/* Search Input di Kiri */}
                     <form
                         onSubmit={handleSearchSubmit}
@@ -226,25 +227,40 @@ export default function AntreanAuditorPage({
                         {/* Filter Instansi */}
                         <div className="w-full sm:w-[160px]">
                             <Select
-                                value={filters.instansi_id ? String(filters.instansi_id) : 'semua'}
+                                value={
+                                    filters.instansi_id
+                                        ? String(filters.instansi_id)
+                                        : 'semua'
+                                }
                                 onValueChange={(val) =>
                                     handleFilterChange('instansi_id', val)
                                 }
                             >
                                 <SelectTrigger className="h-9 w-full text-xs">
-                                    <span className="flex-1 text-left truncate">
+                                    <span className="flex-1 truncate text-left">
                                         {filters.instansi_id
-                                            ? (instansiList.find(
-                                                  (ins) => String(ins.id) === String(filters.instansi_id),
+                                            ? instansiList.find(
+                                                  (ins) =>
+                                                      String(ins.id) ===
+                                                      String(
+                                                          filters.instansi_id,
+                                                      ),
                                               )?.singkatan ||
                                               instansiList.find(
-                                                  (ins) => String(ins.id) === String(filters.instansi_id),
+                                                  (ins) =>
+                                                      String(ins.id) ===
+                                                      String(
+                                                          filters.instansi_id,
+                                                      ),
                                               )?.nama ||
-                                              'Semua instansi')
+                                              'Semua instansi'
                                             : 'Semua instansi'}
                                     </span>
                                 </SelectTrigger>
-                                <SelectContent align="start" className="w-[180px] sm:w-[200px] max-h-72">
+                                <SelectContent
+                                    align="start"
+                                    className="max-h-72 w-[180px] sm:w-[200px]"
+                                >
                                     <SelectItem value="semua">
                                         Semua instansi
                                     </SelectItem>
@@ -264,21 +280,32 @@ export default function AntreanAuditorPage({
                         {/* Filter Kategori */}
                         <div className="w-full sm:w-[170px]">
                             <Select
-                                value={filters.kategori_id ? String(filters.kategori_id) : 'semua'}
+                                value={
+                                    filters.kategori_id
+                                        ? String(filters.kategori_id)
+                                        : 'semua'
+                                }
                                 onValueChange={(val) =>
                                     handleFilterChange('kategori_id', val)
                                 }
                             >
                                 <SelectTrigger className="h-9 w-full text-xs">
-                                    <span className="flex-1 text-left truncate">
+                                    <span className="flex-1 truncate text-left">
                                         {filters.kategori_id
-                                            ? (kategoriList.find(
-                                                  (kat) => String(kat.id) === String(filters.kategori_id),
-                                              )?.nama || 'Semua kategori')
+                                            ? kategoriList.find(
+                                                  (kat) =>
+                                                      String(kat.id) ===
+                                                      String(
+                                                          filters.kategori_id,
+                                                      ),
+                                              )?.nama || 'Semua kategori'
                                             : 'Semua kategori'}
                                     </span>
                                 </SelectTrigger>
-                                <SelectContent align="start" className="w-[220px] max-h-72">
+                                <SelectContent
+                                    align="start"
+                                    className="max-h-72 w-[220px]"
+                                >
                                     <SelectItem value="semua">
                                         Semua kategori
                                     </SelectItem>
@@ -341,10 +368,7 @@ export default function AntreanAuditorPage({
                         {/* Mobile View: Cards */}
                         <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
                             {antrean.data.map((item) => (
-                                <KartuEskalasi
-                                    key={item.id}
-                                    eskalasi={item}
-                                />
+                                <KartuEskalasi key={item.id} eskalasi={item} />
                             ))}
                         </div>
 

@@ -41,7 +41,10 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user()?->loadMissing('kelurahan:id,nama,tingkat', 'instansi:id,nama,singkatan'),
+                'user' => $request->user()?->loadMissing(
+                    'kelurahan.induk.induk',
+                    'instansi:id,nama,singkatan'
+                ),
             ],
             'counts' => [
                 'moderasi' => fn () => $request->user()?->peran === 'admin'

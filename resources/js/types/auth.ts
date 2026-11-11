@@ -18,6 +18,16 @@ export type User = {
         id: number;
         nama: string;
         tingkat: string;
+        induk?: {
+            id: number;
+            nama: string;
+            tingkat: string;
+            induk?: {
+                id: number;
+                nama: string;
+                tingkat: string;
+            } | null;
+        } | null;
     } | null;
     instansi?: {
         id: number;

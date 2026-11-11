@@ -48,12 +48,14 @@ interface ModalBeritaAcaraProps {
         total_berita_acara: number;
         semua_berita_acara?: BeritaAcaraItem[];
     } | null;
+    onSuccess?: () => void;
 }
 
 export default function ModalBeritaAcara({
     open,
     onClose,
     laporan,
+    onSuccess,
 }: ModalBeritaAcaraProps) {
     const [historyPage, setHistoryPage] = useState(1);
     const [tabActive, setTabActive] = useState<'baru' | 'riwayat'>('baru');
@@ -122,7 +124,11 @@ export default function ModalBeritaAcara({
                 setKegiatan('');
                 setHasil('');
                 setHambatan('');
-                router.reload({ only: ['antrean'] });
+                if (onSuccess) {
+                    onSuccess();
+                } else {
+                    router.reload({ only: ['antrean'] });
+                }
             } else {
                 setFieldErrors(
                     Object.fromEntries(

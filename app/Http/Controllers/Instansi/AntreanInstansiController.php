@@ -18,6 +18,7 @@ use App\Http\Requests\Instansi\UsulanTolakRequest;
 use App\Models\Instansi;
 use App\Models\Kategori;
 use App\Models\Laporan;
+use App\Models\Wilayah;
 use App\Services\InstansiTiketService;
 use App\Services\VerifikasiWargaService;
 use Illuminate\Http\JsonResponse;
@@ -40,7 +41,7 @@ class AntreanInstansiController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $filters = $request->only(['status', 'q', 'kategori_id', 'per_page']);
+        $filters = $request->only(['status', 'q', 'kategori_id', 'kelurahan_id', 'per_page']);
 
         $antrean = $this->service->ambilAntreanInstansi($user, $filters);
 
@@ -124,6 +125,7 @@ class AntreanInstansiController extends Controller
         $antrean->setCollection($transformedItems);
 
         $kategoriList = Kategori::where('aktif', true)->orderBy('nama')->get(['id', 'nama']);
+        $kelurahanList = Wilayah::where('tingkat', 'kelurahan')->orderBy('nama')->get(['id', 'nama']);
 
         // Instansi lain untuk modal pengalihan
         $instansiList = Instansi::where('aktif', true)
@@ -136,6 +138,7 @@ class AntreanInstansiController extends Controller
             'filters' => $filters,
             'ringkasan' => $ringkasan,
             'kategoriList' => $kategoriList,
+            'kelurahanList' => $kelurahanList,
             'instansiList' => $instansiList,
             'instansiSaya' => $user->instansi,
         ]);

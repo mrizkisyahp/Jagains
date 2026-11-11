@@ -1,424 +1,318 @@
-import type { ReactNode } from 'react';
+import { useState, useEffect, lazy, Suspense, type ReactNode } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import {
-    AlertTriangle,
-    ArrowRight,
-    CalendarClock,
-    CircleAlert,
-    Clock3,
-    MessageSquareWarning,
-    Users,
-} from 'lucide-react';
+import { ArrowRight, MapPin, Clock, AlertTriangle } from 'lucide-react';
 import InternalLayout from '@/layouts/InternalLayout';
-import InstansiEmptyState from '@/components/instansi/InstansiEmptyState';
-import InstansiStatusBadge, {
-    INSTANSI_STATUS,
-} from '@/components/instansi/InstansiStatusBadge';
+import InstansiStatusBadge from '@/components/instansi/InstansiStatusBadge';
+import InstansiTrenKecepatanChart from '@/components/instansi/InstansiTrenKecepatanChart';
+import InstansiIndikatorCards from '@/components/instansi/InstansiIndikatorCards';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { antrean, dashboard } from '@/routes/instansi';
-import { detail } from '@/routes/tiket';
+import { cn } from '@/lib/utils';
 
-type PeriodeDashboard = '30_hari' | '90_hari' | 'semua';
+const InstansiOverviewMap = lazy(
+    () => import('@/components/instansi/InstansiOverviewMap'),
+);
 
-interface TiketPrioritas {
+interface AntreanTiketItem {
     id: number;
     nomor_tiket: string;
     judul: string;
     status: string;
-    kategori: string | null;
-    kelurahan: string | null;
-    urgensi: 'lewat_sla' | 'perlu_respons' | 'sengketa' | 'sla_aktif';
-    sisa_hari_sla: number | null;
+    kelurahan: string;
+    kategori?: string | null;
+    sisa_hari?: number | null;
+    sisa_hari_sla?: number | null;
+    is_lewat_sla: boolean;
+    urgensi?: string;
+    lintang: number | null;
+    bujur: number | null;
+}
+
+interface MapPointItem {
+    id: number;
+    nomor_tiket: string;
+    judul: string;
+    status: string;
+    lat: number;
+    lng: number;
 }
 
 interface DashboardInstansiProps {
-    periode: PeriodeDashboard;
-    diperbarui_pada: string;
-    tindakan: {
-        lewat_sla: number;
-        perlu_respons: number;
-        perlu_respons_sengketa: number;
+    instansi?: {
+        id: number;
+        nama: string;
+        singkatan?: string | null;
+    };
+    statistik: {
+        tiket_aktif: number;
         menunggu_verifikasi: number;
-        prioritas: TiketPrioritas[];
+        perbaikan_disengketa: number;
+        lewat_sla: number;
+        tiket_selesai: number;
     };
-    pipeline: Array<{ status: string; jumlah: number }>;
-    kualitas: {
-        data_cukup: boolean;
-        ambang_tiket_tertutup: number;
-        tiket_tertutup: number;
-        median_respons_hk: number | null;
-        median_selesai_hk: number | null;
-        janji_ditepati_persen: number | null;
-        anggaran_menggantung_total: number;
-        tingkat_verifikasi_persen: number | null;
-        tingkat_sengketa_persen: number | null;
+    antrean_tiket: AntreanTiketItem[];
+    peta_titik: MapPointItem[];
+    indikator_kinerja: {
+        janji_ditepati: {
+            persen: number;
+            label_tingkat: string;
+            tepat_waktu: number;
+            terlambat: number;
+        };
+        persentase_verifikasi: {
+            persen: number;
+            label_tingkat: string;
+            diverifikasi: number;
+            ditolak: number;
+        };
+        anggaran_menggantung: {
+            total_tiket: number;
+            rata_rata_keterlambatan_hari: number;
+        };
     };
-}
-
-const PERIOD_LABELS: Record<PeriodeDashboard, string> = {
-    '30_hari': '30 hari terakhir',
-    '90_hari': '90 hari terakhir',
-    semua: 'Semua periode',
-};
-
-const TERMINAL_STATUSES = new Set([
-    'DITOLAK',
-    'TERTUTUP_WARGA',
-    'TERTUTUP_AUDITOR',
-]);
-
-function alasanUrgensi(tiket: TiketPrioritas): string {
-    if (tiket.urgensi === 'lewat_sla') {
-        return 'Melewati batas waktu layanan';
-    }
-
-    if (tiket.urgensi === 'sengketa') {
-        return 'Menunggu respons sengketa';
-    }
-
-    if (tiket.urgensi === 'perlu_respons') {
-        return 'Perlu respons awal';
-    }
-
-    if (tiket.sisa_hari_sla === null) {
-        return 'Batas waktu belum ditetapkan';
-    }
-
-    if (tiket.sisa_hari_sla === 0) {
-        return 'Batas waktu berakhir hari ini';
-    }
-
-    return `Sisa ${tiket.sisa_hari_sla} hari`;
-}
-
-function formatNilai(nilai: number | null, suffix: string): string {
-    return nilai === null ? '—' : `${nilai.toLocaleString('id-ID')}${suffix}`;
+    tren_kecepatan: {
+        labels: string[];
+        median_diterima: number[];
+        median_selesai: number[];
+    };
 }
 
 export default function DashboardInstansiPage({
-    periode,
-    diperbarui_pada,
-    tindakan,
-    pipeline,
-    kualitas,
+    instansi,
+    statistik,
+    antrean_tiket,
+    peta_titik,
+    indikator_kinerja,
+    tren_kecepatan,
 }: DashboardInstansiProps) {
-    const tindakanUtama = [
-        {
-            label: 'Lewat batas waktu',
-            value: tindakan.lewat_sla,
-            href: antrean({ query: { status: 'LEWAT_SLA' } }),
-            icon: AlertTriangle,
-        },
-        {
-            label: 'Perlu respons awal',
-            value: tindakan.perlu_respons,
-            href: antrean({ query: { status: 'PERLU_RESPONS' } }),
-            icon: Clock3,
-        },
-        {
-            label: 'Perlu respons sengketa',
-            value: tindakan.perlu_respons_sengketa,
-            href: antrean({ query: { status: 'SENGKETA' } }),
-            icon: MessageSquareWarning,
-        },
-        {
-            label: 'Menunggu verifikasi',
-            value: tindakan.menunggu_verifikasi,
-            href: antrean({ query: { status: 'MENUNGGU_VERIFIKASI' } }),
-            icon: Users,
-        },
-    ];
-    const pipelineAktif = pipeline.filter(
-        ({ status }) => !TERMINAL_STATUSES.has(status),
-    );
-    const pipelineTerminal = pipeline.filter(({ status }) =>
-        TERMINAL_STATUSES.has(status),
-    );
-    const totalAktif = pipelineAktif.reduce(
-        (total, item) => total + item.jumlah,
-        0,
-    );
-    const diperbarui = new Intl.DateTimeFormat('id-ID', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    }).format(new Date(diperbarui_pada));
+    const [isMounted, setIsMounted] = useState(false);
 
-    const metrikKualitas = [
-        [
-            'Respons awal median',
-            formatNilai(kualitas.median_respons_hk, ' hari kerja'),
-        ],
-        [
-            'Sampai diajukan selesai',
-            formatNilai(kualitas.median_selesai_hk, ' hari kerja'),
-        ],
-        [
-            'Janji target dipenuhi',
-            formatNilai(kualitas.janji_ditepati_persen, '%'),
-        ],
-        [
-            'Anggaran melewati target',
-            `${kualitas.anggaran_menggantung_total.toLocaleString('id-ID')} tiket`,
-        ],
-        [
-            'Verifikasi warga',
-            formatNilai(kualitas.tingkat_verifikasi_persen, '%'),
-        ],
-        [
-            'Sengketa setelah verifikasi',
-            formatNilai(kualitas.tingkat_sengketa_persen, '%'),
-        ],
-    ];
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    const formatStat = (num: number) => {
+        return (num ?? 0).toLocaleString('id-ID');
+    };
+
+    const namaSapaan = instansi?.singkatan || instansi?.nama || 'Instansi';
 
     return (
-        <div className="flex min-w-0 flex-col gap-5">
-            <Head title="Dashboard Kinerja Instansi" />
+        <InternalLayout title="Beranda" breadcrumb="Instansi > Beranda">
+            <div className="w-full space-y-8 pb-24">
+                <Head title="Beranda Instansi - Jagains" />
 
-            <header className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-display-sm font-display font-semibold tracking-tight">
-                        Kinerja penanganan
+                {/* Sapaan Header Sesuai Wireframe */}
+                <div className="space-y-1">
+                    <h1 className="text-display-xs font-display font-bold tracking-tight text-foreground sm:text-display-sm">
+                        Hai {namaSapaan}
                     </h1>
-                    <p className="mt-1 text-body-sm text-muted-foreground">
-                        Prioritaskan laporan yang membutuhkan tindakan hari ini.
+                    <p className="text-body-sm font-medium text-muted-foreground">
+                        Selamat Datang di Jagains
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <span className="hidden text-caption-xs text-muted-foreground sm:inline">
-                        Diperbarui {diperbarui}
-                    </span>
-                    <Select
-                        value={periode}
-                        onValueChange={(value) => {
-                            if (!value) {
-                                return;
-                            }
 
-                            router.get(
-                                dashboard.url({ query: { periode: value } }),
-                            );
-                        }}
+                {/* 5 Kartu Statistik Utama (Wireframe Gambar 1) */}
+                <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+                    {/* Kartu 1: Tiket Aktif */}
+                    <Link
+                        href="/instansi/antrean?status=AKTIF"
+                        className="group flex min-h-[110px] flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 shadow-2xs transition-all hover:border-foreground/40 sm:min-h-[125px] sm:p-5"
                     >
-                        <SelectTrigger
-                            aria-label="Pilih periode dashboard"
-                            className="min-w-44 shadow-none"
-                        >
-                            <SelectValue>
-                                {(value: string | null) =>
-                                    PERIOD_LABELS[
-                                        (value ?? 'semua') as PeriodeDashboard
-                                    ]
-                                }
-                            </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                {Object.entries(PERIOD_LABELS).map(
-                                    ([value, label]) => (
-                                        <SelectItem key={value} value={value}>
-                                            {label}
-                                        </SelectItem>
-                                    ),
-                                )}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+                        <span className="text-caption-xs font-display font-bold text-foreground sm:text-body-sm">
+                            Tiket Aktif
+                        </span>
+                        <div className="text-display-xs font-display font-bold tracking-tight text-foreground sm:text-display-md">
+                            {formatStat(statistik?.tiket_aktif ?? 0)}
+                        </div>
+                    </Link>
+
+                    {/* Kartu 2: Menunggu Verifikasi Warga */}
+                    <Link
+                        href="/instansi/antrean?status=MENUNGGU_VERIFIKASI"
+                        className="group flex min-h-[110px] flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 shadow-2xs transition-all hover:border-foreground/40 sm:min-h-[125px] sm:p-5"
+                    >
+                        <span className="text-caption-xs font-display font-bold text-foreground sm:text-body-sm">
+                            Menunggu Verifikasi Warga
+                        </span>
+                        <div className="text-display-xs font-display font-bold tracking-tight text-foreground sm:text-display-md">
+                            {formatStat(statistik?.menunggu_verifikasi ?? 0)}
+                        </div>
+                    </Link>
+
+                    {/* Kartu 3: Perbaikan Disengketa */}
+                    <Link
+                        href="/instansi/antrean?status=DISENGKETAKAN"
+                        className="group flex min-h-[110px] flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 shadow-2xs transition-all hover:border-foreground/40 sm:min-h-[125px] sm:p-5"
+                    >
+                        <span className="text-caption-xs font-display font-bold text-foreground sm:text-body-sm">
+                            Perbaikan Disengketa
+                        </span>
+                        <div className="text-display-xs font-display font-bold tracking-tight text-foreground sm:text-display-md">
+                            {formatStat(statistik?.perbaikan_disengketa ?? 0)}
+                        </div>
+                    </Link>
+
+                    {/* Kartu 4: Lewat Batas Waktu */}
+                    <Link
+                        href="/instansi/antrean?status=LEWAT_SLA"
+                        className="group flex min-h-[110px] flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 shadow-2xs transition-all hover:border-foreground/40 sm:min-h-[125px] sm:p-5"
+                    >
+                        <span className="text-caption-xs font-display font-bold text-foreground sm:text-body-sm">
+                            Lewat Batas Waktu
+                        </span>
+                        <div className="text-display-xs font-display font-bold tracking-tight text-destructive sm:text-display-md">
+                            {formatStat(statistik?.lewat_sla ?? 0)}
+                        </div>
+                    </Link>
+
+                    {/* Kartu 5: Tiket Selesai */}
+                    <Link
+                        href="/instansi/antrean?status=SELESAI"
+                        className="group col-span-2 flex min-h-[110px] flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 shadow-2xs transition-all hover:border-foreground/40 sm:col-span-1 sm:min-h-[125px] sm:p-5"
+                    >
+                        <span className="text-caption-xs font-display font-bold text-foreground sm:text-body-sm">
+                            Tiket Selesai
+                        </span>
+                        <div className="text-display-xs font-display font-bold tracking-tight text-emerald-600 sm:text-display-md dark:text-emerald-400">
+                            {formatStat(statistik?.tiket_selesai ?? 0)}
+                        </div>
+                    </Link>
                 </div>
-            </header>
 
+                {/* BAGIAN 1: LAPORAN (Antrean Tiket Laporan di Kiri, Peta di Kanan) */}
+                <div className="space-y-4">
+                    <h2 className="text-body-base font-display font-bold text-foreground sm:text-body-lg">
+                        Laporan
+                    </h2>
 
-            <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(20rem,1fr)]">
-                <section
-                    className="min-w-0 overflow-hidden rounded-xl border border-border"
-                    aria-labelledby="prioritas-heading"
-                >
-                    <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-                        <div>
-                            <h2
-                                id="prioritas-heading"
-                                className="text-body-medium font-semibold"
-                            >
-                                Perlu ditangani
-                            </h2>
-                            <p className="text-body-sm text-muted-foreground">
-                                Hingga delapan tiket berisiko tertinggi pada
-                                periode ini.
-                            </p>
-                        </div>
-                        <Button
-                            render={<Link href={antrean()} />}
-                            variant="ghost"
-                            size="sm"
-                        >
-                            Buka antrean
-                            <ArrowRight data-icon="inline-end" />
-                        </Button>
-                    </header>
-                    {tindakan.prioritas.length === 0 ? (
-                        <InstansiEmptyState
-                            title="Belum ada tiket untuk ditangani."
-                            description="Tiket aktif dan batas waktu layanan akan muncul di sini."
-                        />
-                    ) : (
-                        <ul className="divide-y divide-border">
-                            {tindakan.prioritas.map((tiket) => (
-                                <li
-                                    key={tiket.id}
-                                    className="flex min-w-0 items-center gap-3 px-4 py-3"
-                                >
-                                    <div className="min-w-0 flex-1">
-                                        <Link
-                                            href={detail(tiket.nomor_tiket)}
-                                            className="block truncate text-body-base font-medium underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                        >
-                                            {tiket.judul}
-                                        </Link>
-                                        <p className="mt-0.5 truncate text-body-sm text-muted-foreground">
-                                            {alasanUrgensi(tiket)}
-                                            {tiket.kelurahan
-                                                ? ` · ${tiket.kelurahan}`
-                                                : ''}
-                                        </p>
-                                    </div>
-                                    <InstansiStatusBadge
-                                        status={tiket.status}
-                                    />
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </section>
-
-                <section
-                    className="min-w-0 rounded-xl border border-border"
-                    aria-labelledby="pipeline-heading"
-                >
-                    <header className="border-b border-border px-4 py-3">
-                        <h2
-                            id="pipeline-heading"
-                            className="text-body-medium font-semibold"
-                        >
-                            Alur penanganan
-                        </h2>
-                        <p className="text-body-sm text-muted-foreground">
-                            Sebaran tiket pada setiap tahap kerja.
-                        </p>
-                    </header>
-                    <div className="flex flex-col gap-3 px-4 py-4">
-                        {pipelineAktif.map(({ status, jumlah }) => (
-                            <div key={status} className="flex flex-col gap-1.5">
-                                <div className="flex items-center justify-between gap-3 text-body-sm">
-                                    <span className="truncate text-muted-foreground">
-                                        {INSTANSI_STATUS[status]?.label ??
-                                            status}
-                                    </span>
-                                    <span className="text-foreground tabular-nums">
-                                        {jumlah.toLocaleString('id-ID')}
-                                    </span>
+                    <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-12">
+                        {/* Kolom Kiri: Antrean Tiket Laporan (lg:col-span-7) */}
+                        <div className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-2xs sm:p-6 lg:col-span-7">
+                            <div className="space-y-4">
+                                {/* Header Card Antrean */}
+                                <div className="flex items-center justify-between border-b border-border/70 pb-3">
+                                    <h3 className="text-body-base font-display font-bold text-foreground">
+                                        Antrean Tiket Laporan
+                                    </h3>
+                                    <Link
+                                        href="/instansi/antrean"
+                                        className="inline-flex items-center gap-1.5 text-caption-xs font-semibold text-muted-foreground transition-colors hover:text-foreground sm:text-body-sm"
+                                    >
+                                        <span>Lihat lainnya</span>
+                                        <ArrowRight className="size-4" />
+                                    </Link>
                                 </div>
-                                <Progress
-                                    value={
-                                        totalAktif === 0
-                                            ? 0
-                                            : (jumlah / totalAktif) * 100
-                                    }
-                                    aria-label={`${INSTANSI_STATUS[status]?.label ?? status}: ${jumlah} tiket`}
-                                    className="h-1 bg-muted [&_[data-slot=progress-indicator]]:bg-foreground"
-                                />
-                            </div>
-                        ))}
-                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 border-t border-border pt-3 text-caption-xs text-muted-foreground">
-                            {pipelineTerminal.map(({ status, jumlah }) => (
-                                <span key={status}>
-                                    {INSTANSI_STATUS[status]?.label ?? status}:{' '}
-                                    <span className="text-foreground tabular-nums">
-                                        {jumlah}
-                                    </span>
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            </div>
 
-            <section
-                className="rounded-xl border border-border"
-                aria-labelledby="kualitas-heading"
-            >
-                <header className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
-                    <div>
-                        <h2
-                            id="kualitas-heading"
-                            className="text-body-medium font-semibold"
-                        >
-                            Kualitas penanganan
-                        </h2>
-                        <p className="text-body-sm text-muted-foreground">
-                            Indikator kinerja laporan yang masuk pada{' '}
-                            {PERIOD_LABELS[periode].toLowerCase()}.
-                        </p>
-                    </div>
-                    <CalendarClock
-                        className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                        aria-hidden="true"
-                    />
-                </header>
-                {!kualitas.data_cukup ? (
-                    <div className="flex items-start gap-3 px-4 py-5">
-                        <CircleAlert
-                            className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                            aria-hidden="true"
-                        />
-                        <div>
-                            <p className="text-body-base font-medium">
-                                Data belum cukup untuk evaluasi kinerja.
-                            </p>
-                            <p className="mt-1 text-body-sm text-muted-foreground">
-                                {kualitas.tiket_tertutup.toLocaleString(
-                                    'id-ID',
-                                )}{' '}
-                                dari{' '}
-                                {kualitas.ambang_tiket_tertutup.toLocaleString(
-                                    'id-ID',
-                                )}{' '}
-                                tiket tertutup pada periode ini diperlukan untuk
-                                menampilkan indikator kualitas.
-                            </p>
+                                {/* List Tiket Sesuai Wireframe */}
+                                {!antrean_tiket ||
+                                antrean_tiket.length === 0 ? (
+                                    <div className="py-8 text-center text-body-sm text-muted-foreground">
+                                        Belum ada tiket aktif dalam antrean.
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-border/60">
+                                        {antrean_tiket.map((tiket) => (
+                                            <div
+                                                key={tiket.id}
+                                                onClick={() =>
+                                                    router.visit(
+                                                        `/tiket/${encodeURIComponent(tiket.nomor_tiket)}`,
+                                                    )
+                                                }
+                                                className="group flex cursor-pointer items-center justify-between gap-3 rounded-xl px-2 py-3.5 transition-colors first:pt-1 last:pb-1 hover:bg-muted/30"
+                                            >
+                                                <div className="min-w-0 flex-1 space-y-1">
+                                                    <h4 className="truncate text-body-sm font-display font-bold text-foreground group-hover:underline">
+                                                        {tiket.judul}
+                                                    </h4>
+                                                    <p className="flex items-center gap-1.5 text-caption-xs text-muted-foreground">
+                                                        <span>
+                                                            {tiket.kelurahan}
+                                                        </span>
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex shrink-0 flex-col items-end gap-1">
+                                                    <InstansiStatusBadge
+                                                        status={tiket.status}
+                                                    />
+                                                    {(() => {
+                                                        const sisa =
+                                                            tiket.sisa_hari ??
+                                                            tiket.sisa_hari_sla;
+                                                        if (
+                                                            typeof sisa !==
+                                                            'number'
+                                                        )
+                                                            return null;
+                                                        return (
+                                                            <span
+                                                                className={cn(
+                                                                    'font-mono text-[11px] font-medium',
+                                                                    tiket.is_lewat_sla
+                                                                        ? 'font-bold text-destructive'
+                                                                        : 'text-muted-foreground',
+                                                                )}
+                                                            >
+                                                                {tiket.is_lewat_sla
+                                                                    ? `Lewat: ${sisa} hr`
+                                                                    : `Sisa Hari: ${sisa}`}
+                                                            </span>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Kolom Kanan: Peta (non-interactable) (lg:col-span-5) */}
+                        <div className="flex min-h-[340px] lg:col-span-5">
+                            {isMounted ? (
+                                <Suspense
+                                    fallback={
+                                        <div className="size-full min-h-[340px] animate-pulse rounded-2xl border border-border/80 bg-muted/20" />
+                                    }
+                                >
+                                    <InstansiOverviewMap
+                                        points={peta_titik ?? []}
+                                        className="size-full"
+                                    />
+                                </Suspense>
+                            ) : (
+                                <div className="size-full min-h-[340px] animate-pulse rounded-2xl border border-border/80 bg-muted/20" />
+                            )}
                         </div>
                     </div>
-                ) : (
-                    <dl className="grid sm:grid-cols-2 xl:grid-cols-3">
-                        {metrikKualitas.map(([label, value], index) => (
-                            <div
-                                key={label}
-                                className={`flex min-h-24 flex-col justify-center gap-1 px-4 py-3 ${index % 2 === 0 ? 'sm:border-r sm:border-border xl:border-r' : ''} ${index < 4 ? 'border-b border-border xl:border-b' : ''}`}
-                            >
-                                <dt className="text-body-sm text-muted-foreground">
-                                    {label}
-                                </dt>
-                                <dd className="text-display-sm font-display font-semibold tabular-nums">
-                                    {value}
-                                </dd>
-                            </div>
-                        ))}
-                    </dl>
-                )}
-            </section>
-        </div>
+                </div>
+
+                {/* BAGIAN 2: INDIKATOR KINERJA PELAYANAN (Gambar 2 Wireframe) */}
+                <div className="space-y-5 pt-4">
+                    <h2 className="text-body-base font-display font-bold text-foreground sm:text-body-lg">
+                        Indikator Kinerja Pelayanan
+                    </h2>
+
+                    {/* Chart Tren Kecepatan Penanganan */}
+                    {tren_kecepatan && (
+                        <InstansiTrenKecepatanChart data={tren_kecepatan} />
+                    )}
+
+                    {/* 3 Donut & Metrik Cards di Bawah */}
+                    {indikator_kinerja && (
+                        <InstansiIndikatorCards
+                            janjiDitepati={indikator_kinerja.janji_ditepati}
+                            persentaseVerifikasi={
+                                indikator_kinerja.persentase_verifikasi
+                            }
+                            anggaranMenggantung={
+                                indikator_kinerja.anggaran_menggantung
+                            }
+                        />
+                    )}
+                </div>
+            </div>
+        </InternalLayout>
     );
 }
-
-DashboardInstansiPage.layout = (page: ReactNode) => (
-    <InternalLayout title="Dashboard kinerja" breadcrumb="Instansi > Kinerja">
-        {page}
-    </InternalLayout>
-);

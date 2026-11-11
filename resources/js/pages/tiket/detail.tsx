@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
@@ -21,8 +21,17 @@ import {
     ZoomIn,
     Copy,
     Check,
+    X,
+    ClipboardCheck,
+    Calendar,
+    Hammer,
+    CheckSquare,
 } from 'lucide-react';
-import type { TiketDetail, LampiranFoto, RiwayatStatusItem } from '@/types/tiket';
+import type {
+    TiketDetail,
+    LampiranFoto,
+    RiwayatStatusItem,
+} from '@/types/tiket';
 import type { User } from '@/types/auth';
 import InternalLayout from '@/layouts/InternalLayout';
 import LandingNavbar from '@/components/landing/LandingNavbar';
@@ -47,6 +56,15 @@ import ModalKonfirmasiLogin from '@/components/tiket/ModalKonfirmasiLogin';
 import ModalBukaIdentitasPelapor from '@/components/admin/ModalBukaIdentitasPelapor';
 import ModalBeriSuaraVerifikasi from '@/components/verifikasi/ModalBeriSuaraVerifikasi';
 import TiketRiwayatStatusTimeline from '@/components/tiket/TiketRiwayatStatusTimeline';
+import ModalTerimaTiket from '@/components/instansi/ModalTerimaTiket';
+import ModalUsulanTolak from '@/components/instansi/ModalUsulanTolak';
+import ModalSurveiSelesai from '@/components/instansi/ModalSurveiSelesai';
+import ModalJadwalAnggaran from '@/components/instansi/ModalJadwalAnggaran';
+import ModalAjukanSelesai from '@/components/instansi/ModalAjukanSelesai';
+import ModalBeritaAcara from '@/components/instansi/ModalBeritaAcara';
+import FotoKondisiLapanganView from '@/components/instansi/FotoKondisiLapanganView';
+import KelolaBeritaAcaraView from '@/components/instansi/KelolaBeritaAcaraView';
+import AjukanPenyelesaianView from '@/components/instansi/AjukanPenyelesaianView';
 
 const LocationMap = lazy(
     () => import('@/components/instansi/InstansiLocationMap'),
@@ -129,6 +147,15 @@ export default function DetailTiketPage({
     const currentUser = auth?.user;
 
     const [tiket, setTiket] = useState<TiketDetail>(initialTiket);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
+        setTiket(initialTiket);
+    }, [initialTiket]);
     const [preview, setPreview] = useState<LampiranFoto | null>(null);
     const [documentPage, setDocumentPage] = useState(1);
     const [loadingDukungan, setLoadingDukungan] = useState(false);
@@ -139,15 +166,44 @@ export default function DetailTiketPage({
     const [laporModalOpen, setLaporModalOpen] = useState(false);
     const [modalIdentitasOpen, setModalIdentitasOpen] = useState(false);
     const [modalVerifikasiOpen, setModalVerifikasiOpen] = useState(false);
+    const [modalTerimaOpen, setModalTerimaOpen] = useState(false);
+    const [modalUsulTolakOpen, setModalUsulTolakOpen] = useState(false);
+    const [modalSurveiOpen, setModalSurveiOpen] = useState(false);
+    const [modalAnggaranOpen, setModalAnggaranOpen] = useState(false);
+    const [modalAjukanSelesaiOpen, setModalAjukanSelesaiOpen] = useState(false);
+    const [modalBeritaAcaraOpen, setModalBeritaAcaraOpen] = useState(false);
+    const [isCapturingMulai, setIsCapturingMulai] = useState(false);
+    const [isKelolaBeritaAcara, setIsKelolaBeritaAcara] = useState(false);
+    const [isAjukanPenyelesaian, setIsAjukanPenyelesaian] = useState(false);
     const [copiedTicket, setCopiedTicket] = useState(false);
-    const [activePhotoTab, setActivePhotoTab] = useState<'awal' | 'sesudah'>('awal');
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('aksi') === 'mulai-pengerjaan') {
+                setIsCapturingMulai(true);
+            }
+            if (params.get('aksi') === 'berita-acara') {
+                setIsKelolaBeritaAcara(true);
+            }
+            if (params.get('aksi') === 'ajukan-selesai') {
+                setIsAjukanPenyelesaian(true);
+            }
+        }
+    }, []);
+    const [activePhotoTab, setActivePhotoTab] = useState<'awal' | 'sesudah'>(
+        'awal',
+    );
 
     const handleCopyTicket = async () => {
         try {
             await navigator.clipboard.writeText(tiket.nomor_tiket);
             setCopiedTicket(true);
             setTimeout(() => setCopiedTicket(false), 2000);
-            toast.success('Nomor Tiket Disalin', `Nomor #${tiket.nomor_tiket} telah disalin ke papan klip.`);
+            toast.success(
+                'Nomor Tiket Disalin',
+                `Nomor #${tiket.nomor_tiket} telah disalin ke papan klip.`,
+            );
         } catch {
             toast.error('Gagal Menyalin', 'Tidak dapat menyalin nomor tiket.');
         }
@@ -188,7 +244,7 @@ export default function DetailTiketPage({
         if (currentUser.peran !== 'warga') {
             toast.warning(
                 'Aksi Dibatasi',
-                'Hanya akun warga Kota Depok yang dapat memberikan dukungan laporan.',
+                'Hanya akun warga terdaftar yang dapat memberikan dukungan laporan.',
             );
             return;
         }
@@ -301,7 +357,7 @@ export default function DetailTiketPage({
             case 'instansi':
                 return {
                     href: '/instansi/antrean',
-                    label: 'Antrean tiket',
+                    label: 'Kembali',
                 };
             case 'warga':
             default:
@@ -319,7 +375,7 @@ export default function DetailTiketPage({
             case 'auditor':
                 return `Auditor > Pengawasan Arbitrase > #${nomorTiket}`;
             case 'instansi':
-                return `Instansi > Antrean Tiket > #${nomorTiket}`;
+                return 'Instansi > Daftar Laporan > Detail Laporan';
             case 'warga':
             default:
                 return `Warga > Riwayat Laporan > #${nomorTiket}`;
@@ -507,7 +563,7 @@ export default function DetailTiketPage({
             <div className="flex items-center justify-between">
                 <Button
                     variant="ghost"
-                    className="h-9 px-0 text-body-sm hover:bg-transparent hover:text-foreground text-muted-foreground gap-1.5 cursor-pointer font-medium"
+                    className="h-9 cursor-pointer gap-1.5 px-0 text-body-sm font-medium text-muted-foreground hover:bg-transparent hover:text-foreground"
                     render={<Link href={backNav.href} />}
                 >
                     <ArrowLeft className="size-4" />
@@ -544,15 +600,15 @@ export default function DetailTiketPage({
                     {/* Header Tiket Sesuai Wireframe */}
                     <div className="space-y-4 border-b border-border/80 pb-6">
                         {/* Baris 1: Judul Laporan (Kiri) & ID Tiket + Salin (Kanan) */}
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground font-display max-w-3xl leading-snug">
+                        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                            <h1 className="max-w-3xl font-display text-2xl leading-snug font-bold tracking-tight text-foreground sm:text-3xl">
                                 {tiket.judul}
                             </h1>
 
                             <button
                                 type="button"
                                 onClick={handleCopyTicket}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground text-caption-xs sm:text-body-sm font-mono font-medium transition-colors cursor-pointer self-start sm:self-auto shrink-0 shadow-2xs"
+                                className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 self-start rounded-xl border border-border/60 bg-muted/40 px-3 py-1.5 text-caption-xs font-mono font-medium text-muted-foreground shadow-2xs transition-colors hover:bg-muted hover:text-foreground sm:self-auto sm:text-body-sm"
                                 title="Klik untuk salin nomor tiket"
                             >
                                 <span>#{tiket.nomor_tiket}</span>
@@ -565,12 +621,12 @@ export default function DetailTiketPage({
                         </div>
 
                         {/* Baris 2: Badge Status (Kiri) & Tombol Aksi (Kanan) */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+                        <div className="flex flex-col justify-between gap-4 pt-1 sm:flex-row sm:items-center">
                             {/* Badges Status */}
                             <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
                                 <Badge
                                     variant="outline"
-                                    className="h-8 px-3.5 rounded-full text-caption-xs font-semibold capitalize bg-muted/40 border-border/70"
+                                    className="h-8 rounded-full border-border/70 bg-muted/40 px-3.5 text-caption-xs font-semibold capitalize"
                                 >
                                     Tingkat {tiket.keparahan}
                                 </Badge>
@@ -582,19 +638,24 @@ export default function DetailTiketPage({
                                         variant={
                                             tiket.kondisi_sla === 'lewat_sla'
                                                 ? 'sla-late'
-                                                : tiket.kondisi_sla === 'hampir_lewat'
+                                                : tiket.kondisi_sla ===
+                                                    'hampir_lewat'
                                                   ? 'sla-warn'
-                                                  : tiket.kondisi_sla === 'dalam_sla'
+                                                  : tiket.kondisi_sla ===
+                                                      'dalam_sla'
                                                     ? 'sla-safe'
                                                     : 'outline'
                                         }
-                                        className="h-8 px-3.5 rounded-full text-caption-xs font-medium"
+                                        className="h-8 rounded-full px-3.5 text-caption-xs font-medium"
                                     >
                                         {tiket.sisa_sla_teks}
                                     </Badge>
                                 ) : (
                                     tiket.instansi_nama && (
-                                        <Badge variant="outline" className="h-8 px-3.5 rounded-full text-caption-xs font-medium text-muted-foreground border-border/70">
+                                        <Badge
+                                            variant="outline"
+                                            className="h-8 rounded-full border-border/70 px-3.5 text-caption-xs font-medium text-muted-foreground"
+                                        >
                                             {tiket.instansi_nama}
                                         </Badge>
                                     )
@@ -605,15 +666,33 @@ export default function DetailTiketPage({
                             <div className="flex items-center gap-2 self-start sm:self-auto">
                                 <Button
                                     type="button"
-                                    variant={tiket.sudah_didukung ? 'default' : 'outline'}
+                                    variant={
+                                        tiket.sudah_didukung
+                                            ? 'default'
+                                            : 'outline'
+                                    }
                                     size="sm"
                                     disabled={loadingDukungan}
                                     onClick={handleToggleDukungan}
-                                    className="h-9 px-3.5 rounded-xl gap-2 text-caption-xs sm:text-body-sm font-semibold cursor-pointer shadow-xs"
-                                    title={tiket.sudah_didukung ? 'Batalkan dukungan' : 'Dukung laporan ini'}
+                                    className="h-9 cursor-pointer gap-2 rounded-xl px-3.5 text-caption-xs font-semibold shadow-xs sm:text-body-sm"
+                                    title={
+                                        tiket.sudah_didukung
+                                            ? 'Batalkan dukungan'
+                                            : 'Dukung laporan ini'
+                                    }
                                 >
-                                    <ThumbsUp className={cn('size-4', tiket.sudah_didukung && 'fill-current')} />
-                                    <span className="font-semibold">{tiket.total_dukungan.toLocaleString('id-ID')}</span>
+                                    <ThumbsUp
+                                        className={cn(
+                                            'size-4',
+                                            tiket.sudah_didukung &&
+                                                'fill-current',
+                                        )}
+                                    />
+                                    <span className="font-semibold">
+                                        {tiket.total_dukungan.toLocaleString(
+                                            'id-ID',
+                                        )}
+                                    </span>
                                 </Button>
 
                                 <Button
@@ -621,7 +700,7 @@ export default function DetailTiketPage({
                                     variant="outline"
                                     size="sm"
                                     onClick={share}
-                                    className="size-9 p-0 rounded-xl cursor-pointer"
+                                    className="size-9 cursor-pointer rounded-xl p-0"
                                     title="Bagikan Tautan Tiket"
                                     aria-label="Bagikan Tautan Tiket"
                                 >
@@ -633,7 +712,7 @@ export default function DetailTiketPage({
                                     variant="outline"
                                     size="sm"
                                     onClick={handleOpenLaporKonten}
-                                    className="size-9 p-0 rounded-xl text-muted-foreground hover:text-destructive hover:border-destructive/40 cursor-pointer"
+                                    className="size-9 cursor-pointer rounded-xl p-0 text-muted-foreground hover:border-destructive/40 hover:text-destructive"
                                     title="Laporkan Pelanggaran Konten"
                                     aria-label="Laporkan Pelanggaran Konten"
                                 >
@@ -644,63 +723,75 @@ export default function DetailTiketPage({
                     </div>
 
                     {/* Section Media & Metadata (3 Kolom Sesuai Wireframe: Peta | Foto | Detail) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                    <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-3">
                         {/* Kolom 1: Peta Lokasi */}
-                        <div className="relative overflow-hidden rounded-2xl bg-zinc-950 aspect-[4/3] w-full border border-border/50 shadow-sm flex items-center justify-center">
-                            {validLocation ? (
-                                <Suspense fallback={<Skeleton className="size-full rounded-2xl" />}>
+                        <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-zinc-950 shadow-sm">
+                            {validLocation && isMounted ? (
+                                <Suspense
+                                    fallback={
+                                        <Skeleton className="size-full rounded-2xl" />
+                                    }
+                                >
                                     <LocationMap
                                         latitude={latitude}
                                         longitude={longitude}
-                                        className="size-full rounded-2xl h-full min-h-full"
+                                        className="size-full h-full min-h-full rounded-2xl"
                                     />
                                 </Suspense>
                             ) : (
-                                <span className="text-zinc-500 font-display font-semibold text-body-sm">Peta</span>
+                                <span className="text-body-sm font-display font-semibold text-zinc-500">
+                                    Peta
+                                </span>
                             )}
                         </div>
 
                         {/* Kolom 2: Bukti Foto Kerusakan */}
-                        <div className="relative overflow-hidden rounded-2xl bg-zinc-950 aspect-[4/3] w-full border border-border/50 shadow-sm flex items-center justify-center group">
+                        <div className="group relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-zinc-950 shadow-sm">
                             {tiket.foto_awal ? (
                                 <button
                                     type="button"
                                     onClick={() =>
                                         setPreview(
-                                            activePhotoTab === 'sesudah' && tiket.foto_sesudah
+                                            activePhotoTab === 'sesudah' &&
+                                                tiket.foto_sesudah
                                                 ? tiket.foto_sesudah
                                                 : tiket.foto_awal,
                                         )
                                     }
-                                    className="size-full relative block focus-visible:outline-2 focus-visible:outline-ring cursor-pointer"
+                                    className="relative block size-full cursor-pointer focus-visible:outline-2 focus-visible:outline-ring"
                                     aria-label="Perbesar foto bukti"
                                 >
                                     <img
                                         src={
-                                            activePhotoTab === 'sesudah' && tiket.foto_sesudah
+                                            activePhotoTab === 'sesudah' &&
+                                            tiket.foto_sesudah
                                                 ? tiket.foto_sesudah.url
                                                 : tiket.foto_awal.url
                                         }
                                         alt="Bukti Foto Kerusakan"
                                         className="size-full object-cover transition-transform duration-200 group-hover:scale-105"
                                     />
-                                    <span className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-xl bg-black/70 backdrop-blur-md px-2.5 py-1 text-caption-xs text-white shadow-md">
+                                    <span className="absolute right-3 bottom-3 flex items-center gap-1.5 rounded-xl bg-black/70 px-2.5 py-1 text-caption-xs text-white shadow-md backdrop-blur-md">
                                         <ZoomIn className="size-3.5" />
                                         <span>Perbesar</span>
                                     </span>
                                 </button>
                             ) : (
-                                <span className="text-zinc-500 font-display font-semibold text-body-sm">Foto</span>
+                                <span className="text-body-sm font-display font-semibold text-zinc-500">
+                                    Foto
+                                </span>
                             )}
 
                             {/* Toggle Foto Awal vs Sesudah jika laporan sudah selesai diperbaiki */}
                             {tiket.foto_awal && tiket.foto_sesudah && (
-                                <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-xl bg-black/70 backdrop-blur-md p-1 border border-white/10 text-[11px]">
+                                <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-xl border border-white/10 bg-black/70 p-1 text-[11px] backdrop-blur-md">
                                     <button
                                         type="button"
-                                        onClick={() => setActivePhotoTab('awal')}
+                                        onClick={() =>
+                                            setActivePhotoTab('awal')
+                                        }
                                         className={cn(
-                                            'px-2 py-0.5 rounded-lg font-semibold transition-all cursor-pointer',
+                                            'cursor-pointer rounded-lg px-2 py-0.5 font-semibold transition-all',
                                             activePhotoTab === 'awal'
                                                 ? 'bg-white text-zinc-950 shadow-xs'
                                                 : 'text-white/70 hover:text-white',
@@ -710,9 +801,11 @@ export default function DetailTiketPage({
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => setActivePhotoTab('sesudah')}
+                                        onClick={() =>
+                                            setActivePhotoTab('sesudah')
+                                        }
                                         className={cn(
-                                            'px-2 py-0.5 rounded-lg font-semibold transition-all cursor-pointer',
+                                            'cursor-pointer rounded-lg px-2 py-0.5 font-semibold transition-all',
                                             activePhotoTab === 'sesudah'
                                                 ? 'bg-white text-zinc-950 shadow-xs'
                                                 : 'text-white/70 hover:text-white',
@@ -725,7 +818,7 @@ export default function DetailTiketPage({
                         </div>
 
                         {/* Kolom 3: Rincian Metadata */}
-                        <div className="flex flex-col justify-between py-1 space-y-4 rounded-2xl border border-border/60 bg-card p-5 sm:p-6 shadow-2xs">
+                        <div className="flex flex-col justify-between space-y-4 rounded-2xl border border-border/60 bg-card p-5 py-1 shadow-2xs sm:p-6">
                             <div className="space-y-1">
                                 <h3 className="text-body-sm font-bold text-foreground">
                                     Tanggal Pelaporan
@@ -739,8 +832,10 @@ export default function DetailTiketPage({
                                 <h3 className="text-body-sm font-bold text-foreground">
                                     Lokasi
                                 </h3>
-                                <p className="text-body-sm text-muted-foreground leading-relaxed">
-                                    Kel. {tiket.kelurahan_nama}, Kec. {tiket.kecamatan_nama}, Kota Depok
+                                <p className="text-body-sm leading-relaxed text-muted-foreground">
+                                    Kel. {tiket.kelurahan_nama}, Kec.{' '}
+                                    {tiket.kecamatan_nama},{' '}
+                                    {tiket.kota_nama || 'Jabodetabek'}
                                 </p>
                             </div>
 
@@ -766,19 +861,20 @@ export default function DetailTiketPage({
 
                     {/* Section Keterangan Detail Kerusakan */}
                     <section className="space-y-3">
-                        <h2 className="font-display text-title-md sm:text-title-lg font-bold text-foreground">
+                        <h2 className="text-title-md font-display font-bold text-foreground sm:text-title-lg">
                             Keterangan Detail Kerusakan
                         </h2>
-                        <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-2xs">
-                            <p className="text-body-sm sm:text-body-base leading-relaxed whitespace-pre-wrap text-foreground/90">
-                                {tiket.keterangan || 'Tidak ada keterangan tambahan.'}
+                        <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-2xs sm:p-6">
+                            <p className="text-body-sm leading-relaxed whitespace-pre-wrap text-foreground/90 sm:text-body-base">
+                                {tiket.keterangan ||
+                                    'Tidak ada keterangan tambahan.'}
                             </p>
                         </div>
                     </section>
 
                     {/* Section Lini Masa Laporan (Timeline Vertikal Sesuai Referensi & Urutan Kronologis Descending) */}
                     <section className="space-y-4 pt-2">
-                        <h2 className="font-display text-title-md sm:text-title-lg font-bold text-foreground">
+                        <h2 className="text-title-md font-display font-bold text-foreground sm:text-title-lg">
                             Lini Masa Laporan
                         </h2>
 
@@ -792,8 +888,107 @@ export default function DetailTiketPage({
                         />
                     </section>
 
+                    {/* Floating / Sticky Action Bar Khusus Petugas Instansi saat status DITERUSKAN (Sesuai Wireframe) */}
+                    {currentUser?.peran === 'instansi' &&
+                        tiket.status === 'DITERUSKAN' && (
+                            <div className="fixed right-4 bottom-4 z-40 flex items-center gap-2.5 rounded-2xl border border-border/80 bg-background/95 p-2 shadow-xl backdrop-blur-md sm:right-6 sm:bottom-6 sm:gap-3">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setModalUsulTolakOpen(true)}
+                                    className="h-11 cursor-pointer gap-2 rounded-xl px-5 font-semibold text-foreground shadow-xs transition-colors hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                                >
+                                    <span>Usul Penolakan</span>
+                                    <X className="size-4" />
+                                </Button>
+                                <Button
+                                    type="button"
+                                    onClick={() => setModalTerimaOpen(true)}
+                                    className="h-11 cursor-pointer gap-2 rounded-xl bg-foreground px-6 font-semibold text-background shadow-xs transition-colors hover:bg-foreground/90"
+                                >
+                                    <span>Terima Tiket</span>
+                                    <Check className="size-4" />
+                                </Button>
+                            </div>
+                        )}
 
+                    {/* Floating / Sticky Action Bar Khusus Petugas Instansi saat status DITERIMA (Selesaikan Survei Sesuai Wireframe) */}
+                    {currentUser?.peran === 'instansi' &&
+                        tiket.status === 'DITERIMA' && (
+                            <div className="fixed right-4 bottom-4 z-40 flex items-center rounded-2xl border border-border/80 bg-background/95 p-2 shadow-xl backdrop-blur-md sm:right-6 sm:bottom-6">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setModalSurveiOpen(true)}
+                                    className="h-11 cursor-pointer gap-2 rounded-xl border border-border/80 px-5 font-semibold text-foreground shadow-xs hover:bg-muted"
+                                >
+                                    <span>Selesaikan Survei</span>
+                                    <ClipboardCheck className="size-4" />
+                                </Button>
+                            </div>
+                        )}
 
+                    {/* Floating / Sticky Action Bar Khusus Petugas Instansi saat status DISURVEI (Jadwalkan Anggaran Sesuai Wireframe) */}
+                    {currentUser?.peran === 'instansi' &&
+                        tiket.status === 'DISURVEI' && (
+                            <div className="fixed right-4 bottom-4 z-40 flex items-center rounded-2xl border border-border/80 bg-background/95 p-2 shadow-xl backdrop-blur-md sm:right-6 sm:bottom-6">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setModalAnggaranOpen(true)}
+                                    className="h-11 cursor-pointer gap-2 rounded-xl border border-border/80 px-5 font-semibold text-foreground shadow-xs hover:bg-muted"
+                                >
+                                    <span>Jadwalkan Anggaran</span>
+                                    <Calendar className="size-4" />
+                                </Button>
+                            </div>
+                        )}
+
+                    {/* Floating / Sticky Action Bar Khusus Petugas Instansi saat status TERJADWAL_ANGGARAN (Mulai Pengerjaan Sesuai Wireframe) */}
+                    {currentUser?.peran === 'instansi' &&
+                        (tiket.status === 'TERJADWAL_ANGGARAN' ||
+                            tiket.status === 'SIAP_DIKERJAKAN') && (
+                            <div className="fixed right-4 bottom-4 z-40 flex items-center rounded-2xl border border-border/80 bg-background/95 p-2 shadow-xl backdrop-blur-md sm:right-6 sm:bottom-6">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setIsCapturingMulai(true)}
+                                    className="h-11 cursor-pointer gap-2 rounded-xl border border-border/80 px-5 font-semibold text-foreground shadow-xs hover:bg-muted"
+                                >
+                                    <span>Mulai Pengerjaan</span>
+                                    <Hammer className="size-4" />
+                                </Button>
+                            </div>
+                        )}
+
+                    {/* Floating / Sticky Action Bar Khusus Petugas Instansi saat status DIKERJAKAN (Kelola Berita Acara & Ajukan Selesai Sesuai Wireframe) */}
+                    {currentUser?.peran === 'instansi' &&
+                        (tiket.status === 'DIKERJAKAN' ||
+                            tiket.status === 'DALAM_PENGERJAAN') && (
+                            <div className="fixed right-4 bottom-4 z-40 flex items-center gap-2.5 rounded-2xl border border-border/80 bg-background/95 p-2 shadow-xl backdrop-blur-md sm:right-6 sm:bottom-6 sm:gap-3">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setIsKelolaBeritaAcara(true)}
+                                    className="h-11 cursor-pointer gap-2 rounded-xl border border-border/80 px-5 font-semibold text-foreground shadow-xs hover:bg-muted"
+                                >
+                                    <span>Kelola Berita Acara</span>
+                                    <FileText className="size-4" />
+                                </Button>
+
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                        setIsAjukanPenyelesaian(true)
+                                    }
+                                    className="h-11 cursor-pointer gap-2 rounded-xl border border-border/80 px-5 font-semibold text-foreground shadow-xs hover:bg-muted"
+                                >
+                                    <span>Ajukan Selesai</span>
+                                    <CheckSquare className="size-4" />
+                                </Button>
+                            </div>
+                        )}
                 </>
             )}
 
@@ -847,18 +1042,223 @@ export default function DetailTiketPage({
                 tiket={tiket as any}
                 onSuccess={() => router.reload()}
             />
+
+            {/* Modal Aksi Petugas Instansi */}
+            {currentUser?.peran === 'instansi' && (
+                <>
+                    <ModalTerimaTiket
+                        open={modalTerimaOpen}
+                        onClose={() => setModalTerimaOpen(false)}
+                        laporan={{
+                            id: tiket.id,
+                            nomor_tiket: tiket.nomor_tiket,
+                            judul: tiket.judul,
+                        }}
+                        onSuccess={() => router.reload()}
+                    />
+
+                    <ModalUsulanTolak
+                        open={modalUsulTolakOpen}
+                        onClose={() => setModalUsulTolakOpen(false)}
+                        laporan={{
+                            id: tiket.id,
+                            nomor_tiket: tiket.nomor_tiket,
+                            judul: tiket.judul,
+                        }}
+                        onSuccess={() => router.reload()}
+                    />
+
+                    <ModalSurveiSelesai
+                        open={modalSurveiOpen}
+                        onClose={() => setModalSurveiOpen(false)}
+                        laporan={{
+                            id: tiket.id,
+                            nomor_tiket: tiket.nomor_tiket,
+                            judul: tiket.judul,
+                        }}
+                        onSuccess={() => router.reload()}
+                    />
+
+                    <ModalJadwalAnggaran
+                        open={modalAnggaranOpen}
+                        onClose={() => setModalAnggaranOpen(false)}
+                        laporan={{
+                            id: tiket.id,
+                            nomor_tiket: tiket.nomor_tiket,
+                            judul: tiket.judul,
+                        }}
+                        onSuccess={() => router.reload()}
+                    />
+
+                    <ModalBeritaAcara
+                        open={modalBeritaAcaraOpen}
+                        onClose={() => setModalBeritaAcaraOpen(false)}
+                        laporan={{
+                            id: tiket.id,
+                            nomor_tiket: tiket.nomor_tiket,
+                            judul: tiket.judul,
+                            total_berita_acara: tiket.berita_acara?.length ?? 0,
+                            semua_berita_acara:
+                                tiket.berita_acara?.map((b) => ({
+                                    versi: b.versi,
+                                    kegiatan: b.kegiatan,
+                                    hasil: b.hasil,
+                                    hambatan: b.hambatan,
+                                    waktu: b.created_at,
+                                })) ?? [],
+                        }}
+                        onSuccess={() => router.reload()}
+                    />
+
+                    <ModalAjukanSelesai
+                        open={modalAjukanSelesaiOpen}
+                        onClose={() => setModalAjukanSelesaiOpen(false)}
+                        onOpenBeritaAcara={() => {
+                            setModalAjukanSelesaiOpen(false);
+                            setModalBeritaAcaraOpen(true);
+                        }}
+                        laporan={{
+                            id: tiket.id,
+                            nomor_tiket: tiket.nomor_tiket,
+                            judul: tiket.judul,
+                            lintang: Number(tiket.lintang),
+                            bujur: Number(tiket.bujur),
+                            total_berita_acara: tiket.berita_acara?.length ?? 0,
+                        }}
+                        onSuccess={() => router.reload()}
+                    />
+                </>
+            )}
         </div>
     );
+
+    // KONDISI 1A: Petugas Instansi Membuka Kamera Kondisi Lapangan (Sesuai Wireframe)
+    if (currentUser?.peran === 'instansi' && isCapturingMulai) {
+        return (
+            <InternalLayout
+                title="Foto Kondisi Lapangan Pengerjaan"
+                breadcrumb="Instansi > Daftar Laporan > Detail Laporan > Foto Kondisi Lapangan Pengerjaan"
+                fullWidth
+            >
+                <Head>
+                    <title>{`Foto Kondisi Lapangan — #${tiket.nomor_tiket} — Jagains`}</title>
+                    <meta
+                        name="description"
+                        content={`Dokumentasi foto kondisi fisik awal sebelum dimulainya perbaikan tiket #${tiket.nomor_tiket}.`}
+                    />
+                </Head>
+                <FotoKondisiLapanganView
+                    laporan={{
+                        id: tiket.id,
+                        nomor_tiket: tiket.nomor_tiket,
+                        judul: tiket.judul,
+                        lintang: Number(tiket.lintang),
+                        bujur: Number(tiket.bujur),
+                    }}
+                    onKembali={() => setIsCapturingMulai(false)}
+                    onSuccess={() => {
+                        setIsCapturingMulai(false);
+                        router.reload();
+                    }}
+                />
+            </InternalLayout>
+        );
+    }
+
+    // KONDISI 1B: Petugas Instansi Membuka Layar Kelola Berita Acara (Sesuai Wireframe - 41)
+    if (currentUser?.peran === 'instansi' && isKelolaBeritaAcara) {
+        return (
+            <InternalLayout
+                title="Kelola Berita Acara"
+                breadcrumb="Instansi > Daftar Laporan > Detail Laporan > Kelola Berita Acara"
+                fullWidth
+            >
+                <Head>
+                    <title>{`Kelola Berita Acara — #${tiket.nomor_tiket} — Jagains`}</title>
+                    <meta
+                        name="description"
+                        content={`Kelola progres dan riwayat berita acara pelaksanaan fisik perbaikan tiket #${tiket.nomor_tiket}.`}
+                    />
+                </Head>
+                <KelolaBeritaAcaraView
+                    beritaAcara={tiket.berita_acara || []}
+                    instansiNama={tiket.instansi_nama || ''}
+                    laporanId={tiket.id}
+                    nomorTiket={tiket.nomor_tiket}
+                    onKembali={() => setIsKelolaBeritaAcara(false)}
+                    onSuccess={() => router.reload()}
+                />
+
+                <ModalBeritaAcara
+                    open={modalBeritaAcaraOpen}
+                    onClose={() => setModalBeritaAcaraOpen(false)}
+                    laporan={{
+                        id: tiket.id,
+                        nomor_tiket: tiket.nomor_tiket,
+                        judul: tiket.judul,
+                        total_berita_acara: tiket.berita_acara?.length ?? 0,
+                        semua_berita_acara:
+                            tiket.berita_acara?.map((b) => ({
+                                versi: b.versi,
+                                kegiatan: b.kegiatan,
+                                hasil: b.hasil,
+                                hambatan: b.hambatan,
+                                waktu: b.created_at,
+                            })) ?? [],
+                    }}
+                    onSuccess={() => router.reload()}
+                />
+            </InternalLayout>
+        );
+    }
+
+    // KONDISI 1C: Petugas Instansi Membuka Layar Ajukan Penyelesaian (Sesuai Wireframe - 45, 50, 51)
+    if (currentUser?.peran === 'instansi' && isAjukanPenyelesaian) {
+        return (
+            <InternalLayout
+                title="Ajukan Penyelesaian"
+                breadcrumb="Instansi > Daftar Laporan > Detail Laporan > Ajukan Penyelesaian"
+                fullWidth
+            >
+                <Head>
+                    <title>{`Ajukan Penyelesaian — #${tiket.nomor_tiket} — Jagains`}</title>
+                    <meta
+                        name="description"
+                        content={`Ajukan penyelesaian pekerjaan perbaikan fisik fasilitas publik untuk tiket #${tiket.nomor_tiket}.`}
+                    />
+                </Head>
+                <AjukanPenyelesaianView
+                    tiket={tiket}
+                    onKembali={() => setIsAjukanPenyelesaian(false)}
+                    onSuccess={() => {
+                        setIsAjukanPenyelesaian(false);
+                        router.reload();
+                    }}
+                    onBukaBeritaAcara={() => {
+                        setIsAjukanPenyelesaian(false);
+                        setIsKelolaBeritaAcara(true);
+                    }}
+                />
+            </InternalLayout>
+        );
+    }
 
     // KONDISI 1: Pengguna Terautentikasi (Admin, Auditor, Instansi, Warga)
     if (currentUser) {
         return (
             <InternalLayout
-                title={`Detail Laporan: #${tiket.nomor_tiket}`}
+                title={
+                    currentUser.peran === 'instansi'
+                        ? 'Detail Laporan'
+                        : `Detail Laporan: #${tiket.nomor_tiket}`
+                }
                 breadcrumb={
                     currentUser.peran === 'warga'
                         ? `Warga > Riwayat Laporan > #${tiket.nomor_tiket}`
-                        : getRoleBreadcrumb(currentUser.peran, tiket.nomor_tiket)
+                        : getRoleBreadcrumb(
+                              currentUser.peran,
+                              tiket.nomor_tiket,
+                          )
                 }
                 fullWidth
             >
@@ -866,7 +1266,7 @@ export default function DetailTiketPage({
                     <title>{`Tiket ${tiket.nomor_tiket}: ${tiket.judul} — Jagains`}</title>
                     <meta
                         name="description"
-                        content={`Pantau akuntabilitas penanganan laporan fasilitas publik nomor tiket ${tiket.nomor_tiket} di Kota Depok secara transparan.`}
+                        content={`Pantau akuntabilitas penanganan laporan fasilitas publik nomor tiket ${tiket.nomor_tiket} di ${tiket.kota_nama || 'Jabodetabek'} secara transparan.`}
                     />
                 </Head>
                 {mainTicketContent}
@@ -881,7 +1281,7 @@ export default function DetailTiketPage({
                 <title>{`Tiket ${tiket.nomor_tiket}: ${tiket.judul} — Jagains`}</title>
                 <meta
                     name="description"
-                    content={`Pantau akuntabilitas penanganan laporan fasilitas publik nomor tiket ${tiket.nomor_tiket} di Kota Depok secara transparan.`}
+                    content={`Pantau akuntabilitas penanganan laporan fasilitas publik nomor tiket ${tiket.nomor_tiket} di ${tiket.kota_nama || 'Jabodetabek'} secara transparan.`}
                 />
             </Head>
 
@@ -899,7 +1299,7 @@ export default function DetailTiketPage({
 
                     <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         <Shield className="size-3.5 text-primary" />
-                        <span>Platform Pengawasan Publik Kota Depok</span>
+                        <span>Platform Pengawasan Publik Jabodetabek</span>
                     </div>
                 </div>
 

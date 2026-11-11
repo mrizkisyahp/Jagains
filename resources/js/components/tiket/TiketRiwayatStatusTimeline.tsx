@@ -1,6 +1,14 @@
 import { useMemo } from 'react';
 import { router } from '@inertiajs/react';
-import { Building2, FileText, GitFork, ShieldCheck, ZoomIn } from 'lucide-react';
+import {
+    Building2,
+    CheckCircle2,
+    FileText,
+    GitFork,
+    ShieldCheck,
+    XCircle,
+    ZoomIn,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import InstansiStatusBadge, {
     formatInstansiMessage,
@@ -78,11 +86,14 @@ export default function TiketRiwayatStatusTimeline({
         }
     };
 
-    if (sortedRiwayat.length === 0 && (!pengalihan || pengalihan.length === 0)) {
+    if (
+        sortedRiwayat.length === 0 &&
+        (!pengalihan || pengalihan.length === 0)
+    ) {
         return (
             <div
                 className={cn(
-                    'rounded-2xl border border-dashed border-border/80 bg-card p-6 sm:p-8 text-center text-muted-foreground text-body-sm shadow-2xs',
+                    'rounded-2xl border border-dashed border-border/80 bg-card p-6 text-center text-body-sm text-muted-foreground shadow-2xs sm:p-8',
                     className,
                 )}
             >
@@ -94,31 +105,37 @@ export default function TiketRiwayatStatusTimeline({
     return (
         <div
             className={cn(
-                'rounded-2xl border border-border/80 bg-card p-5 sm:p-7 shadow-2xs space-y-6',
+                'space-y-6 rounded-2xl border border-border/80 bg-card p-5 shadow-2xs sm:p-7',
                 className,
             )}
         >
             {/* Riwayat Pengalihan Antar-Dinas (jika ada) */}
             {pengalihan && pengalihan.length > 0 && (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-2.5">
-                    <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-caption-xs sm:text-body-sm">
+                <div className="space-y-2.5 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+                    <div className="flex items-center gap-2 text-caption-xs font-bold text-amber-700 sm:text-body-sm dark:text-amber-400">
                         <GitFork className="size-4 shrink-0" />
-                        <span>Catatan Pengalihan Kewenangan Dinas ({pengalihan.length})</span>
+                        <span>
+                            Catatan Pengalihan Kewenangan Dinas (
+                            {pengalihan.length})
+                        </span>
                     </div>
                     <div className="space-y-2">
                         {pengalihan.map((p) => (
                             <div
                                 key={p.id}
-                                className="rounded-lg bg-card/90 p-3 border border-border/60 text-caption-xs space-y-1 shadow-2xs"
+                                className="space-y-1 rounded-lg border border-border/60 bg-card/90 p-3 text-caption-xs shadow-2xs"
                             >
                                 <div className="flex flex-wrap items-center justify-between gap-1 text-muted-foreground">
                                     <span className="font-semibold text-foreground">
-                                        {p.instansi_asal} &rarr; {p.instansi_tujuan}
+                                        {p.instansi_asal} &rarr;{' '}
+                                        {p.instansi_tujuan}
                                     </span>
-                                    <time className="font-mono">{formatDateTime(p.waktu)}</time>
+                                    <time className="font-mono">
+                                        {formatDateTime(p.waktu)}
+                                    </time>
                                 </div>
                                 {p.alasan && (
-                                    <p className="italic text-muted-foreground">
+                                    <p className="text-muted-foreground italic">
                                         &ldquo;{p.alasan}&rdquo;
                                     </p>
                                 )}
@@ -136,21 +153,25 @@ export default function TiketRiwayatStatusTimeline({
                         const isLast = index === sortedRiwayat.length - 1;
                         const komparasi = item.detail?.komparasi_foto;
                         const beritaAcara = item.detail?.berita_acara?.terkini;
+                        const verifikasi = item.detail?.verifikasi_ringkasan;
 
                         // Verifikasi Warga di backend direpresentasikan oleh 'MENUNGGU_VERIFIKASI'
-                        const isVerifikasiWarga = item.status_baru === 'MENUNGGU_VERIFIKASI';
+                        const isVerifikasiWarga =
+                            item.status_baru === 'MENUNGGU_VERIFIKASI';
                         // Hanya aktif jika status saat ini pada tiket masih 'MENUNGGU_VERIFIKASI'
-                        const isVerifikasiAktif = isVerifikasiWarga && tiketStatus === 'MENUNGGU_VERIFIKASI';
+                        const isVerifikasiAktif =
+                            isVerifikasiWarga &&
+                            tiketStatus === 'MENUNGGU_VERIFIKASI';
 
                         return (
                             <li
                                 key={item.id}
-                                className="relative pl-7 sm:pl-9 pb-7 sm:pb-8 last:pb-1 group"
+                                className="group relative pb-7 pl-7 last:pb-1 sm:pb-8 sm:pl-9"
                             >
                                 {/* Garis Vertikal (Connector Line) */}
                                 {!isLast && (
                                     <span
-                                        className="absolute left-[5px] top-[14px] -bottom-[14px] w-[2px] bg-border transition-colors group-hover:bg-muted-foreground/30"
+                                        className="absolute top-[14px] -bottom-[14px] left-[5px] w-[2px] bg-border transition-colors group-hover:bg-muted-foreground/30"
                                         aria-hidden="true"
                                     />
                                 )}
@@ -158,7 +179,7 @@ export default function TiketRiwayatStatusTimeline({
                                 {/* Dot / Circle Marker (Tepat di atas Garis Vertikal) */}
                                 <span
                                     className={cn(
-                                        'absolute left-0 top-[7px] size-3 rounded-full ring-4 ring-card z-10 transition-all',
+                                        'absolute top-[7px] left-0 z-10 size-3 rounded-full ring-4 ring-card transition-all',
                                         isFirst
                                             ? 'bg-foreground shadow-xs'
                                             : 'bg-muted-foreground/70',
@@ -167,20 +188,22 @@ export default function TiketRiwayatStatusTimeline({
                                 />
 
                                 {/* Konten Riwayat di Sisi Kanan Garis */}
-                                <div className="space-y-2.5 min-w-0">
+                                <div className="min-w-0 space-y-2.5">
                                     {/* Baris 1: Status Badge & Waktu */}
                                     <div className="flex flex-wrap items-center justify-between gap-2">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <InstansiStatusBadge status={item.status_baru} />
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <InstansiStatusBadge
+                                                status={item.status_baru}
+                                            />
                                             {isFirst && (
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                                                <span className="inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
                                                     Status Terkini
                                                 </span>
                                             )}
                                         </div>
                                         <time
                                             dateTime={item.waktu}
-                                            className="text-caption-xs sm:text-body-sm font-mono text-muted-foreground"
+                                            className="text-caption-xs font-mono text-muted-foreground sm:text-body-sm"
                                         >
                                             {formatDateTime(item.waktu)}
                                         </time>
@@ -188,7 +211,7 @@ export default function TiketRiwayatStatusTimeline({
 
                                     {/* Baris 2: Instansi Penanggung Jawab & Aktor */}
                                     <div className="flex items-center gap-1.5 text-body-sm font-semibold text-foreground">
-                                        <Building2 className="size-4 text-muted-foreground shrink-0" />
+                                        <Building2 className="size-4 shrink-0 text-muted-foreground" />
                                         <span>
                                             {item.instansi_nama ??
                                                 (item.peran_pelaku === 'sistem'
@@ -199,85 +222,136 @@ export default function TiketRiwayatStatusTimeline({
 
                                     {/* Baris 3: Catatan / Deskripsi Perubahan Status */}
                                     {item.catatan && (
-                                        <p className="text-body-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                                            {formatInstansiMessage(item.catatan)}
+                                        <p className="text-body-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+                                            {formatInstansiMessage(
+                                                item.catatan,
+                                            )}
                                         </p>
                                     )}
 
                                     {/* Baris 4: Informasi Tambahan (Ringkasan Berita Acara jika ada) */}
                                     {beritaAcara && (
-                                        <div className="rounded-xl border border-border/70 bg-muted/20 p-3 sm:p-3.5 space-y-1.5 text-caption-xs sm:text-body-sm">
-                                            <div className="flex items-center justify-between text-muted-foreground font-semibold">
+                                        <div className="space-y-1.5 rounded-xl border border-border/70 bg-muted/20 p-3 text-caption-xs sm:p-3.5 sm:text-body-sm">
+                                            <div className="flex items-center justify-between font-semibold text-muted-foreground">
                                                 <span className="flex items-center gap-1.5 text-foreground">
                                                     <FileText className="size-3.5 text-primary" />
                                                     <span>
-                                                        Berita Acara Pengerjaan (Versi {beritaAcara.versi})
+                                                        Berita Acara Pengerjaan
+                                                        (Versi{' '}
+                                                        {beritaAcara.versi})
                                                     </span>
                                                 </span>
-                                                <span>{beritaAcara.instansi_nama}</span>
+                                                <span>
+                                                    {beritaAcara.instansi_nama}
+                                                </span>
                                             </div>
-                                            <p className="text-muted-foreground line-clamp-2">
-                                                <strong className="text-foreground font-medium">Hasil: </strong>
+                                            <p className="line-clamp-2 text-muted-foreground">
+                                                <strong className="font-medium text-foreground">
+                                                    Hasil:{' '}
+                                                </strong>
                                                 {beritaAcara.hasil}
                                             </p>
                                         </div>
                                     )}
 
                                     {/* Baris 5: Dokumentasi Foto (Sebelum / Sesudah jika tersedia) */}
-                                    {komparasi && (komparasi.sebelum || komparasi.sesudah) && (
-                                        <div className="flex flex-wrap items-center gap-3 pt-1">
-                                            {komparasi.sebelum && (
-                                                <figure
-                                                    onClick={() =>
-                                                        onPreviewPhoto?.(komparasi.sebelum!)
-                                                    }
-                                                    className="group/photo relative size-16 sm:size-20 rounded-xl overflow-hidden border border-border bg-muted cursor-pointer hover:border-foreground/40 transition-all shrink-0"
-                                                    title="Lihat Foto Sebelum Pengerjaan"
-                                                >
-                                                    <img
-                                                        src={komparasi.sebelum.url}
-                                                        alt="Foto Sebelum Pengerjaan"
-                                                        className="size-full object-cover transition duration-200 group-hover/photo:scale-105"
-                                                    />
-                                                    <span className="absolute bottom-1 left-1 rounded bg-black/75 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
-                                                        Sebelum
-                                                    </span>
-                                                    <span className="absolute top-1 right-1 rounded bg-black/60 p-0.5 text-white opacity-0 transition group-hover/photo:opacity-100">
-                                                        <ZoomIn className="size-3" />
-                                                    </span>
-                                                </figure>
-                                            )}
-                                            {komparasi.sesudah && (
-                                                <figure
-                                                    onClick={() =>
-                                                        onPreviewPhoto?.(komparasi.sesudah!)
-                                                    }
-                                                    className="group/photo relative size-16 sm:size-20 rounded-xl overflow-hidden border border-border bg-muted cursor-pointer hover:border-foreground/40 transition-all shrink-0"
-                                                    title="Lihat Foto Sesudah Pengerjaan"
-                                                >
-                                                    <img
-                                                        src={komparasi.sesudah.url}
-                                                        alt="Foto Sesudah Pengerjaan"
-                                                        className="size-full object-cover transition duration-200 group-hover/photo:scale-105"
-                                                    />
-                                                    <span className="absolute bottom-1 left-1 rounded bg-black/75 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
-                                                        Sesudah
-                                                    </span>
-                                                    <span className="absolute top-1 right-1 rounded bg-black/60 p-0.5 text-white opacity-0 transition group-hover/photo:opacity-100">
-                                                        <ZoomIn className="size-3" />
-                                                    </span>
-                                                </figure>
-                                            )}
+                                    {komparasi &&
+                                        (komparasi.sebelum ||
+                                            komparasi.sesudah) && (
+                                            <div className="flex flex-wrap items-center gap-3 pt-1">
+                                                {komparasi.sebelum && (
+                                                    <figure
+                                                        onClick={() =>
+                                                            onPreviewPhoto?.(
+                                                                komparasi.sebelum!,
+                                                            )
+                                                        }
+                                                        className="group/photo relative size-16 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-border bg-muted transition-all hover:border-foreground/40 sm:size-20"
+                                                        title="Lihat Foto Sebelum Pengerjaan"
+                                                    >
+                                                        <img
+                                                            src={
+                                                                komparasi
+                                                                    .sebelum.url
+                                                            }
+                                                            alt="Foto Sebelum Pengerjaan"
+                                                            className="size-full object-cover transition duration-200 group-hover/photo:scale-105"
+                                                        />
+                                                        <span className="absolute bottom-1 left-1 rounded bg-black/75 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
+                                                            Sebelum
+                                                        </span>
+                                                        <span className="absolute top-1 right-1 rounded bg-black/60 p-0.5 text-white opacity-0 transition group-hover/photo:opacity-100">
+                                                            <ZoomIn className="size-3" />
+                                                        </span>
+                                                    </figure>
+                                                )}
+                                                {komparasi.sesudah && (
+                                                    <figure
+                                                        onClick={() =>
+                                                            onPreviewPhoto?.(
+                                                                komparasi.sesudah!,
+                                                            )
+                                                        }
+                                                        className="group/photo relative size-16 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-border bg-muted transition-all hover:border-foreground/40 sm:size-20"
+                                                        title="Lihat Foto Sesudah Pengerjaan"
+                                                    >
+                                                        <img
+                                                            src={
+                                                                komparasi
+                                                                    .sesudah.url
+                                                            }
+                                                            alt="Foto Sesudah Pengerjaan"
+                                                            className="size-full object-cover transition duration-200 group-hover/photo:scale-105"
+                                                        />
+                                                        <span className="absolute bottom-1 left-1 rounded bg-black/75 px-1.5 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
+                                                            Sesudah
+                                                        </span>
+                                                        <span className="absolute top-1 right-1 rounded bg-black/60 p-0.5 text-white opacity-0 transition group-hover/photo:opacity-100">
+                                                            <ZoomIn className="size-3" />
+                                                        </span>
+                                                    </figure>
+                                                )}
+                                            </div>
+                                        )}
+
+                                    {/* Baris 6: Penghitungan Suara Verifikasi (Count Verif) */}
+                                    {verifikasi && (
+                                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                                            <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-caption-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                                                <CheckCircle2 className="size-3.5" />
+                                                <span>
+                                                    +
+                                                    {
+                                                        verifikasi.suara_setuju_bobot
+                                                    }{' '}
+                                                    Sesuai
+                                                </span>
+                                            </span>
+                                            <span className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/20 bg-destructive/10 px-2.5 py-1 text-caption-xs font-semibold text-destructive">
+                                                <XCircle className="size-3.5" />
+                                                <span>
+                                                    -
+                                                    {
+                                                        verifikasi.suara_tolak_bobot
+                                                    }{' '}
+                                                    Tidak Sesuai
+                                                </span>
+                                            </span>
+                                            <span className="text-caption-xs font-medium text-muted-foreground">
+                                                ({verifikasi.total_pemilih}{' '}
+                                                suara · Target{' '}
+                                                {verifikasi.target_k} K)
+                                            </span>
                                         </div>
                                     )}
 
-                                    {/* Baris 6: Tombol Beri Suara (HANYA muncul jika Verifikasi Warga masih aktif) */}
+                                    {/* Baris 7: Tombol Beri Suara (HANYA muncul jika Verifikasi Warga masih aktif) */}
                                     {isVerifikasiAktif && (
                                         <div className="pt-1">
                                             <Button
                                                 type="button"
                                                 onClick={handleBeriSuara}
-                                                className="h-9 px-4 rounded-xl text-body-sm font-bold gap-2 cursor-pointer shadow-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
+                                                className="h-9 cursor-pointer gap-2 rounded-xl bg-primary px-4 text-body-sm font-bold text-primary-foreground shadow-xs transition-all hover:bg-primary/90"
                                             >
                                                 <ShieldCheck className="size-4" />
                                                 <span>Beri Suara</span>

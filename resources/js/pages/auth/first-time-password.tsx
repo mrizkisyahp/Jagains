@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+    FieldError,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import GuestLayouts from '@/layouts/GuestLayout';
 import AuthSplitCard from '@/components/auth/AuthSplitCard';
 import { Lock, Eye, EyeOff, AlertCircle, LogOut } from 'lucide-react';
@@ -14,7 +18,10 @@ interface FirstTimePasswordProps {
     peran: string;
 }
 
-export default function FirstTimePassword({ username, peran }: FirstTimePasswordProps) {
+export default function FirstTimePassword({
+    username,
+    peran,
+}: FirstTimePasswordProps) {
     const { data, setData, post, processing, errors } = useForm({
         current_password: '',
         new_password: '',
@@ -64,7 +71,8 @@ export default function FirstTimePassword({ username, peran }: FirstTimePassword
                 >
                     <AlertCircle className="size-4 text-amber-600 dark:text-amber-400" />
                     <AlertDescription className="text-body-sm">
-                        Kata sandi baru tidak boleh sama dengan kata sandi awal dan minimal 8 karakter.
+                        Kata sandi baru tidak boleh sama dengan kata sandi awal
+                        dan minimal 8 karakter.
                     </AlertDescription>
                 </Alert>
 
@@ -85,7 +93,10 @@ export default function FirstTimePassword({ username, peran }: FirstTimePassword
                                     placeholder="Kata sandi acak dari Administrator"
                                     value={data.current_password}
                                     onChange={(e) =>
-                                        setData('current_password', e.target.value)
+                                        setData(
+                                            'current_password',
+                                            e.target.value,
+                                        )
                                     }
                                     required
                                     className="h-11 w-full rounded-xl pr-10 pl-10 text-body-sm"
@@ -106,7 +117,9 @@ export default function FirstTimePassword({ username, peran }: FirstTimePassword
                                 </button>
                             </div>
                             {errors.current_password && (
-                                <FieldError>{errors.current_password}</FieldError>
+                                <FieldError>
+                                    {errors.current_password}
+                                </FieldError>
                             )}
                         </Field>
 
@@ -194,9 +207,11 @@ export default function FirstTimePassword({ username, peran }: FirstTimePassword
                     <Button
                         type="submit"
                         disabled={processing}
-                        className="h-11 w-full rounded-xl font-semibold shadow-sm transition-all mt-2"
+                        className="mt-2 h-11 w-full rounded-xl font-semibold shadow-sm transition-all"
                     >
-                        {processing ? 'Menyimpan...' : 'Simpan & Masuk ke Sistem'}
+                        {processing
+                            ? 'Menyimpan...'
+                            : 'Simpan & Masuk ke Sistem'}
                     </Button>
                 </form>
             </AuthSplitCard>

@@ -26,7 +26,11 @@ interface TiketQuickSummaryProps {
     className?: string;
 }
 
-export default function TiketQuickSummary({ tiket, onClose, className }: TiketQuickSummaryProps) {
+export default function TiketQuickSummary({
+    tiket,
+    onClose,
+    className,
+}: TiketQuickSummaryProps) {
     const [copied, setCopied] = useState(false);
 
     if (!tiket) return null;
@@ -81,50 +85,57 @@ export default function TiketQuickSummary({ tiket, onClose, className }: TiketQu
     return (
         <div
             className={cn(
-                'fixed inset-x-4 bottom-4 z-40 sm:inset-x-auto sm:bottom-6 sm:right-6 md:right-16 sm:w-[320px] md:w-[340px] pointer-events-none transition-all duration-300',
-                className
+                'pointer-events-none fixed inset-x-4 bottom-4 z-40 transition-all duration-300 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-[320px] md:right-16 md:w-[340px]',
+                className,
             )}
         >
-            <Card className="pointer-events-auto overflow-hidden rounded-2xl bg-card border border-border shadow-2xl p-0 transition-all duration-200">
+            <Card className="pointer-events-auto overflow-hidden rounded-2xl border border-border bg-card p-0 shadow-2xl transition-all duration-200">
                 {/* 1. Gambar Laporan (Sesuai Referensi image 21.png) */}
-                <div className="relative w-full h-44 sm:h-48 bg-muted overflow-hidden flex items-center justify-center">
+                <div className="relative flex h-44 w-full items-center justify-center overflow-hidden bg-muted sm:h-48">
                     {tiket.foto_url ? (
                         <img
                             src={tiket.foto_url}
                             alt={tiket.judul}
-                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                             onError={(e) => {
                                 // Fallback jika gambar gagal dimuat
-                                (e.target as HTMLElement).style.display = 'none';
+                                (e.target as HTMLElement).style.display =
+                                    'none';
                             }}
                         />
                     ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-muted via-muted/80 to-muted/50 text-muted-foreground p-4">
-                            <ImageIcon className="size-10 mb-2 opacity-40 text-foreground" />
-                            <span className="text-caption-xs font-medium text-center">
+                        <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-muted via-muted/80 to-muted/50 p-4 text-muted-foreground">
+                            <ImageIcon className="mb-2 size-10 text-foreground opacity-40" />
+                            <span className="text-center text-caption-xs font-medium">
                                 Dokumentasi Titik Laporan
                             </span>
                         </div>
                     )}
 
                     {/* Tombol Aksi di Sudut Atas Gambar */}
-                    <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                    <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
                         <Button
                             type="button"
                             variant="secondary"
                             size="icon"
                             onClick={handleCopyLink}
-                            className="size-8 rounded-full bg-background/80 backdrop-blur-md text-foreground shadow-sm hover:bg-background"
+                            className="size-8 rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur-md hover:bg-background"
                             title="Salin Tautan Tiket"
                         >
-                            {copied ? <Check className="size-3.5 text-sla-safe" /> : <Share2 className="size-3.5" />}
+                            {copied ? (
+                                <Check className="size-3.5 text-sla-safe" />
+                            ) : (
+                                <Share2 className="size-3.5" />
+                            )}
                         </Button>
                         <Button
                             type="button"
                             variant="secondary"
                             size="icon"
                             onClick={onClose}
-                            className="size-8 rounded-full bg-background/80 backdrop-blur-md text-foreground shadow-sm hover:bg-background"
+                            className="size-8 rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur-md hover:bg-background"
                             title="Tutup Ringkasan"
                         >
                             <X className="size-3.5" />
@@ -133,40 +144,47 @@ export default function TiketQuickSummary({ tiket, onClose, className }: TiketQu
 
                     {/* Kategori Badge di Kiri Atas */}
                     <div className="absolute top-2.5 left-2.5 z-10">
-                        <Badge variant="outline" className="bg-background/90 backdrop-blur-md text-caption-xs font-semibold px-2 py-0.5 rounded-full border-border">
+                        <Badge
+                            variant="outline"
+                            className="rounded-full border-border bg-background/90 px-2 py-0.5 text-caption-xs font-semibold backdrop-blur-md"
+                        >
                             {tiket.kategori_nama}
                         </Badge>
                     </div>
                 </div>
 
                 {/* Konten Utama Card: Judul, Lokasi, Status, Dukungan */}
-                <div className="p-4 sm:p-5 space-y-3.5">
+                <div className="space-y-3.5 p-4 sm:p-5">
                     {/* Status SLA & Nomor Tiket */}
                     <div className="flex flex-wrap items-center justify-between gap-1.5">
-                        <Badge variant={badgeConfig.variant} className="text-caption-xs font-semibold gap-1.5 px-2.5 py-0.5 shrink-0">
+                        <Badge
+                            variant={badgeConfig.variant}
+                            className="shrink-0 gap-1.5 px-2.5 py-0.5 text-caption-xs font-semibold"
+                        >
                             {badgeConfig.icon}
                             <span>{badgeConfig.label}</span>
                         </Badge>
-                        <span className="font-mono text-caption-xs font-semibold text-muted-foreground whitespace-nowrap">
+                        <span className="text-caption-xs font-mono font-semibold whitespace-nowrap text-muted-foreground">
                             #{tiket.nomor_tiket}
                         </span>
                     </div>
 
                     {/* 2. Judul Laporan */}
-                    <h3 className="font-display text-body-base font-bold text-foreground leading-snug line-clamp-2">
+                    <h3 className="line-clamp-2 text-body-base font-display leading-snug font-bold text-foreground">
                         {tiket.judul}
                     </h3>
 
                     {/* 3. Lokasi */}
                     <p className="flex items-center gap-1.5 text-caption-xs text-muted-foreground">
-                        <MapPin className="size-3.5 text-muted-foreground shrink-0" />
+                        <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
                         <span className="truncate">
-                            Kel. {tiket.kelurahan_nama}, Kec. {tiket.kecamatan_nama}
+                            Kel. {tiket.kelurahan_nama}, Kec.{' '}
+                            {tiket.kecamatan_nama}
                         </span>
                     </p>
 
                     {/* 4. Jumlah Dukungan & Instansi */}
-                    <div className="pt-2 border-t border-border/60 flex items-center justify-between text-caption-xs">
+                    <div className="flex items-center justify-between border-t border-border/60 pt-2 text-caption-xs">
                         <div className="flex items-center gap-1.5 font-semibold text-foreground">
                             <ThumbsUp className="size-3.5 text-primary" />
                             <span>{tiket.jumlah_dukungan} Dukungan Warga</span>
@@ -179,7 +197,7 @@ export default function TiketQuickSummary({ tiket, onClose, className }: TiketQu
                             href={`/tiket/${tiket.nomor_tiket}`}
                             className={cn(
                                 buttonVariants({ variant: 'default' }),
-                                'w-full h-10 font-semibold gap-2 shadow-xs rounded-xl justify-center'
+                                'h-10 w-full justify-center gap-2 rounded-xl font-semibold shadow-xs',
                             )}
                         >
                             <span>Lihat Detail Lengkap</span>

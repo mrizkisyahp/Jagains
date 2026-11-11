@@ -727,86 +727,94 @@ export default function KonfigurasiMasterDataTab({
             {subTab === 'wilayah' && (
                 <div className="space-y-3">
                     <div className="overflow-hidden rounded-xl border border-border bg-card">
-                       <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h4 className="text-body-medium font-semibold text-foreground">
-                                Wilayah Administratif
-                            </h4>
-                            <p className="text-caption-xs text-muted-foreground">
-                                Data wilayah administratif yang digunakan untuk
-                                mengelompokkan aduan dan instansi teknis.
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex flex-1 flex-wrap items-center gap-2">
-                            <div className="relative max-w-sm min-w-[200px] flex-1">
-                                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    type="text"
-                                    placeholder="Cari kelurahan, kecamatan, BPS..."
-                                    value={searchWilayah}
-                                    onChange={(e) => {
-                                        setSearchWilayah(e.target.value);
-                                        setPageWilayah(1);
-                                    }}
-                                    className="h-9 pr-8 pl-9 text-xs"
-                                />
-                                {searchWilayah && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSearchWilayah('');
+                        <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h4 className="text-body-medium font-semibold text-foreground">
+                                    Wilayah Administratif
+                                </h4>
+                                <p className="text-caption-xs text-muted-foreground">
+                                    Data wilayah administratif yang digunakan
+                                    untuk mengelompokkan aduan dan instansi
+                                    teknis.
+                                </p>
+                            </div>
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex flex-1 flex-wrap items-center gap-2">
+                                    <div className="relative max-w-sm min-w-[200px] flex-1">
+                                        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            type="text"
+                                            placeholder="Cari kelurahan, kecamatan, BPS..."
+                                            value={searchWilayah}
+                                            onChange={(e) => {
+                                                setSearchWilayah(
+                                                    e.target.value,
+                                                );
+                                                setPageWilayah(1);
+                                            }}
+                                            className="h-9 pr-8 pl-9 text-xs"
+                                        />
+                                        {searchWilayah && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSearchWilayah('');
+                                                    setPageWilayah(1);
+                                                }}
+                                                className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                aria-label="Hapus filter pencarian"
+                                            >
+                                                <X className="size-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <Select
+                                        value={filterTingkatWilayah}
+                                        onValueChange={(val) => {
+                                            setFilterTingkatWilayah(
+                                                val ?? 'semua',
+                                            );
                                             setPageWilayah(1);
                                         }}
-                                        className="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                        aria-label="Hapus filter pencarian"
                                     >
-                                        <X className="size-3.5" />
-                                    </button>
-                                )}
+                                        <SelectTrigger className="h-9 w-[160px] text-xs">
+                                            <SelectValue placeholder="Tingkat Wilayah" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="semua">
+                                                    Semua Tingkat
+                                                </SelectItem>
+                                                <SelectItem value="kelurahan">
+                                                    Kelurahan
+                                                </SelectItem>
+                                                <SelectItem value="kecamatan">
+                                                    Kecamatan
+                                                </SelectItem>
+                                                <SelectItem value="kota">
+                                                    Kota
+                                                </SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={bukaTambahWilayah}
+                                    title="Tambah Wilayah"
+                                    aria-label="Tambah Wilayah"
+                                >
+                                    <Plus
+                                        className="size-3.5"
+                                        aria-hidden="true"
+                                    />
+                                    <span className="hidden sm:inline">
+                                        Tambah Wilayah
+                                    </span>
+                                </Button>
                             </div>
-                            <Select
-                                value={filterTingkatWilayah}
-                                onValueChange={(val) => {
-                                    setFilterTingkatWilayah(val ?? 'semua');
-                                    setPageWilayah(1);
-                                }}
-                            >
-                                <SelectTrigger className="h-9 w-[160px] text-xs">
-                                    <SelectValue placeholder="Tingkat Wilayah" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="semua">
-                                            Semua Tingkat
-                                        </SelectItem>
-                                        <SelectItem value="kelurahan">
-                                            Kelurahan
-                                        </SelectItem>
-                                        <SelectItem value="kecamatan">
-                                            Kecamatan
-                                        </SelectItem>
-                                        <SelectItem value="kota">
-                                            Kota
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
                         </div>
-                        <Button
-                            size="sm"
-                            variant="default"
-                            onClick={bukaTambahWilayah}
-                            title="Tambah Wilayah"
-                            aria-label="Tambah Wilayah"
-                        >
-                            <Plus className="size-3.5" aria-hidden="true" />
-                            <span className="hidden sm:inline">
-                                Tambah Wilayah
-                            </span>
-                        </Button>
-                    </div>
-                    </div>
                         <Table>
                             <TableHeader className="bg-muted/40">
                                 <TableRow>
@@ -965,7 +973,7 @@ export default function KonfigurasiMasterDataTab({
                                 onChange={(e) =>
                                     formInstansi.setData('nama', e.target.value)
                                 }
-                                placeholder="Contoh: Dinas Perhubungan Kota Depok"
+                                placeholder="Contoh: Dinas Perhubungan"
                                 required
                             />
                             {formInstansi.errors.nama && (

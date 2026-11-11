@@ -2,7 +2,11 @@ import { ReactNode } from 'react';
 import { Head } from '@inertiajs/react';
 import InternalLayout from '@/layouts/InternalLayout';
 import AuditorAuditLogCard from '@/components/auditor/AuditorAuditLogCard';
-import { AuditLogItem, AuditLogFilterState, PaginatedData } from '@/types/audit';
+import {
+    AuditLogItem,
+    AuditLogFilterState,
+    PaginatedData,
+} from '@/types/audit';
 import { ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 

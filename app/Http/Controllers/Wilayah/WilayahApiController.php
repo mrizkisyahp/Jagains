@@ -30,7 +30,7 @@ class WilayahApiController extends Controller
                 'kelurahan_id' => null,
                 'nama' => null,
                 'kecamatan' => null,
-                'pesan' => 'Lokasi berada di luar cakupan wilayah layanan (Kota Depok & DKI Jakarta).',
+                'pesan' => 'Lokasi berada di luar cakupan wilayah layanan (Jabodetabek).',
             ]);
         }
 
@@ -54,11 +54,11 @@ class WilayahApiController extends Controller
     }
 
     /**
-     * Mengambil daftar kelurahan se-Kota Depok untuk dropdown manual.
+     * Mengambil daftar kelurahan se-Jabodetabek untuk dropdown manual.
      */
     public function daftarKelurahan(): JsonResponse
     {
-        $kelurahans = $this->wilayahService->getDaftarKelurahanDepok();
+        $kelurahans = $this->wilayahService->getDaftarKelurahan();
 
         return response()->json($kelurahans);
     }

@@ -214,3 +214,42 @@ test('rute /instansi/sengketa dialihkan langsung ke antrean dengan filter sengke
         ->get('/instansi/sengketa')
         ->assertRedirect('/instansi/antrean?status=sengketa');
 });
+
+test('filter antrean status AKTIF, SELESAI, dan LEWAT_SLA berfungsi dengan benar', function () {
+    buatLaporanFeature([
+        'pelapor_id' => $this->warga->id,
+        'kategori_id' => $this->kategori->id,
+        'instansi_id' => $this->instansiA->id,
+        'kelurahan_id' => $this->kelurahan->id,
+        'status' => 'DIKERJAKAN',
+    ]);
+
+    buatLaporanFeature([
+        'pelapor_id' => $this->warga->id,
+        'kategori_id' => $this->kategori->id,
+        'instansi_id' => $this->instansiA->id,
+        'kelurahan_id' => $this->kelurahan->id,
+        'status' => 'TERTUTUP_WARGA',
+        'ditutup_pada' => now(),
+    ]);
+
+    // Test filter AKTIF
+    $this->actingAs($this->petugasA)
+        ->get('/instansi/antrean?status=AKTIF')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('instansi/antrean')
+            ->where('filters.status', 'AKTIF')
+            ->has('antrean.data', 1)
+        );
+
+    // Test filter SELESAI
+    $this->actingAs($this->petugasA)
+        ->get('/instansi/antrean?status=SELESAI')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('instansi/antrean')
+            ->where('filters.status', 'SELESAI')
+            ->has('antrean.data', 1)
+        );
+});

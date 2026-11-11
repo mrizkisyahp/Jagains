@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+    FieldError,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import GuestLayouts from '@/layouts/GuestLayout';

@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+    FieldError,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import GuestLayouts from '@/layouts/GuestLayout';
@@ -31,14 +36,17 @@ export default function Login({ status, success }: LoginProps) {
             <Head title="Masuk - Jagains" />
 
             <AuthSplitCard
-                heroBadge="Sistem Pengawasan Depok"
+                heroBadge="Sistem Pengawasan Jabodetabek"
                 heroTitle="Jaga Kontribusi Anda, Jaga Fasilitas Rakyat."
-                heroDescription="Platform audit sengketa fisik independen dan transparansi penanganan fasilitas publik Kota Depok."
+                heroDescription="Platform audit sengketa fisik independen dan transparansi penanganan fasilitas publik Jabodetabek."
                 title="Selamat Datang Kembali"
                 subtitle="Masukkan kredensial akun Anda untuk mengakses sistem."
                 footer={
                     <div className="space-y-1.5 text-caption-xs text-muted-foreground">
-                        <p>Data pribadi warga dikelola aman sesuai standar UU PDP.</p>
+                        <p>
+                            Data pribadi warga dikelola aman sesuai standar UU
+                            PDP.
+                        </p>
                         <p>
                             Hanya ingin memantau persebaran?{' '}
                             <Link
@@ -158,7 +166,7 @@ export default function Login({ status, success }: LoginProps) {
                     </Button>
 
                     {/* Link Daftar */}
-                    <div className="flex items-center justify-center gap-1.5 text-body-sm text-muted-foreground pt-1">
+                    <div className="flex items-center justify-center gap-1.5 pt-1 text-body-sm text-muted-foreground">
                         <span>Belum memiliki akun warga?</span>
                         <Link
                             href="/daftar"

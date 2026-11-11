@@ -86,63 +86,98 @@ export default function KinerjaSection({ statistik }: KinerjaSectionProps) {
     } satisfies ChartConfig;
 
     return (
-        <section id="kinerja" className="py-20 sm:py-28 bg-background">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
+        <section id="kinerja" className="bg-background py-20 sm:py-28">
+            <div className="mx-auto max-w-7xl space-y-12 px-4 sm:space-y-16 sm:px-6 lg:px-8">
                 {/* Header Seksi */}
-                <div className="text-center max-w-3xl mx-auto space-y-4">
-                    <h2 className="font-display text-3xl sm:text-4xl lg:text-4xl font-extrabold tracking-tight text-foreground">
+                <div className="mx-auto max-w-3xl space-y-4 text-center">
+                    <h2 className="font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-4xl">
                         Ukur Kinerja Layanan Publik Berbasis Data Nyata
                     </h2>
-                    <p className="text-body-base sm:text-body-large text-muted-foreground">
-                        Statistik transparan dihitung langsung dari aktivitas sistem laporan dan SLA di Kota Depok.
+                    <p className="sm:text-body-large text-body-base text-muted-foreground">
+                        Statistik transparan dihitung langsung dari aktivitas
+                        sistem laporan dan SLA di wilayah Jabodetabek.
                     </p>
                 </div>
 
                 {/* 3 Cards Grid Sesuai Referensi image 16.png & Konten image 15.png */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+                <div className="grid grid-cols-1 items-stretch gap-6 sm:gap-8 md:grid-cols-3">
                     {/* Card 1: Rata-rata Respon Awal (<menit>) */}
-                    <Card className="p-6 sm:p-7 rounded-3xl bg-card border border-border/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-6">
+                    <Card className="flex flex-col justify-between space-y-6 rounded-3xl border border-border/80 bg-card p-6 shadow-xs transition-all hover:shadow-md sm:p-7">
                         {/* Top Bar: Title & Filter Mingguan */}
                         <div className="flex items-center justify-between">
-                            <span className="font-display text-body-sm font-bold text-foreground flex items-center gap-1.5">
+                            <span className="flex items-center gap-1.5 text-body-sm font-display font-bold text-foreground">
                                 <Clock className="size-4 text-primary" />
                                 Kecepatan Respon
                             </span>
-                            <Badge variant="secondary" className="text-caption-xs font-semibold px-2.5 py-0.5 rounded-full">
+                            <Badge
+                                variant="secondary"
+                                className="rounded-full px-2.5 py-0.5 text-caption-xs font-semibold"
+                            >
                                 Mingguan ▾
                             </Badge>
                         </div>
 
                         {/* Metric & Trend */}
                         <div className="space-y-1">
-                            <span className="text-caption-xs text-muted-foreground font-medium block">
+                            <span className="block text-caption-xs font-medium text-muted-foreground">
                                 Rata-rata Respon Awal
                             </span>
                             <div className="flex items-baseline gap-2">
-                                <span className="font-display text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight">
+                                <span className="font-display text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
                                     {responMenit}
                                 </span>
                                 <span className="font-display text-xl font-bold text-muted-foreground">
                                     Menit
                                 </span>
-                                <span className="inline-flex items-center text-xs font-bold text-primary ml-1.5">
-                                    <ArrowUpRight className="size-4 inline" /> +18%
+                                <span className="ml-1.5 inline-flex items-center text-xs font-bold text-primary">
+                                    <ArrowUpRight className="inline size-4" />{' '}
+                                    +18%
                                 </span>
                             </div>
                         </div>
 
                         {/* Chart Area shadcn/ui Recharts */}
                         <div className="h-32 w-full pt-2">
-                            <ChartContainer config={chartConfigRespon} className="h-full w-full aspect-auto">
-                                <AreaChart data={responData} margin={{ top: 10, right: 8, left: 8, bottom: 0 }}>
+                            <ChartContainer
+                                config={chartConfigRespon}
+                                className="aspect-auto h-full w-full"
+                            >
+                                <AreaChart
+                                    data={responData}
+                                    margin={{
+                                        top: 10,
+                                        right: 8,
+                                        left: 8,
+                                        bottom: 0,
+                                    }}
+                                >
                                     <defs>
-                                        <linearGradient id="fillRespon" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.4} />
-                                            <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0.0} />
+                                        <linearGradient
+                                            id="fillRespon"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            <stop
+                                                offset="5%"
+                                                stopColor="var(--color-primary)"
+                                                stopOpacity={0.4}
+                                            />
+                                            <stop
+                                                offset="95%"
+                                                stopColor="var(--color-primary)"
+                                                stopOpacity={0.0}
+                                            />
                                         </linearGradient>
                                     </defs>
                                     <XAxis dataKey="hari" hide />
-                                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                    <ChartTooltip
+                                        cursor={false}
+                                        content={
+                                            <ChartTooltipContent hideLabel />
+                                        }
+                                    />
                                     <Area
                                         type="natural"
                                         dataKey="nilai"
@@ -155,56 +190,91 @@ export default function KinerjaSection({ statistik }: KinerjaSectionProps) {
                         </div>
 
                         {/* Bottom Insight Bar Sesuai image 16.png */}
-                        <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-4">
-                            <p className="text-caption-xs text-muted-foreground leading-relaxed flex-1">
-                                Tanggapan awal dinas tercatat dalam hitungan menit sejak tiket diverifikasi sistem.
+                        <div className="flex items-center justify-between gap-4 border-t border-border/60 pt-3">
+                            <p className="flex-1 text-caption-xs leading-relaxed text-muted-foreground">
+                                Tanggapan awal dinas tercatat dalam hitungan
+                                menit sejak tiket diverifikasi sistem.
                             </p>
-                            <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <ArrowUpRight className="size-4" />
                             </div>
                         </div>
                     </Card>
 
                     {/* Card 2: Laporan Terlacak Real-time (<%>) */}
-                    <Card className="p-6 sm:p-7 rounded-3xl bg-card border border-border/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-6">
+                    <Card className="flex flex-col justify-between space-y-6 rounded-3xl border border-border/80 bg-card p-6 shadow-xs transition-all hover:shadow-md sm:p-7">
                         {/* Top Bar: Title & Filter Mingguan */}
                         <div className="flex items-center justify-between">
-                            <span className="font-display text-body-sm font-bold text-foreground flex items-center gap-1.5">
+                            <span className="flex items-center gap-1.5 text-body-sm font-display font-bold text-foreground">
                                 <ShieldCheck className="size-4 text-chart-1" />
                                 Pelacakan Titik
                             </span>
-                            <Badge variant="secondary" className="text-caption-xs font-semibold px-2.5 py-0.5 rounded-full">
+                            <Badge
+                                variant="secondary"
+                                className="rounded-full px-2.5 py-0.5 text-caption-xs font-semibold"
+                            >
                                 Mingguan ▾
                             </Badge>
                         </div>
 
                         {/* Metric & Trend */}
                         <div className="space-y-1">
-                            <span className="text-caption-xs text-muted-foreground font-medium block">
+                            <span className="block text-caption-xs font-medium text-muted-foreground">
                                 Laporan Terlacak Real-time
                             </span>
                             <div className="flex items-baseline gap-2">
-                                <span className="font-display text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight">
+                                <span className="font-display text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
                                     {terlacakPersen}%
                                 </span>
-                                <span className="inline-flex items-center text-xs font-bold text-chart-1 ml-1.5">
-                                    <ArrowUpRight className="size-4 inline" /> Aktif
+                                <span className="ml-1.5 inline-flex items-center text-xs font-bold text-chart-1">
+                                    <ArrowUpRight className="inline size-4" />{' '}
+                                    Aktif
                                 </span>
                             </div>
                         </div>
 
                         {/* Chart Area shadcn/ui Recharts */}
                         <div className="h-32 w-full pt-2">
-                            <ChartContainer config={chartConfigTerlacak} className="h-full w-full aspect-auto">
-                                <AreaChart data={terlacakData} margin={{ top: 10, right: 8, left: 8, bottom: 0 }}>
+                            <ChartContainer
+                                config={chartConfigTerlacak}
+                                className="aspect-auto h-full w-full"
+                            >
+                                <AreaChart
+                                    data={terlacakData}
+                                    margin={{
+                                        top: 10,
+                                        right: 8,
+                                        left: 8,
+                                        bottom: 0,
+                                    }}
+                                >
                                     <defs>
-                                        <linearGradient id="fillTerlacak" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="var(--color-chart-1)" stopOpacity={0.4} />
-                                            <stop offset="95%" stopColor="var(--color-chart-1)" stopOpacity={0.0} />
+                                        <linearGradient
+                                            id="fillTerlacak"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            <stop
+                                                offset="5%"
+                                                stopColor="var(--color-chart-1)"
+                                                stopOpacity={0.4}
+                                            />
+                                            <stop
+                                                offset="95%"
+                                                stopColor="var(--color-chart-1)"
+                                                stopOpacity={0.0}
+                                            />
                                         </linearGradient>
                                     </defs>
                                     <XAxis dataKey="hari" hide />
-                                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                    <ChartTooltip
+                                        cursor={false}
+                                        content={
+                                            <ChartTooltipContent hideLabel />
+                                        }
+                                    />
                                     <Area
                                         type="monotone"
                                         dataKey="nilai"
@@ -217,56 +287,91 @@ export default function KinerjaSection({ statistik }: KinerjaSectionProps) {
                         </div>
 
                         {/* Bottom Insight Bar Sesuai image 16.png */}
-                        <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-4">
-                            <p className="text-caption-xs text-muted-foreground leading-relaxed flex-1">
-                                100% aduan terikat titik koordinat GPS akurat dan riwayat audit tanpa manipulasi.
+                        <div className="flex items-center justify-between gap-4 border-t border-border/60 pt-3">
+                            <p className="flex-1 text-caption-xs leading-relaxed text-muted-foreground">
+                                100% aduan terikat titik koordinat GPS akurat
+                                dan riwayat audit tanpa manipulasi.
                             </p>
-                            <div className="size-8 rounded-full bg-chart-1/10 text-chart-1 flex items-center justify-center shrink-0">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-chart-1/10 text-chart-1">
                                 <ArrowUpRight className="size-4" />
                             </div>
                         </div>
                     </Card>
 
                     {/* Card 3: Rasio Laporan Diselesaikan per Minggu (<%>) */}
-                    <Card className="p-6 sm:p-7 rounded-3xl bg-card border border-border/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-6">
+                    <Card className="flex flex-col justify-between space-y-6 rounded-3xl border border-border/80 bg-card p-6 shadow-xs transition-all hover:shadow-md sm:p-7">
                         {/* Top Bar: Title & Filter Mingguan */}
                         <div className="flex items-center justify-between">
-                            <span className="font-display text-body-sm font-bold text-foreground flex items-center gap-1.5">
+                            <span className="flex items-center gap-1.5 text-body-sm font-display font-bold text-foreground">
                                 <CheckCircle2 className="size-4 text-chart-5" />
                                 Rasio Penyelesaian
                             </span>
-                            <Badge variant="secondary" className="text-caption-xs font-semibold px-2.5 py-0.5 rounded-full">
+                            <Badge
+                                variant="secondary"
+                                className="rounded-full px-2.5 py-0.5 text-caption-xs font-semibold"
+                            >
                                 Mingguan ▾
                             </Badge>
                         </div>
 
                         {/* Metric & Trend */}
                         <div className="space-y-1">
-                            <span className="text-caption-xs text-muted-foreground font-medium block">
+                            <span className="block text-caption-xs font-medium text-muted-foreground">
                                 Rasio Selesai per Minggu
                             </span>
                             <div className="flex items-baseline gap-2">
-                                <span className="font-display text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight">
+                                <span className="font-display text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
                                     {rasioSelesai}%
                                 </span>
-                                <span className="inline-flex items-center text-xs font-bold text-chart-5 ml-1.5">
-                                    <ArrowUpRight className="size-4 inline" /> +12%
+                                <span className="ml-1.5 inline-flex items-center text-xs font-bold text-chart-5">
+                                    <ArrowUpRight className="inline size-4" />{' '}
+                                    +12%
                                 </span>
                             </div>
                         </div>
 
                         {/* Chart Area shadcn/ui Recharts */}
                         <div className="h-32 w-full pt-2">
-                            <ChartContainer config={chartConfigRasio} className="h-full w-full aspect-auto">
-                                <AreaChart data={rasioData} margin={{ top: 10, right: 8, left: 8, bottom: 0 }}>
+                            <ChartContainer
+                                config={chartConfigRasio}
+                                className="aspect-auto h-full w-full"
+                            >
+                                <AreaChart
+                                    data={rasioData}
+                                    margin={{
+                                        top: 10,
+                                        right: 8,
+                                        left: 8,
+                                        bottom: 0,
+                                    }}
+                                >
                                     <defs>
-                                        <linearGradient id="fillRasio" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="var(--color-chart-5)" stopOpacity={0.4} />
-                                            <stop offset="95%" stopColor="var(--color-chart-5)" stopOpacity={0.0} />
+                                        <linearGradient
+                                            id="fillRasio"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            <stop
+                                                offset="5%"
+                                                stopColor="var(--color-chart-5)"
+                                                stopOpacity={0.4}
+                                            />
+                                            <stop
+                                                offset="95%"
+                                                stopColor="var(--color-chart-5)"
+                                                stopOpacity={0.0}
+                                            />
                                         </linearGradient>
                                     </defs>
                                     <XAxis dataKey="hari" hide />
-                                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                    <ChartTooltip
+                                        cursor={false}
+                                        content={
+                                            <ChartTooltipContent hideLabel />
+                                        }
+                                    />
                                     <Area
                                         type="natural"
                                         dataKey="nilai"
@@ -279,11 +384,12 @@ export default function KinerjaSection({ statistik }: KinerjaSectionProps) {
                         </div>
 
                         {/* Bottom Insight Bar Sesuai image 16.png */}
-                        <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-4">
-                            <p className="text-caption-xs text-muted-foreground leading-relaxed flex-1">
-                                Tiket berhasil diperbaiki tuntas dan disahkan langsung oleh kuorum warga kelurahan.
+                        <div className="flex items-center justify-between gap-4 border-t border-border/60 pt-3">
+                            <p className="flex-1 text-caption-xs leading-relaxed text-muted-foreground">
+                                Tiket berhasil diperbaiki tuntas dan disahkan
+                                langsung oleh kuorum warga kelurahan.
                             </p>
-                            <div className="size-8 rounded-full bg-chart-5/10 text-chart-5 flex items-center justify-center shrink-0">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-chart-5/10 text-chart-5">
                                 <ArrowUpRight className="size-4" />
                             </div>
                         </div>

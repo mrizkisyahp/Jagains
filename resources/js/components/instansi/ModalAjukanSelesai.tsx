@@ -39,6 +39,7 @@ interface ModalAjukanSelesaiProps {
         bujur: number;
         total_berita_acara: number;
     } | null;
+    onSuccess?: () => void;
 }
 
 export default function ModalAjukanSelesai({
@@ -46,6 +47,7 @@ export default function ModalAjukanSelesai({
     onClose,
     onOpenBeritaAcara,
     laporan,
+    onSuccess,
 }: ModalAjukanSelesaiProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -218,7 +220,8 @@ export default function ModalAjukanSelesai({
 
             const img = new Image();
             img.onload = () => {
-                const canvas = canvasRef.current || document.createElement('canvas');
+                const canvas =
+                    canvasRef.current || document.createElement('canvas');
                 const maxDim = 1280;
                 let w = img.width;
                 let h = img.height;
@@ -314,7 +317,11 @@ export default function ModalAjukanSelesai({
                 );
                 onClose();
                 setCapturedFoto(null);
-                router.reload({ only: ['antrean', 'ringkasan'] });
+                if (onSuccess) {
+                    onSuccess();
+                } else {
+                    router.reload({ only: ['antrean', 'ringkasan'] });
+                }
             } else {
                 setFieldErrors(
                     Object.fromEntries(
@@ -504,8 +511,10 @@ export default function ModalAjukanSelesai({
                                         <Button
                                             type="button"
                                             variant="secondary"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="h-11 text-body-medium shadow-none md:h-10 gap-1.5"
+                                            onClick={() =>
+                                                fileInputRef.current?.click()
+                                            }
+                                            className="h-11 gap-1.5 text-body-medium shadow-none md:h-10"
                                         >
                                             <Upload className="size-4" />
                                             Ambil dari file
@@ -571,8 +580,10 @@ export default function ModalAjukanSelesai({
                                     <Button
                                         type="button"
                                         variant="secondary"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="h-11 text-body-medium shadow-none md:h-10 gap-1.5"
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
+                                        className="h-11 gap-1.5 text-body-medium shadow-none md:h-10"
                                     >
                                         <Upload className="size-4" />
                                         Ganti dari file
@@ -584,7 +595,9 @@ export default function ModalAjukanSelesai({
                                         type="button"
                                         variant="outline"
                                         onClick={handleSnap}
-                                        disabled={!hasActiveStream || isLocating}
+                                        disabled={
+                                            !hasActiveStream || isLocating
+                                        }
                                         className="h-11 text-body-medium shadow-none md:h-10"
                                     >
                                         <Camera data-icon="inline-start" />
@@ -593,8 +606,10 @@ export default function ModalAjukanSelesai({
                                     <Button
                                         type="button"
                                         variant="secondary"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="h-11 text-body-medium shadow-none md:h-10 gap-1.5"
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
+                                        className="h-11 gap-1.5 text-body-medium shadow-none md:h-10"
                                     >
                                         <Upload className="size-4" />
                                         Ambil dari file

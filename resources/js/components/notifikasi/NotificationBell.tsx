@@ -34,12 +34,16 @@ export default function NotificationBell() {
     // Tutup popover jika klik di luar
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+            if (
+                popoverRef.current &&
+                !popoverRef.current.contains(event.target as Node)
+            ) {
                 setOpen(false);
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        return () =>
+            document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const tandaiDibaca = async (id: number, nomorTiket?: string) => {
@@ -48,12 +52,21 @@ export default function NotificationBell() {
                 method: 'PATCH',
                 headers: {
                     Accept: 'application/json',
-                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                    'X-CSRF-TOKEN':
+                        (
+                            document.querySelector(
+                                'meta[name="csrf-token"]',
+                            ) as HTMLMetaElement
+                        )?.content || '',
                 },
             });
             setUnreadCount((prev) => Math.max(0, prev - 1));
             setNotifikasiList((prev) =>
-                prev.map((n) => (n.id === id ? { ...n, dibaca_pada: new Date().toISOString() } : n))
+                prev.map((n) =>
+                    n.id === id
+                        ? { ...n, dibaca_pada: new Date().toISOString() }
+                        : n,
+                ),
             );
             if (nomorTiket) {
                 setOpen(false);
@@ -71,12 +84,20 @@ export default function NotificationBell() {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                    'X-CSRF-TOKEN':
+                        (
+                            document.querySelector(
+                                'meta[name="csrf-token"]',
+                            ) as HTMLMetaElement
+                        )?.content || '',
                 },
             });
             setUnreadCount(0);
             setNotifikasiList((prev) =>
-                prev.map((n) => ({ ...n, dibaca_pada: new Date().toISOString() }))
+                prev.map((n) => ({
+                    ...n,
+                    dibaca_pada: new Date().toISOString(),
+                })),
             );
         } finally {
             setLoading(false);
@@ -93,17 +114,19 @@ export default function NotificationBell() {
             >
                 <Bell className="size-4" />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-pulse">
+                    <span className="text-destructive-foreground absolute -top-1 -right-1 flex size-4 animate-pulse items-center justify-center rounded-full bg-destructive text-[10px] font-bold">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-border bg-card p-4 shadow-xl z-50 text-card-foreground">
-                    <div className="flex items-center justify-between pb-3 border-b border-border/60">
+                <div className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-xl sm:w-96">
+                    <div className="flex items-center justify-between border-b border-border/60 pb-3">
                         <div className="flex items-center gap-2">
-                            <span className="font-display text-sm font-bold text-foreground">Notifikasi</span>
+                            <span className="font-display text-sm font-bold text-foreground">
+                                Notifikasi
+                            </span>
                             {unreadCount > 0 && (
                                 <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
                                     {unreadCount} baru
@@ -116,7 +139,7 @@ export default function NotificationBell() {
                                 type="button"
                                 onClick={tandaiSemuaDibaca}
                                 disabled={loading}
-                                className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                                className="flex cursor-pointer items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-primary"
                             >
                                 <CheckCheck className="size-3.5" />
                                 <span>Tandai Semua Dibaca</span>
@@ -124,7 +147,7 @@ export default function NotificationBell() {
                         )}
                     </div>
 
-                    <div className="divide-y divide-border/40 max-h-80 overflow-y-auto my-2">
+                    <div className="my-2 max-h-80 divide-y divide-border/40 overflow-y-auto">
                         {notifikasiList.length === 0 ? (
                             <div className="py-8 text-center text-xs text-muted-foreground">
                                 Belum ada notifikasi baru untuk Anda.
@@ -135,24 +158,35 @@ export default function NotificationBell() {
                                 return (
                                     <div
                                         key={item.id}
-                                        onClick={() => tandaiDibaca(item.id, item.laporan?.nomor_tiket)}
-                                        className={`p-2.5 transition-colors rounded-lg cursor-pointer flex flex-col gap-1 ${
-                                            isUnread ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/40'
+                                        onClick={() =>
+                                            tandaiDibaca(
+                                                item.id,
+                                                item.laporan?.nomor_tiket,
+                                            )
+                                        }
+                                        className={`flex cursor-pointer flex-col gap-1 rounded-lg p-2.5 transition-colors ${
+                                            isUnread
+                                                ? 'bg-primary/5 hover:bg-primary/10'
+                                                : 'hover:bg-muted/40'
                                         }`}
                                     >
                                         <div className="flex items-start justify-between gap-2">
-                                            <p className={`text-xs ${isUnread ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+                                            <p
+                                                className={`text-xs ${isUnread ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}
+                                            >
                                                 {item.pesan}
                                             </p>
                                             {isUnread && (
-                                                <span className="size-2 rounded-full bg-primary shrink-0 mt-1" />
+                                                <span className="mt-1 size-2 shrink-0 rounded-full bg-primary" />
                                             )}
                                         </div>
 
-                                        <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
+                                        <div className="flex items-center justify-between pt-1 text-[10px] text-muted-foreground">
                                             <span className="flex items-center gap-1">
                                                 <Clock className="size-3" />
-                                                {new Date(item.created_at).toLocaleTimeString('id-ID', {
+                                                {new Date(
+                                                    item.created_at,
+                                                ).toLocaleTimeString('id-ID', {
                                                     hour: '2-digit',
                                                     minute: '2-digit',
                                                     day: 'numeric',
@@ -160,7 +194,7 @@ export default function NotificationBell() {
                                                 })}
                                             </span>
                                             {item.laporan && (
-                                                <span className="font-mono text-primary flex items-center gap-0.5">
+                                                <span className="flex items-center gap-0.5 font-mono text-primary">
                                                     {item.laporan.nomor_tiket}
                                                     <ExternalLink className="size-2.5" />
                                                 </span>
@@ -172,16 +206,16 @@ export default function NotificationBell() {
                         )}
                     </div>
 
-                    <div className="pt-2 border-t border-border/60 text-center">
+                    <div className="border-t border-border/60 pt-2 text-center">
                         <button
                             type="button"
                             onClick={() => {
                                 setOpen(false);
-                                router.visit('/warga/riwayat');
+                                router.visit('/notifikasi');
                             }}
-                            className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                            className="cursor-pointer text-[11px] font-semibold text-primary hover:underline"
                         >
-                            Lihat Riwayat & Aktivitas Warga
+                            Lihat Semua Notifikasi
                         </button>
                     </div>
                 </div>

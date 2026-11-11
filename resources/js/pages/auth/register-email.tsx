@@ -1,6 +1,11 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+    FieldError,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
@@ -12,14 +17,23 @@ import {
 import { toast } from '@/components/ui/toast';
 import GuestLayouts from '@/layouts/GuestLayout';
 import AuthSplitCard from '@/components/auth/AuthSplitCard';
-import { Mail, ArrowRight, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
+import {
+    Mail,
+    ArrowRight,
+    AlertTriangle,
+    CheckCircle2,
+    Info,
+} from 'lucide-react';
 
 interface RegisterEmailProps {
     status?: string;
     tokenError?: string;
 }
 
-export default function RegisterEmail({ status, tokenError }: RegisterEmailProps) {
+export default function RegisterEmail({
+    status,
+    tokenError,
+}: RegisterEmailProps) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
@@ -70,22 +84,26 @@ export default function RegisterEmail({ status, tokenError }: RegisterEmailProps
                 }
             >
                 {/* Zero Knowledge Privacy Badge & Alert Badges */}
-                <div className="flex flex-wrap items-center gap-2 mb-3">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
                     <TooltipProvider>
                         <Tooltip>
-                            <TooltipTrigger className="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/40 px-2.5 py-1 text-caption-xs font-medium text-muted-foreground hover:text-foreground cursor-help transition-colors">
-                                <span className="font-semibold text-foreground">Zero-Knowledge Privacy</span>
+                            <TooltipTrigger className="inline-flex cursor-help items-center gap-1.5 rounded-lg border border-border/80 bg-muted/40 px-2.5 py-1 text-caption-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
+                                <span className="font-semibold text-foreground">
+                                    Zero-Knowledge Privacy
+                                </span>
                                 <Info className="size-3 text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs text-xs">
-                                Alamat email Anda dinormalisasi dan dienkripsi satu arah dengan HMAC SHA-256. Kami tidak pernah menyimpan alamat email asli di basis data kami.
+                                Alamat email Anda dinormalisasi dan dienkripsi
+                                satu arah dengan HMAC SHA-256. Kami tidak pernah
+                                menyimpan alamat email asli di basis data kami.
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
 
                     {status && (
                         <div className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-caption-xs font-semibold text-emerald-800 dark:text-emerald-300">
-                            <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <CheckCircle2 className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                             <span>Tautan verifikasi terkirim</span>
                         </div>
                     )}
@@ -93,11 +111,14 @@ export default function RegisterEmail({ status, tokenError }: RegisterEmailProps
 
                 {tokenError && (
                     <div
-                        className="mb-3.5 inline-flex items-center gap-1.5 rounded-lg border border-destructive/20 bg-destructive/10 px-2.5 py-1 text-caption-xs font-semibold text-destructive max-w-full"
+                        className="mb-3.5 inline-flex max-w-full items-center gap-1.5 rounded-lg border border-destructive/20 bg-destructive/10 px-2.5 py-1 text-caption-xs font-semibold text-destructive"
                         title={tokenError}
                     >
                         <AlertTriangle className="size-3.5 shrink-0" />
-                        <span className="truncate">Tautan Kedaluwarsa: Silakan masukkan email Anda untuk tautan baru</span>
+                        <span className="truncate">
+                            Tautan Kedaluwarsa: Silakan masukkan email Anda
+                            untuk tautan baru
+                        </span>
                     </div>
                 )}
 
@@ -129,7 +150,8 @@ export default function RegisterEmail({ status, tokenError }: RegisterEmailProps
                                 <FieldError>{errors.email}</FieldError>
                             )}
                             <p className="mt-1.5 text-caption-xs text-muted-foreground">
-                                Domain instansi pemerintah (.go.id) tidak diizinkan untuk akun warga.
+                                Domain instansi pemerintah (.go.id) tidak
+                                diizinkan untuk akun warga.
                             </p>
                         </Field>
                     </FieldGroup>
@@ -137,9 +159,11 @@ export default function RegisterEmail({ status, tokenError }: RegisterEmailProps
                     <Button
                         type="submit"
                         disabled={processing}
-                        className="h-11 w-full rounded-xl font-semibold gap-2 shadow-sm transition-all"
+                        className="h-11 w-full gap-2 rounded-xl font-semibold shadow-sm transition-all"
                     >
-                        {processing ? 'Mengirim Tautan...' : 'Kirim Tautan Verifikasi'}
+                        {processing
+                            ? 'Mengirim Tautan...'
+                            : 'Kirim Tautan Verifikasi'}
                         <ArrowRight className="size-4" />
                     </Button>
                 </form>

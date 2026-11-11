@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             PengaturanSeeder::class,
             ParameterKuorumSeeder::class,
             LaporanSiklusHidupDemoSeeder::class,
+            NotifikasiSeeder::class,
         ]);
     }
 }

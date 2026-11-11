@@ -28,71 +28,71 @@ export default function LandingNavbar() {
                 </Link>
 
                 {/* Desktop Nav Links */}
-                <nav className="hidden md:flex items-center gap-8 text-body-sm font-medium text-muted-foreground">
+                <nav className="hidden items-center gap-8 text-body-sm font-medium text-muted-foreground md:flex">
                     <button
                         type="button"
                         onClick={() => scrollToSection('alur')}
-                        className="hover:text-foreground transition-colors cursor-pointer"
+                        className="cursor-pointer transition-colors hover:text-foreground"
                     >
                         Alur
                     </button>
                     <button
                         type="button"
                         onClick={() => scrollToSection('janji')}
-                        className="hover:text-foreground transition-colors cursor-pointer"
+                        className="cursor-pointer transition-colors hover:text-foreground"
                     >
                         Janji
                     </button>
                     <button
                         type="button"
                         onClick={() => scrollToSection('privasi')}
-                        className="hover:text-foreground transition-colors cursor-pointer"
+                        className="cursor-pointer transition-colors hover:text-foreground"
                     >
                         Keamanan
                     </button>
                     <button
                         type="button"
                         onClick={() => scrollToSection('kinerja')}
-                        className="hover:text-foreground transition-colors cursor-pointer"
+                        className="cursor-pointer transition-colors hover:text-foreground"
                     >
                         Kinerja
                     </button>
                     <button
                         type="button"
                         onClick={() => scrollToSection('sebaran-peta')}
-                        className="hover:text-foreground transition-colors cursor-pointer text-primary font-semibold"
+                        className="cursor-pointer font-semibold text-primary transition-colors hover:text-foreground"
                     >
                         Lihat Sekitar
                     </button>
                 </nav>
 
                 {/* Desktop Action Buttons */}
-                <div className="hidden md:flex items-center gap-3">
+                <div className="hidden items-center gap-3 md:flex">
                     {user ? (
                         <Link
                             href={
                                 user.peran === 'instansi'
                                     ? '/instansi/antrean'
                                     : user.peran === 'auditor'
-                                    ? '/auditor/antrean'
-                                    : user.peran === 'admin'
-                                    ? '/admin/antrean-routing'
-                                    : '/peta'
+                                      ? '/auditor/antrean'
+                                      : user.peran === 'admin'
+                                        ? '/admin/antrean-routing'
+                                        : '/peta'
                             }
                             className={cn(
                                 buttonVariants({ variant: 'outline' }),
-                                'h-10 text-body-sm font-semibold rounded-xl border-border'
+                                'h-10 rounded-xl border-border text-body-sm font-semibold',
                             )}
                         >
                             <span>Buka Portal {user.username}</span>
-                            <ArrowRight className="size-4 ml-1.5" />
+                            <ArrowRight className="ml-1.5 size-4" />
                         </Link>
                     ) : (
                         <Link
                             href="/warga/lapor"
                             className={cn(
                                 buttonVariants({ variant: 'default' }),
-                                'h-10 text-body-sm font-semibold rounded-xl shadow-xs'
+                                'h-10 rounded-xl text-body-sm font-semibold shadow-xs',
                             )}
                         >
                             <span>Lapor Masalah</span>
@@ -109,72 +109,82 @@ export default function LandingNavbar() {
                         onClick={() => setMobileOpen(!mobileOpen)}
                         className="size-10 rounded-xl text-foreground"
                     >
-                        {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+                        {mobileOpen ? (
+                            <X className="size-5" />
+                        ) : (
+                            <Menu className="size-5" />
+                        )}
                     </Button>
                 </div>
             </div>
 
             {/* Mobile Dropdown Menu */}
             {mobileOpen && (
-                <div className="md:hidden border-b border-border bg-card px-4 pt-3 pb-6 space-y-3">
+                <div className="space-y-3 border-b border-border bg-card px-4 pt-3 pb-6 md:hidden">
                     <div className="flex flex-col space-y-2 text-body-sm font-medium">
                         <button
                             type="button"
                             onClick={() => scrollToSection('alur')}
-                            className="text-left py-2 px-3 rounded-lg hover:bg-muted text-foreground"
+                            className="rounded-lg px-3 py-2 text-left text-foreground hover:bg-muted"
                         >
                             Alur
                         </button>
                         <button
                             type="button"
                             onClick={() => scrollToSection('janji')}
-                            className="text-left py-2 px-3 rounded-lg hover:bg-muted text-foreground"
+                            className="rounded-lg px-3 py-2 text-left text-foreground hover:bg-muted"
                         >
                             Janji
                         </button>
                         <button
                             type="button"
                             onClick={() => scrollToSection('privasi')}
-                            className="text-left py-2 px-3 rounded-lg hover:bg-muted text-foreground"
+                            className="rounded-lg px-3 py-2 text-left text-foreground hover:bg-muted"
                         >
                             Keamanan
                         </button>
                         <button
                             type="button"
                             onClick={() => scrollToSection('kinerja')}
-                            className="text-left py-2 px-3 rounded-lg hover:bg-muted text-foreground"
+                            className="rounded-lg px-3 py-2 text-left text-foreground hover:bg-muted"
                         >
                             Kinerja
                         </button>
                         <button
                             type="button"
                             onClick={() => scrollToSection('sebaran-peta')}
-                            className="text-left py-2 px-3 rounded-lg hover:bg-muted text-primary font-bold"
+                            className="rounded-lg px-3 py-2 text-left font-bold text-primary hover:bg-muted"
                         >
                             Lihat Sekitar (Peta)
                         </button>
                     </div>
 
-                    <div className="pt-3 border-t border-border flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 border-t border-border pt-3">
                         {user ? (
                             <Link
                                 href={
                                     user.peran === 'instansi'
                                         ? '/instansi/antrean'
                                         : user.peran === 'auditor'
-                                        ? '/auditor/antrean'
-                                        : user.peran === 'admin'
-                                        ? '/admin/antrean-routing'
-                                        : '/peta'
+                                          ? '/auditor/antrean'
+                                          : user.peran === 'admin'
+                                            ? '/admin/antrean-routing'
+                                            : '/peta'
                                 }
-                                className={cn(buttonVariants({ variant: 'default' }), 'w-full h-11 font-semibold rounded-xl')}
+                                className={cn(
+                                    buttonVariants({ variant: 'default' }),
+                                    'h-11 w-full rounded-xl font-semibold',
+                                )}
                             >
                                 Buka Portal ({user.username})
                             </Link>
                         ) : (
                             <Link
                                 href="/warga/lapor"
-                                className={cn(buttonVariants({ variant: 'default' }), 'w-full h-11 font-semibold rounded-xl')}
+                                className={cn(
+                                    buttonVariants({ variant: 'default' }),
+                                    'h-11 w-full rounded-xl font-semibold',
+                                )}
                             >
                                 Lapor Masalah
                             </Link>

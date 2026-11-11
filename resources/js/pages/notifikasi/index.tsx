@@ -22,17 +22,20 @@ interface NotifikasiPageProps {
     };
 }
 
-export default function NotifikasiIndexPage({ notifikasi }: NotifikasiPageProps) {
-    const { auth } = usePage<{ auth?: { user?: { peran?: string } | null } }>().props;
+export default function NotifikasiIndexPage({
+    notifikasi,
+}: NotifikasiPageProps) {
+    const { auth } = usePage<{ auth?: { user?: { peran?: string } | null } }>()
+        .props;
     const peran = auth?.user?.peran;
     const rolePrefix =
         peran === 'admin'
             ? 'Admin'
             : peran === 'auditor'
-            ? 'Auditor'
-            : peran === 'instansi'
-            ? 'Instansi'
-            : 'Warga';
+              ? 'Auditor'
+              : peran === 'instansi'
+                ? 'Instansi'
+                : 'Warga';
 
     const unreadCount = notifikasi.data.filter((n) => !n.dibaca_pada).length;
 
@@ -42,7 +45,12 @@ export default function NotifikasiIndexPage({ notifikasi }: NotifikasiPageProps)
                 method: 'PATCH',
                 headers: {
                     Accept: 'application/json',
-                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                    'X-CSRF-TOKEN':
+                        (
+                            document.querySelector(
+                                'meta[name="csrf-token"]',
+                            ) as HTMLMetaElement
+                        )?.content || '',
                 },
             });
             if (nomorTiket) {
@@ -60,8 +68,9 @@ export default function NotifikasiIndexPage({ notifikasi }: NotifikasiPageProps)
             '/api/notifikasi/baca-semua',
             {},
             {
-                onSuccess: () => toast.success('Seluruh notifikasi telah ditandai dibaca.'),
-            }
+                onSuccess: () =>
+                    toast.success('Seluruh notifikasi telah ditandai dibaca.'),
+            },
         );
     };
 
@@ -70,150 +79,170 @@ export default function NotifikasiIndexPage({ notifikasi }: NotifikasiPageProps)
             title="Pusat Notifikasi"
             breadcrumb={`${rolePrefix} > Notifikasi`}
         >
-            <div className="space-y-6 max-w-4xl mx-auto pb-12">
+            <div className="mx-auto max-w-4xl space-y-6 pb-12">
                 <Head title="Pusat Notifikasi" />
 
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                        <h1 className="font-display text-2xl font-bold text-foreground">
-                            Pusat Notifikasi & Pembaruan
-                        </h1>
-                        {unreadCount > 0 && (
-                            <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-bold">
-                                {unreadCount} Belum Dibaca
-                            </Badge>
-                        )}
+                {/* Header */}
+                <div className="flex flex-col justify-between gap-4 border-b border-border pb-4 sm:flex-row sm:items-center">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            <h1 className="font-display text-2xl font-bold text-foreground">
+                                Pusat Notifikasi & Pembaruan
+                            </h1>
+                            {unreadCount > 0 && (
+                                <Badge className="border-primary/20 bg-primary/10 text-xs font-bold text-primary">
+                                    {unreadCount} Belum Dibaca
+                                </Badge>
+                            )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Pemberitahuan resmi mengenai perubahan status tiket
+                            Anda, undangan verifikasi kuorum warga, dan proses
+                            mediasi sengketa.
+                        </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Pemberitahuan resmi mengenai perubahan status tiket Anda, undangan verifikasi kuorum warga, dan proses mediasi sengketa.
-                    </p>
+
+                    {unreadCount > 0 && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={tandaiSemuaDibaca}
+                            className="cursor-pointer gap-1.5 self-start text-xs sm:self-auto"
+                        >
+                            <CheckCheck className="size-4" />
+                            <span>Tandai Semua Dibaca</span>
+                        </Button>
+                    )}
                 </div>
 
-                {unreadCount > 0 && (
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={tandaiSemuaDibaca}
-                        className="text-xs gap-1.5 self-start sm:self-auto cursor-pointer"
-                    >
-                        <CheckCheck className="size-4" />
-                        <span>Tandai Semua Dibaca</span>
-                    </Button>
-                )}
-            </div>
-
-            {/* List Notifikasi */}
-            {notifikasi.data.length === 0 ? (
-                <div className="rounded-3xl border border-dashed border-border/80 p-12 text-center space-y-3">
-                    <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-                        <Inbox className="size-6" />
+                {/* List Notifikasi */}
+                {notifikasi.data.length === 0 ? (
+                    <div className="space-y-3 rounded-3xl border border-dashed border-border/80 p-12 text-center">
+                        <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                            <Inbox className="size-6" />
+                        </div>
+                        <h3 className="font-display text-base font-bold text-foreground">
+                            Belum Ada Notifikasi
+                        </h3>
+                        <p className="mx-auto max-w-sm text-xs text-muted-foreground">
+                            Ketika ada pembaruan laporan atau permohonan
+                            verifikasi hasil perbaikan di lingkungan Anda,
+                            pemberitahuan akan tampil di sini.
+                        </p>
                     </div>
-                    <h3 className="font-display text-base font-bold text-foreground">
-                        Belum Ada Notifikasi
-                    </h3>
-                    <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                        Ketika ada pembaruan laporan atau permohonan verifikasi hasil perbaikan di lingkungan Anda, pemberitahuan akan tampil di sini.
-                    </p>
-                </div>
-            ) : (
-                <div className="divide-y divide-border/60 rounded-3xl border border-border/80 bg-card overflow-hidden shadow-2xs">
-                    {notifikasi.data.map((item) => {
-                        const isUnread = !item.dibaca_pada;
-                        return (
-                            <div
-                                key={item.id}
-                                onClick={() => tandaiDibaca(item.id, item.laporan?.nomor_tiket)}
-                                className={`p-4 sm:p-5 transition-colors cursor-pointer flex items-start gap-4 ${
-                                    isUnread ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/30'
-                                }`}
-                            >
+                ) : (
+                    <div className="divide-y divide-border/60 overflow-hidden rounded-3xl border border-border/80 bg-card shadow-2xs">
+                        {notifikasi.data.map((item) => {
+                            const isUnread = !item.dibaca_pada;
+                            return (
                                 <div
-                                    className={`size-10 rounded-2xl flex items-center justify-center shrink-0 mt-0.5 ${
+                                    key={item.id}
+                                    onClick={() =>
+                                        tandaiDibaca(
+                                            item.id,
+                                            item.laporan?.nomor_tiket,
+                                        )
+                                    }
+                                    className={`flex cursor-pointer items-start gap-4 p-4 transition-colors sm:p-5 ${
                                         isUnread
-                                            ? 'bg-primary/15 text-primary'
-                                            : 'bg-muted text-muted-foreground'
+                                            ? 'bg-primary/5 hover:bg-primary/10'
+                                            : 'hover:bg-muted/30'
                                     }`}
                                 >
-                                    <Bell className="size-4" />
-                                </div>
-
-                                <div className="flex-1 space-y-1.5 min-w-0">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <p
-                                            className={`text-sm leading-relaxed ${
-                                                isUnread ? 'font-bold text-foreground' : 'text-foreground/80'
-                                            }`}
-                                        >
-                                            {item.pesan}
-                                        </p>
-                                        {isUnread && (
-                                            <span className="size-2 rounded-full bg-primary shrink-0 mt-1.5" />
-                                        )}
+                                    <div
+                                        className={`mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl ${
+                                            isUnread
+                                                ? 'bg-primary/15 text-primary'
+                                                : 'bg-muted text-muted-foreground'
+                                        }`}
+                                    >
+                                        <Bell className="size-4" />
                                     </div>
 
-                                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                        <span className="flex items-center gap-1 text-[11px]">
-                                            <Clock className="size-3" />
-                                            {new Date(item.created_at).toLocaleString('id-ID', {
-                                                day: 'numeric',
-                                                month: 'short',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                            })}
-                                        </span>
+                                    <div className="min-w-0 flex-1 space-y-1.5">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <p
+                                                className={`text-sm leading-relaxed ${
+                                                    isUnread
+                                                        ? 'font-bold text-foreground'
+                                                        : 'text-foreground/80'
+                                                }`}
+                                            >
+                                                {item.pesan}
+                                            </p>
+                                            {isUnread && (
+                                                <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
+                                            )}
+                                        </div>
 
-                                        {item.laporan && (
-                                            <span className="font-mono text-primary font-semibold flex items-center gap-1 text-[11px]">
-                                                {item.laporan.nomor_tiket}
-                                                <ExternalLink className="size-3" />
+                                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                            <span className="flex items-center gap-1 text-[11px]">
+                                                <Clock className="size-3" />
+                                                {new Date(
+                                                    item.created_at,
+                                                ).toLocaleString('id-ID', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                })}
                                             </span>
-                                        )}
+
+                                            {item.laporan && (
+                                                <span className="flex items-center gap-1 font-mono text-[11px] font-semibold text-primary">
+                                                    {item.laporan.nomor_tiket}
+                                                    <ExternalLink className="size-3" />
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* Paginasi */}
-            {notifikasi.last_page > 1 && (
-                <div className="flex items-center justify-between border-t border-border/60 pt-4 text-xs text-muted-foreground">
-                    <span>
-                        Menampilkan {notifikasi.from} - {notifikasi.to} dari total {notifikasi.total}
-                    </span>
-                    <div className="flex items-center gap-1">
-                        {notifikasi.links.map((link, idx) => {
-                            if (!link.url) {
-                                return (
-                                    <span
-                                        key={idx}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                        className="px-2.5 py-1 text-muted-foreground/50 text-xs"
-                                    />
-                                );
-                            }
-                            return (
-                                <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => router.visit(link.url!)}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                                        link.active
-                                            ? 'bg-primary text-primary-foreground font-bold'
-                                            : 'hover:bg-muted text-foreground'
-                                    }`}
-                                />
                             );
                         })}
                     </div>
-                </div>
-            )}
+                )}
+
+                {/* Paginasi */}
+                {notifikasi.last_page > 1 && (
+                    <div className="flex items-center justify-between border-t border-border/60 pt-4 text-xs text-muted-foreground">
+                        <span>
+                            Menampilkan {notifikasi.from} - {notifikasi.to} dari
+                            total {notifikasi.total}
+                        </span>
+                        <div className="flex items-center gap-1">
+                            {notifikasi.links.map((link, idx) => {
+                                if (!link.url) {
+                                    return (
+                                        <span
+                                            key={idx}
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
+                                            className="px-2.5 py-1 text-xs text-muted-foreground/50"
+                                        />
+                                    );
+                                }
+                                return (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={() => router.visit(link.url!)}
+                                        dangerouslySetInnerHTML={{
+                                            __html: link.label,
+                                        }}
+                                        className={`cursor-pointer rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
+                                            link.active
+                                                ? 'bg-primary font-bold text-primary-foreground'
+                                                : 'text-foreground hover:bg-muted'
+                                        }`}
+                                    />
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
         </InternalLayout>
     );

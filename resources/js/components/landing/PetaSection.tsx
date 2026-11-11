@@ -1,5 +1,17 @@
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
-import { MasterFilterPeta, TitikLaporanPeta, PetaFilterState, KondisiSla } from '@/types/peta';
+import {
+    useState,
+    useEffect,
+    useMemo,
+    useCallback,
+    lazy,
+    Suspense,
+} from 'react';
+import {
+    MasterFilterPeta,
+    TitikLaporanPeta,
+    PetaFilterState,
+    KondisiSla,
+} from '@/types/peta';
 const PetaCanvas = lazy(() => import('@/components/peta/PetaCanvas'));
 import PetaFilterBar from '@/components/peta/PetaFilterBar';
 import PetaDrawerList from '@/components/peta/PetaDrawerList';
@@ -17,7 +29,9 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
     const [allTitik, setAllTitik] = useState<TitikLaporanPeta[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedTiket, setSelectedTiket] = useState<TitikLaporanPeta | null>(null);
+    const [selectedTiket, setSelectedTiket] = useState<TitikLaporanPeta | null>(
+        null,
+    );
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     useEffect(() => {
@@ -48,7 +62,9 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
             });
 
             if (!res.ok) {
-                throw new Error(`Gagal memuat data sebaran (HTTP ${res.status})`);
+                throw new Error(
+                    `Gagal memuat data sebaran (HTTP ${res.status})`,
+                );
             }
 
             const data = await res.json();
@@ -58,7 +74,9 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
                 throw new Error('Format data tidak sesuai');
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Gagal menghubungi server');
+            setError(
+                err instanceof Error ? err.message : 'Gagal menghubungi server',
+            );
         } finally {
             setIsLoading(false);
         }
@@ -75,7 +93,9 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
             const fokusTiket = urlParams.get('fokus');
             if (fokusTiket) {
                 const target = allTitik.find(
-                    (t) => t.nomor_tiket.toUpperCase() === fokusTiket.toUpperCase()
+                    (t) =>
+                        t.nomor_tiket.toUpperCase() ===
+                        fokusTiket.toUpperCase(),
                 );
                 if (target) {
                     setSelectedTiket(target);
@@ -87,10 +107,16 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
     // Filter reaktif client-side
     const filteredTitik = useMemo(() => {
         return allTitik.filter((item) => {
-            if (filters.kategori_id !== null && item.kategori_id !== filters.kategori_id) {
+            if (
+                filters.kategori_id !== null &&
+                item.kategori_id !== filters.kategori_id
+            ) {
                 return false;
             }
-            if (filters.kecamatan_id !== null && item.kecamatan_id !== filters.kecamatan_id) {
+            if (
+                filters.kecamatan_id !== null &&
+                item.kecamatan_id !== filters.kecamatan_id
+            ) {
                 return false;
             }
             if (filters.kota_id && item.kota_id !== filters.kota_id) {
@@ -99,27 +125,46 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
             if (filters.status && item.status !== filters.status) {
                 return false;
             }
-            if (filters.kondisi_sla !== null && item.kondisi_sla !== filters.kondisi_sla) {
+            if (
+                filters.kondisi_sla !== null &&
+                item.kondisi_sla !== filters.kondisi_sla
+            ) {
                 return false;
             }
-            if (filters.instansi_id !== null && item.instansi_id !== filters.instansi_id) {
+            if (
+                filters.instansi_id !== null &&
+                item.instansi_id !== filters.instansi_id
+            ) {
                 return false;
             }
             if (filters.rentang_waktu !== null) {
                 const createdAt = new Date(item.created_at).getTime();
-                const batasWaktu = Date.now() - filters.rentang_waktu * 24 * 60 * 60 * 1000;
+                const batasWaktu =
+                    Date.now() - filters.rentang_waktu * 24 * 60 * 60 * 1000;
                 if (createdAt < batasWaktu) {
                     return false;
                 }
             }
             if (filters.search.trim() !== '') {
                 const query = filters.search.toLowerCase();
-                const matchNomor = item.nomor_tiket.toLowerCase().includes(query);
+                const matchNomor = item.nomor_tiket
+                    .toLowerCase()
+                    .includes(query);
                 const matchJudul = item.judul.toLowerCase().includes(query);
-                const matchKelurahan = item.kelurahan_nama.toLowerCase().includes(query);
-                const matchKecamatan = item.kecamatan_nama.toLowerCase().includes(query);
+                const matchKelurahan = item.kelurahan_nama
+                    .toLowerCase()
+                    .includes(query);
+                const matchKecamatan = item.kecamatan_nama
+                    .toLowerCase()
+                    .includes(query);
                 const matchKota = item.kota_nama?.toLowerCase().includes(query);
-                if (!matchNomor && !matchJudul && !matchKelurahan && !matchKecamatan && !matchKota) {
+                if (
+                    !matchNomor &&
+                    !matchJudul &&
+                    !matchKelurahan &&
+                    !matchKecamatan &&
+                    !matchKota
+                ) {
                     return false;
                 }
             }
@@ -141,35 +186,43 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
     };
 
     return (
-        <section id="sebaran-peta" className="py-20 sm:py-28 bg-muted/30 border-t border-border/80">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
+        <section
+            id="sebaran-peta"
+            className="border-t border-border/80 bg-muted/30 py-20 sm:py-28"
+        >
+            <div className="mx-auto max-w-7xl space-y-8 px-4 sm:space-y-10 sm:px-6 lg:px-8">
                 {/* Header Seksi Sesuai Wireframe Mockup */}
-                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div className="max-w-2xl space-y-3">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3.5 py-1 text-caption-xs font-semibold text-primary border border-primary/20">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-caption-xs font-semibold text-primary">
                             <Layers className="size-3.5" />
                             <span>Peta Sebaran Laporan Publik</span>
                         </div>
 
-                        <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
+                        <h2 className="font-display text-3xl leading-[1.15] font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
                             Lihat apa yang dilaporkan di sekitar Anda.
                         </h2>
 
-                        <p className="text-body-base sm:text-body-large text-muted-foreground leading-relaxed">
-                            Siapa saja bisa melihat. Penanda dibedakan oleh bentuk isi dan teks status, bukan warna saja.
+                        <p className="sm:text-body-large text-body-base leading-relaxed text-muted-foreground">
+                            Siapa saja bisa melihat. Penanda dibedakan oleh
+                            bentuk isi dan teks status, bukan warna saja.
                         </p>
                     </div>
 
                     {/* Ringkasan Jumlah Tiket Aktif & Selesai */}
-                    <div className="flex items-center gap-3 shrink-0 self-start md:self-end">
-                        <div className="px-4 py-2 bg-card rounded-2xl border border-border shadow-xs text-center">
-                            <span className="block text-caption-xs text-muted-foreground font-medium">Laporan Aktif</span>
+                    <div className="flex shrink-0 items-center gap-3 self-start md:self-end">
+                        <div className="rounded-2xl border border-border bg-card px-4 py-2 text-center shadow-xs">
+                            <span className="block text-caption-xs font-medium text-muted-foreground">
+                                Laporan Aktif
+                            </span>
                             <span className="font-mono text-lg font-bold text-foreground">
                                 {masterFilter?.statistik?.laporan_aktif ?? 0}
                             </span>
                         </div>
-                        <div className="px-4 py-2 bg-card rounded-2xl border border-border shadow-xs text-center">
-                            <span className="block text-caption-xs text-muted-foreground font-medium">Selesai Diverifikasi</span>
+                        <div className="rounded-2xl border border-border bg-card px-4 py-2 text-center shadow-xs">
+                            <span className="block text-caption-xs font-medium text-muted-foreground">
+                                Selesai Diverifikasi
+                            </span>
                             <span className="font-mono text-lg font-bold text-emerald-600 dark:text-emerald-400">
                                 {masterFilter?.statistik?.laporan_selesai ?? 0}
                             </span>
@@ -188,7 +241,7 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
                                 variant="outline"
                                 size="sm"
                                 onClick={fetchTitik}
-                                className="h-8 gap-1.5 text-caption-xs font-semibold rounded-lg"
+                                className="h-8 gap-1.5 rounded-lg text-caption-xs font-semibold"
                             >
                                 <RefreshCw className="size-3.5" />
                                 Coba Lagi
@@ -211,13 +264,15 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
                 )}
 
                 {/* Kanvas Peta Interaktif Leaflet + Clustering */}
-                <div className="relative w-full h-[620px] lg:h-[720px] overflow-hidden rounded-3xl shadow-md border border-border">
+                <div className="relative h-[620px] w-full overflow-hidden rounded-3xl border border-border shadow-md lg:h-[720px]">
                     {isMounted ? (
                         <Suspense
                             fallback={
-                                <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
+                                <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/20 text-muted-foreground">
                                     <RefreshCw className="size-6 animate-spin text-primary" />
-                                    <span className="text-body-sm font-medium">Memuat peta sebaran...</span>
+                                    <span className="text-body-sm font-medium">
+                                        Memuat peta sebaran...
+                                    </span>
                                 </div>
                             }
                         >
@@ -229,9 +284,11 @@ export default function PetaSection({ masterFilter }: PetaSectionProps) {
                             />
                         </Suspense>
                     ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/20 text-muted-foreground">
                             <RefreshCw className="size-6 animate-spin text-primary" />
-                            <span className="text-body-sm font-medium">Memuat peta sebaran...</span>
+                            <span className="text-body-sm font-medium">
+                                Memuat peta sebaran...
+                            </span>
                         </div>
                     )}
 

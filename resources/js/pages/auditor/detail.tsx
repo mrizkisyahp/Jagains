@@ -136,7 +136,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                 </div>
 
                 <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="space-y-1.5 min-w-0">
+                    <div className="min-w-0 space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
                             <span className="font-mono text-xs font-bold text-foreground">
                                 {detail.laporan.nomor_tiket}
@@ -150,7 +150,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                             </Badge>
                             <Badge
                                 variant="outline"
-                                className="font-mono text-caption-xs font-medium"
+                                className="text-caption-xs font-mono font-medium"
                             >
                                 {detail.laporan.status}
                             </Badge>
@@ -164,8 +164,9 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                             {detail.laporan.judul}
                         </h2>
                         <p className="text-caption-sm text-muted-foreground">
-                            Sidang Majelis Auditor Independen Kota Depok • Masuk
-                            eskalasi pada {formatTanggal(detail.eskalasi.created_at)}
+                            Sidang Majelis Auditor Independen Jabodetabek •
+                            Masuk eskalasi pada{' '}
+                            {formatTanggal(detail.eskalasi.created_at)}
                         </p>
                     </div>
 
@@ -202,7 +203,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                         className={cn(
                             'group flex items-center gap-3.5 rounded-lg p-3 text-left transition-all',
                             currentStep === 1
-                                ? 'bg-primary/10 border border-primary/30 shadow-2xs'
+                                ? 'border border-primary/30 bg-primary/10 shadow-2xs'
                                 : 'border border-transparent hover:bg-muted/50',
                         )}
                     >
@@ -228,7 +229,8 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                 Telaah Berkas Perkara
                             </span>
                             <span className="block truncate text-caption-xs text-muted-foreground">
-                                Verifikasi bukti fisik, laporan warga, dan dokumen dinas
+                                Verifikasi bukti fisik, laporan warga, dan
+                                dokumen dinas
                             </span>
                         </div>
                     </button>
@@ -240,7 +242,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                         className={cn(
                             'group flex items-center gap-3.5 rounded-lg p-3 text-left transition-all',
                             currentStep === 2
-                                ? 'bg-primary/10 border border-primary/30 shadow-2xs'
+                                ? 'border border-primary/30 bg-primary/10 shadow-2xs'
                                 : 'border border-transparent hover:bg-muted/50',
                         )}
                     >
@@ -266,7 +268,8 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                 Sidang Putusan Auditor
                             </span>
                             <span className="block truncate text-caption-xs text-muted-foreground">
-                                Penetapan amar putusan resmi yang final dan mengikat
+                                Penetapan amar putusan resmi yang final dan
+                                mengikat
                             </span>
                         </div>
                     </button>
@@ -279,7 +282,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                     {/* Ringkasan Metadata Kasus */}
                     <div className="grid grid-cols-1 gap-4 rounded-xl border border-border bg-card p-5 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="min-w-0 space-y-1">
-                            <span className="text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            <span className="text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Instansi Pelaksana
                             </span>
                             <div className="flex items-center gap-2">
@@ -292,14 +295,14 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                 </span>
                             </div>
                             {detail.laporan.instansi?.singkatan && (
-                                <span className="inline-block rounded bg-muted px-1.5 py-0.2 text-[10px] font-semibold text-muted-foreground">
+                                <span className="py-0.2 inline-block rounded bg-muted px-1.5 text-[10px] font-semibold text-muted-foreground">
                                     {detail.laporan.instansi.singkatan}
                                 </span>
                             )}
                         </div>
 
                         <div className="min-w-0 space-y-1">
-                            <span className="text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            <span className="text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Lokasi Wilayah
                             </span>
                             <div className="flex items-center gap-2">
@@ -316,7 +319,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                         </div>
 
                         <div className="min-w-0 space-y-1">
-                            <span className="text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            <span className="text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Status & Tahap
                             </span>
                             <p className="text-body-sm font-semibold text-foreground">
@@ -325,19 +328,21 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                     : 'Tahap Pelaksanaan'}
                             </p>
                             <span className="block text-caption-xs text-muted-foreground">
-                                Sengketa Ronde Ke-{detail.laporan.ronde_sengketa || 1}
+                                Sengketa Ronde Ke-
+                                {detail.laporan.ronde_sengketa || 1}
                             </span>
                         </div>
 
                         <div className="min-w-0 space-y-1">
-                            <span className="text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            <span className="text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                 Keterlambatan SLA
                             </span>
                             {detail.eskalasi.hari_terlambat > 0 ? (
                                 <div className="flex items-center gap-1.5 text-body-sm font-bold text-destructive">
                                     <Clock className="size-4 shrink-0" />
                                     <span>
-                                        {detail.eskalasi.hari_terlambat} Hari Kerja
+                                        {detail.eskalasi.hari_terlambat} Hari
+                                        Kerja
                                     </span>
                                 </div>
                             ) : (
@@ -355,7 +360,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
 
                     {/* Deskripsi Aduan Pelapor Warga */}
                     <div className="rounded-xl border border-border bg-card p-5">
-                        <h3 className="flex items-center gap-2 text-caption-xs font-bold uppercase tracking-wider text-foreground">
+                        <h3 className="flex items-center gap-2 text-caption-xs font-bold tracking-wider text-foreground uppercase">
                             <FileText className="size-4 text-muted-foreground" />
                             <span>Deskripsi Aduan Pelapor Warga</span>
                         </h3>
@@ -368,11 +373,11 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                     {/* Dokumentasi Visual Lapangan: Komparasi Sebelum vs Sesudah */}
                     <div className="rounded-xl border border-border bg-card p-5">
                         <div className="flex items-center justify-between border-b border-border pb-3">
-                            <h3 className="flex items-center gap-2 text-caption-xs font-bold uppercase tracking-wider text-foreground">
+                            <h3 className="flex items-center gap-2 text-caption-xs font-bold tracking-wider text-foreground uppercase">
                                 <ImageIcon className="size-4 text-muted-foreground" />
                                 <span>
-                                    Dokumentasi Visual Lapangan (Komparasi Sebelum vs
-                                    Sesudah)
+                                    Dokumentasi Visual Lapangan (Komparasi
+                                    Sebelum vs Sesudah)
                                 </span>
                             </h3>
                             <span className="text-caption-xs text-muted-foreground">
@@ -384,8 +389,13 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                             {/* Foto Awal */}
                             <div className="overflow-hidden rounded-lg border border-border bg-muted/20">
                                 <div className="flex items-center justify-between border-b border-border bg-muted/50 px-3.5 py-2 text-caption-xs font-semibold text-foreground">
-                                    <span>Foto Awal (Kondisi Rusak Pelapor)</span>
-                                    <Badge variant="outline" className="text-[10px]">
+                                    <span>
+                                        Foto Awal (Kondisi Rusak Pelapor)
+                                    </span>
+                                    <Badge
+                                        variant="outline"
+                                        className="text-[10px]"
+                                    >
                                         Sebelum
                                     </Badge>
                                 </div>
@@ -398,7 +408,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                         />
                                     </div>
                                 ) : (
-                                    <div className="flex aspect-video items-center justify-center text-caption-sm text-muted-foreground">
+                                    <div className="text-caption-sm flex aspect-video items-center justify-center text-muted-foreground">
                                         Foto awal belum diunggah oleh pelapor.
                                     </div>
                                 )}
@@ -407,8 +417,13 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                             {/* Foto Sesudah */}
                             <div className="overflow-hidden rounded-lg border border-border bg-muted/20">
                                 <div className="flex items-center justify-between border-b border-border bg-muted/50 px-3.5 py-2 text-caption-xs font-semibold text-foreground">
-                                    <span>Foto Sesudah (Klaim Perbaikan Instansi)</span>
-                                    <Badge variant="outline" className="text-[10px]">
+                                    <span>
+                                        Foto Sesudah (Klaim Perbaikan Instansi)
+                                    </span>
+                                    <Badge
+                                        variant="outline"
+                                        className="text-[10px]"
+                                    >
                                         Sesudah
                                     </Badge>
                                 </div>
@@ -421,8 +436,9 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                         />
                                     </div>
                                 ) : (
-                                    <div className="flex aspect-video items-center justify-center text-caption-sm text-muted-foreground">
-                                        Instansi belum melampirkan foto hasil perbaikan fisik.
+                                    <div className="text-caption-sm flex aspect-video items-center justify-center text-muted-foreground">
+                                        Instansi belum melampirkan foto hasil
+                                        perbaikan fisik.
                                     </div>
                                 )}
                             </div>
@@ -433,15 +449,17 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                     {detail.berita_acara ? (
                         <div className="rounded-xl border border-border bg-card p-5">
                             <div className="flex items-center justify-between border-b border-border pb-3">
-                                <h3 className="flex items-center gap-2 text-caption-xs font-bold uppercase tracking-wider text-foreground">
+                                <h3 className="flex items-center gap-2 text-caption-xs font-bold tracking-wider text-foreground uppercase">
                                     <FileText className="size-4 text-muted-foreground" />
                                     <span>
                                         Berita Acara Pelaksanaan Fisik (Versi{' '}
                                         {detail.berita_acara.versi})
                                     </span>
                                 </h3>
-                                <span className="font-mono text-caption-xs text-muted-foreground">
-                                    {formatTanggal(detail.berita_acara.created_at)}
+                                <span className="text-caption-xs font-mono text-muted-foreground">
+                                    {formatTanggal(
+                                        detail.berita_acara.created_at,
+                                    )}
                                 </span>
                             </div>
 
@@ -475,41 +493,47 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                             </div>
                         </div>
                     ) : (
-                        <div className="rounded-xl border border-dashed border-border bg-muted/10 p-4 text-center text-caption-sm text-muted-foreground">
-                            Belum ada dokumen Berita Acara Pekerjaan yang diunggah oleh instansi pelaksana.
+                        <div className="text-caption-sm rounded-xl border border-dashed border-border bg-muted/10 p-4 text-center text-muted-foreground">
+                            Belum ada dokumen Berita Acara Pekerjaan yang
+                            diunggah oleh instansi pelaksana.
                         </div>
                     )}
 
                     {/* Catatan Sanggahan Resmi Instansi (jika ada) */}
-                    {detail.sengketa && detail.sengketa.jawaban === 'sanggah' && (
-                        <div className="rounded-xl border border-border bg-muted/20 p-5">
-                            <div className="flex items-center justify-between border-b border-border/80 pb-3">
-                                <h3 className="flex items-center gap-2 text-caption-xs font-bold uppercase tracking-wider text-foreground">
-                                    <ShieldAlert className="size-4 text-primary" />
-                                    <span>Dokumen Sanggahan Resmi Instansi</span>
-                                </h3>
-                                {detail.sengketa.petugas && (
-                                    <span className="text-caption-xs text-muted-foreground">
-                                        Oleh: {detail.sengketa.petugas} •{' '}
-                                        {formatTanggal(detail.sengketa.waktu_jawab)}
-                                    </span>
-                                )}
+                    {detail.sengketa &&
+                        detail.sengketa.jawaban === 'sanggah' && (
+                            <div className="rounded-xl border border-border bg-muted/20 p-5">
+                                <div className="flex items-center justify-between border-b border-border/80 pb-3">
+                                    <h3 className="flex items-center gap-2 text-caption-xs font-bold tracking-wider text-foreground uppercase">
+                                        <ShieldAlert className="size-4 text-primary" />
+                                        <span>
+                                            Dokumen Sanggahan Resmi Instansi
+                                        </span>
+                                    </h3>
+                                    {detail.sengketa.petugas && (
+                                        <span className="text-caption-xs text-muted-foreground">
+                                            Oleh: {detail.sengketa.petugas} •{' '}
+                                            {formatTanggal(
+                                                detail.sengketa.waktu_jawab,
+                                            )}
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="mt-3 text-body-sm leading-relaxed text-foreground">
+                                    {detail.sengketa.alasan_sanggah}
+                                </p>
                             </div>
-                            <p className="mt-3 text-body-sm leading-relaxed text-foreground">
-                                {detail.sengketa.alasan_sanggah}
-                            </p>
-                        </div>
-                    )}
+                        )}
 
                     {/* Partisipasi & Suara Warga (jika ada) */}
                     {detail.suara_warga && detail.suara_warga.length > 0 && (
                         <div className="rounded-xl border border-border bg-card p-5">
                             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-                                <h3 className="flex items-center gap-2 text-caption-xs font-bold uppercase tracking-wider text-foreground">
+                                <h3 className="flex items-center gap-2 text-caption-xs font-bold tracking-wider text-foreground uppercase">
                                     <Users className="size-4 text-muted-foreground" />
                                     <span>
-                                        Partisipasi Suara Verifikasi Warga ({totalSuara}{' '}
-                                        Suara)
+                                        Partisipasi Suara Verifikasi Warga (
+                                        {totalSuara} Suara)
                                     </span>
                                 </h3>
                                 <div className="flex items-center gap-3 text-caption-xs">
@@ -533,7 +557,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                 {detail.suara_warga.map((s, idx) => (
                                     <div
                                         key={s.id || idx}
-                                        className="rounded-lg border border-border/60 bg-muted/10 p-3.5 text-caption-sm"
+                                        className="text-caption-sm rounded-lg border border-border/60 bg-muted/10 p-3.5"
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
@@ -553,7 +577,10 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                                     </Badge>
                                                 )}
                                                 <span className="text-muted-foreground">
-                                                    {s.jalur === 'A' ? 'Jarak Dekat' : 'Jarak Jauh'} • Bobot {s.bobot}
+                                                    {s.jalur === 'A'
+                                                        ? 'Jarak Dekat'
+                                                        : 'Jarak Jauh'}{' '}
+                                                    • Bobot {s.bobot}
                                                 </span>
                                             </div>
                                             <span className="font-mono text-[11px] text-muted-foreground">
@@ -572,44 +599,47 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                     )}
 
                     {/* Riwayat Putusan Majelis Sebelumnya (jika ada) */}
-                    {detail.riwayat_keputusan && detail.riwayat_keputusan.length > 0 && (
-                        <div className="rounded-xl border border-border bg-card p-5">
-                            <h3 className="flex items-center gap-2 text-caption-xs font-bold uppercase tracking-wider text-foreground">
-                                <Scale className="size-4 text-muted-foreground" />
-                                <span>Riwayat Putusan Sidang Sebelumnya</span>
-                            </h3>
-                            <div className="mt-3 space-y-3">
-                                {detail.riwayat_keputusan.map((k) => (
-                                    <div
-                                        key={k.id}
-                                        className="rounded-lg border border-border/60 bg-muted/20 p-3 text-caption-sm"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <Badge
-                                                variant="outline"
-                                                className="font-semibold"
-                                            >
-                                                {k.jenis}
-                                            </Badge>
-                                            <span className="font-mono text-[11px] text-muted-foreground">
-                                                {formatTanggal(k.waktu)}
-                                            </span>
+                    {detail.riwayat_keputusan &&
+                        detail.riwayat_keputusan.length > 0 && (
+                            <div className="rounded-xl border border-border bg-card p-5">
+                                <h3 className="flex items-center gap-2 text-caption-xs font-bold tracking-wider text-foreground uppercase">
+                                    <Scale className="size-4 text-muted-foreground" />
+                                    <span>
+                                        Riwayat Putusan Sidang Sebelumnya
+                                    </span>
+                                </h3>
+                                <div className="mt-3 space-y-3">
+                                    {detail.riwayat_keputusan.map((k) => (
+                                        <div
+                                            key={k.id}
+                                            className="text-caption-sm rounded-lg border border-border/60 bg-muted/20 p-3"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="font-semibold"
+                                                >
+                                                    {k.jenis}
+                                                </Badge>
+                                                <span className="font-mono text-[11px] text-muted-foreground">
+                                                    {formatTanggal(k.waktu)}
+                                                </span>
+                                            </div>
+                                            {k.alasan && (
+                                                <p className="mt-2 text-body-sm text-muted-foreground">
+                                                    {k.alasan}
+                                                </p>
+                                            )}
+                                            {k.perintah && (
+                                                <p className="mt-1 text-body-sm text-foreground">
+                                                    Perintah: {k.perintah}
+                                                </p>
+                                            )}
                                         </div>
-                                        {k.alasan && (
-                                            <p className="mt-2 text-body-sm text-muted-foreground">
-                                                {k.alasan}
-                                            </p>
-                                        )}
-                                        {k.perintah && (
-                                            <p className="mt-1 text-body-sm text-foreground">
-                                                Perintah: {k.perintah}
-                                            </p>
-                                        )}
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
                     {/* Tombol Lanjut ke Langkah 2 */}
                     <div className="flex items-center justify-between border-t border-border pt-4">
@@ -652,21 +682,23 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                             /* Skenario 1: Pemicu Keterlambatan SLA */
                             <div className="space-y-5 rounded-xl border border-destructive/20 bg-destructive/5 p-5">
                                 <div className="flex items-start gap-3">
-                                    <Clock className="size-5 shrink-0 text-destructive mt-0.5" />
+                                    <Clock className="mt-0.5 size-5 shrink-0 text-destructive" />
                                     <div>
                                         <h4 className="text-body-sm font-semibold text-foreground">
-                                            Penerbitan Instruksi Tindak Lanjut SLA
+                                            Penerbitan Instruksi Tindak Lanjut
+                                            SLA
                                         </h4>
-                                        <p className="mt-1 text-caption-sm leading-relaxed text-muted-foreground">
+                                        <p className="text-caption-sm mt-1 leading-relaxed text-muted-foreground">
                                             Tiket telah melewati batas waktu SLA
                                             resmi tahap{' '}
                                             <strong>
-                                                {detail.eskalasi.tahap || 'penanganan'}
+                                                {detail.eskalasi.tahap ||
+                                                    'penanganan'}
                                             </strong>
-                                            . Sesuai wewenang independen, Auditor
-                                            menetapkan perintah tertulis yang mengikat
-                                            dan tenggat waktu kepatuhan bagi instansi
-                                            pelaksana.
+                                            . Sesuai wewenang independen,
+                                            Auditor menetapkan perintah tertulis
+                                            yang mengikat dan tenggat waktu
+                                            kepatuhan bagi instansi pelaksana.
                                         </p>
                                     </div>
                                 </div>
@@ -674,8 +706,11 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                 <div className="space-y-1.5">
                                     <div className="flex items-center justify-between">
                                         <FieldLabel className="text-xs font-semibold">
-                                            Instruksi / Perintah Tertulis Auditor{' '}
-                                            <span className="text-destructive">*</span>
+                                            Instruksi / Perintah Tertulis
+                                            Auditor{' '}
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
                                         </FieldLabel>
                                         <span className="text-caption-xs text-muted-foreground">
                                             {perintah.length}/256
@@ -693,16 +728,20 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                         required
                                     />
                                     <p className="text-[11px] text-muted-foreground">
-                                        Minimal 10 karakter, maksimal 256 karakter. Perintah ini akan tampil
-                                        secara publik pada detail tiket dan dikirim
-                                        sebagai notifikasi resmi ke dinas terkait.
+                                        Minimal 10 karakter, maksimal 256
+                                        karakter. Perintah ini akan tampil
+                                        secara publik pada detail tiket dan
+                                        dikirim sebagai notifikasi resmi ke
+                                        dinas terkait.
                                     </p>
                                 </div>
 
                                 <div className="space-y-1.5">
                                     <FieldLabel className="text-xs font-semibold">
                                         Tenggat Waktu Kepatuhan Perintah{' '}
-                                        <span className="text-destructive">*</span>
+                                        <span className="text-destructive">
+                                            *
+                                        </span>
                                     </FieldLabel>
                                     <Input
                                         type="date"
@@ -715,7 +754,7 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                         onChange={(e) =>
                                             setTenggat(e.target.value)
                                         }
-                                        className="text-xs max-w-xs"
+                                        className="max-w-xs text-xs"
                                         required
                                     />
                                 </div>
@@ -724,8 +763,9 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                             /* Skenario 2: Pemicu Non-SLA (Sanggahan, Ronde 4x, Tanpa Kuorum 14 Hari) */
                             <div className="space-y-6">
                                 <div className="rounded-xl border border-border bg-card p-5">
-                                    <h4 className="text-caption-xs font-bold uppercase tracking-wider text-foreground">
-                                        Opsi Amar Putusan Sidang (Final & Mengikat)
+                                    <h4 className="text-caption-xs font-bold tracking-wider text-foreground uppercase">
+                                        Opsi Amar Putusan Sidang (Final &
+                                        Mengikat)
                                     </h4>
                                     <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <button
@@ -756,8 +796,9 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                             </div>
                                             <p className="mt-2 text-caption-xs leading-relaxed text-muted-foreground">
                                                 Pekerjaan fisik perbaikan dinas
-                                                dinyatakan sah dan memenuhi standar
-                                                teknis. Status tiket berubah menjadi{' '}
+                                                dinyatakan sah dan memenuhi
+                                                standar teknis. Status tiket
+                                                berubah menjadi{' '}
                                                 <strong className="text-foreground">
                                                     TERTUTUP_AUDITOR
                                                 </strong>
@@ -788,13 +829,14 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                                     )}
                                                 />
                                                 <span className="text-body-sm font-semibold text-foreground">
-                                                    2. Perintahkan Kerjakan Ulang
+                                                    2. Perintahkan Kerjakan
+                                                    Ulang
                                                 </span>
                                             </div>
                                             <p className="mt-2 text-caption-xs leading-relaxed text-muted-foreground">
-                                                Pekerjaan fisik dinilai belum tuntas
-                                                atau tidak sesuai aduan. Status tiket
-                                                dikembalikan ke{' '}
+                                                Pekerjaan fisik dinilai belum
+                                                tuntas atau tidak sesuai aduan.
+                                                Status tiket dikembalikan ke{' '}
                                                 <strong className="text-foreground">
                                                     DIKERJAKAN
                                                 </strong>{' '}
@@ -805,11 +847,14 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                 </div>
 
                                 {/* Alasan Pertimbangan Yuridis / Teknis */}
-                                <div className="rounded-xl border border-border bg-card p-5 space-y-1.5">
+                                <div className="space-y-1.5 rounded-xl border border-border bg-card p-5">
                                     <div className="flex items-center justify-between">
                                         <FieldLabel className="text-xs font-semibold">
-                                            Alasan Pertimbangan Yuridis & Teknis Auditor{' '}
-                                            <span className="text-destructive">*</span>
+                                            Alasan Pertimbangan Yuridis & Teknis
+                                            Auditor{' '}
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
                                         </FieldLabel>
                                         <span className="text-caption-xs text-muted-foreground">
                                             {alasan.length}/256
@@ -827,9 +872,10 @@ export default function AuditorDetailPage({ detail }: AuditorDetailPageProps) {
                                         required
                                     />
                                     <p className="text-[11px] text-muted-foreground">
-                                        Minimal 10 karakter, maksimal 256 karakter. Alasan pertimbangan ini
-                                        akan tercatat permanen di audit log dan tampil
-                                        secara transparan kepada publik.
+                                        Minimal 10 karakter, maksimal 256
+                                        karakter. Alasan pertimbangan ini akan
+                                        tercatat permanen di audit log dan
+                                        tampil secara transparan kepada publik.
                                     </p>
                                 </div>
 

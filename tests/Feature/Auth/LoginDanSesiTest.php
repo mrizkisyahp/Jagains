@@ -96,7 +96,7 @@ class LoginDanSesiTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $response->assertRedirect('/warga/profil');
+        $response->assertRedirect('/warga/beranda');
         $this->assertAuthenticatedAs($warga);
 
         $warga->refresh();
@@ -133,7 +133,7 @@ class LoginDanSesiTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_login_instansi_membersihkan_url_intended_yang_tidak_sesuai_peran()
+    public function test_login_instansi_membersihkan_url_intended_dan_langsung_ke_beranda()
     {
         $petugas = User::factory()->instansi()->create([
             'username' => 'petugas_intended',
@@ -149,6 +149,6 @@ class LoginDanSesiTest extends TestCase
                 'password' => 'password123',
             ]);
 
-        $response->assertRedirect('/instansi/antrean');
+        $response->assertRedirect('/instansi/dashboard');
     }
 }

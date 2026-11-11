@@ -19,7 +19,7 @@ class CekBatasWaktuVerifikasiCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Memeriksa tiket verifikasi yang melewati 14 hari kalender tanpa kuorum dan mengalihkannya ke Auditor (FR-VER-05, ST-05)';
+    protected $description = 'Memeriksa tiket verifikasi yang melewati 14 hari kalender tanpa kuorum dan mengalihkannya ke Auditor';
 
     /**
      * Execute the console command.

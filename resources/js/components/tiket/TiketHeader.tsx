@@ -41,18 +41,25 @@ export default function TiketHeader({
     const handleCopyNomor = () => {
         navigator.clipboard.writeText(tiket.nomor_tiket);
         setCopied(true);
-        toast.success('Nomor Tiket Disalin', `Kode ${tiket.nomor_tiket} siap digunakan.`);
+        toast.success(
+            'Nomor Tiket Disalin',
+            `Kode ${tiket.nomor_tiket} siap digunakan.`,
+        );
         setTimeout(() => setCopied(false), 2000);
     };
 
     const handleShare = async () => {
         const shareData = {
             title: `Tiket Aduan Jagains: ${tiket.nomor_tiket}`,
-            text: `Pantau penanganan aduan fasilitas publik "${tiket.judul}" di Kelurahan ${tiket.kelurahan_nama}, Kota Depok:`,
+            text: `Pantau penanganan aduan fasilitas publik "${tiket.judul}" di Kelurahan ${tiket.kelurahan_nama}, ${tiket.kota_nama || 'Jabodetabek'}:`,
             url: window.location.href,
         };
 
-        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        if (
+            navigator.share &&
+            navigator.canShare &&
+            navigator.canShare(shareData)
+        ) {
             try {
                 await navigator.share(shareData);
                 toast.success('Tautan Dibagikan');
@@ -64,17 +71,35 @@ export default function TiketHeader({
 
         // Fallback to clipboard
         navigator.clipboard.writeText(window.location.href);
-        toast.success('Tautan Disalin ke Clipboard', 'Tautan detail tiket publik dapat Anda bagikan.');
+        toast.success(
+            'Tautan Disalin ke Clipboard',
+            'Tautan detail tiket publik dapat Anda bagikan.',
+        );
     };
 
     const getKeparahanBadge = (keparahan: string) => {
         switch (keparahan) {
             case 'berat':
-                return <Badge variant="destructive" className="capitalize text-[11px] font-semibold">Tingkat Berat</Badge>;
+                return (
+                    <Badge
+                        variant="destructive"
+                        className="text-[11px] font-semibold capitalize"
+                    >
+                        Tingkat Berat
+                    </Badge>
+                );
             case 'sedang':
-                return <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 capitalize text-[11px] font-semibold">Tingkat Sedang</Badge>;
+                return (
+                    <Badge className="border-amber-500/30 bg-amber-500/15 text-[11px] font-semibold text-amber-700 capitalize dark:text-amber-400">
+                        Tingkat Sedang
+                    </Badge>
+                );
             default:
-                return <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 capitalize text-[11px] font-semibold">Tingkat Ringan</Badge>;
+                return (
+                    <Badge className="border-emerald-500/30 bg-emerald-500/15 text-[11px] font-semibold text-emerald-700 capitalize dark:text-emerald-400">
+                        Tingkat Ringan
+                    </Badge>
+                );
         }
     };
 
@@ -82,28 +107,31 @@ export default function TiketHeader({
         switch (kondisi) {
             case 'dalam_sla':
                 return (
-                    <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 flex items-center gap-1.5 py-1 px-2.5">
+                    <Badge className="flex items-center gap-1.5 border-emerald-500/30 bg-emerald-500/15 px-2.5 py-1 text-emerald-700 dark:text-emerald-300">
                         <Clock className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                         <span>Dalam SLA</span>
                     </Badge>
                 );
             case 'hampir_lewat':
                 return (
-                    <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 flex items-center gap-1.5 py-1 px-2.5">
+                    <Badge className="flex items-center gap-1.5 border-amber-500/30 bg-amber-500/15 px-2.5 py-1 text-amber-700 dark:text-amber-300">
                         <AlertTriangle className="size-3.5 text-amber-600 dark:text-amber-400" />
                         <span>Hampir Lewat SLA</span>
                     </Badge>
                 );
             case 'lewat_sla':
                 return (
-                    <Badge variant="destructive" className="flex items-center gap-1.5 py-1 px-2.5">
+                    <Badge
+                        variant="destructive"
+                        className="flex items-center gap-1.5 px-2.5 py-1"
+                    >
                         <ShieldAlert className="size-3.5" />
                         <span>Lewat SLA (Terekam)</span>
                     </Badge>
                 );
             case 'menunggu_warga':
                 return (
-                    <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30 flex items-center gap-1.5 py-1 px-2.5">
+                    <Badge className="flex items-center gap-1.5 border-blue-500/30 bg-blue-500/15 px-2.5 py-1 text-blue-700 dark:text-blue-300">
                         <Users className="size-3.5 text-blue-600 dark:text-blue-400" />
                         <span>Kuorum Warga</span>
                     </Badge>
@@ -111,7 +139,7 @@ export default function TiketHeader({
             case 'selesai':
             default:
                 return (
-                    <Badge className="bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30 flex items-center gap-1.5 py-1 px-2.5">
+                    <Badge className="flex items-center gap-1.5 border-slate-500/30 bg-slate-500/15 px-2.5 py-1 text-slate-700 dark:text-slate-300">
                         <CheckCircle2 className="size-3.5 text-slate-600 dark:text-slate-400" />
                         <span>Selesai</span>
                     </Badge>
@@ -119,20 +147,24 @@ export default function TiketHeader({
         }
     };
 
-    const isFinalStatus = ['TERTUTUP_WARGA', 'TERTUTUP_AUDITOR', 'DITOLAK'].includes(tiket.status);
+    const isFinalStatus = [
+        'TERTUTUP_WARGA',
+        'TERTUTUP_AUDITOR',
+        'DITOLAK',
+    ].includes(tiket.status);
 
     return (
         <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-xs">
             {/* Baris Atas: Nomor Tiket & Aksi Cepat */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-border/60">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
                 <div className="flex items-center gap-2">
-                    <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                    <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                         Kode Tiket:
                     </span>
                     <button
                         type="button"
                         onClick={handleCopyNomor}
-                        className="group inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1 font-mono text-xs font-bold text-foreground hover:bg-muted/80 transition-colors cursor-pointer border border-border/60"
+                        className="group inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-border/60 bg-muted px-2.5 py-1 font-mono text-xs font-bold text-foreground transition-colors hover:bg-muted/80"
                         title="Klik untuk menyalin nomor tiket"
                     >
                         <span>{tiket.nomor_tiket}</span>
@@ -150,7 +182,7 @@ export default function TiketHeader({
                         variant="outline"
                         size="sm"
                         onClick={handleShare}
-                        className="h-8 gap-1.5 text-xs font-medium cursor-pointer"
+                        className="h-8 cursor-pointer gap-1.5 text-xs font-medium"
                     >
                         <Share2 className="size-3.5" />
                         <span>Bagikan</span>
@@ -159,11 +191,13 @@ export default function TiketHeader({
                     {/* Tombol Dukungan Warga (hanya jika warga atau publik tamu) */}
                     {(!userRole || userRole === 'warga') && (
                         <Button
-                            variant={tiket.sudah_didukung ? 'default' : 'outline'}
+                            variant={
+                                tiket.sudah_didukung ? 'default' : 'outline'
+                            }
                             size="sm"
                             onClick={onToggleDukungan}
                             disabled={loadingDukungan || isFinalStatus}
-                            className={`h-8 gap-1.5 text-xs font-medium cursor-pointer ${
+                            className={`h-8 cursor-pointer gap-1.5 text-xs font-medium ${
                                 tiket.sudah_didukung
                                     ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                                     : 'hover:border-primary hover:text-primary'
@@ -172,13 +206,17 @@ export default function TiketHeader({
                                 isFinalStatus
                                     ? 'Tiket telah berstatus final'
                                     : tiket.sudah_didukung
-                                    ? 'Batalkan dukungan'
-                                    : 'Dukung laporan ini'
+                                      ? 'Batalkan dukungan'
+                                      : 'Dukung laporan ini'
                             }
                         >
-                            <ThumbsUp className={`size-3.5 ${tiket.sudah_didukung ? 'fill-current' : ''}`} />
-                            <span>{tiket.sudah_didukung ? 'Didukung' : 'Dukung'}</span>
-                            <span className="ml-1 rounded-full bg-background/20 px-1.5 py-0.2 text-[10px] font-bold">
+                            <ThumbsUp
+                                className={`size-3.5 ${tiket.sudah_didukung ? 'fill-current' : ''}`}
+                            />
+                            <span>
+                                {tiket.sudah_didukung ? 'Didukung' : 'Dukung'}
+                            </span>
+                            <span className="py-0.2 ml-1 rounded-full bg-background/20 px-1.5 text-[10px] font-bold">
                                 {tiket.total_dukungan}
                             </span>
                         </Button>
@@ -189,7 +227,7 @@ export default function TiketHeader({
                         variant="ghost"
                         size="sm"
                         onClick={onOpenLaporKonten}
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="h-8 w-8 cursor-pointer p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                         title="Laporkan konten ini jika melanggar pedoman"
                     >
                         <Flag className="size-3.5" />
@@ -198,10 +236,13 @@ export default function TiketHeader({
             </div>
 
             {/* Judul & Status Dua Lapisan */}
-            <div className="pt-5 space-y-3">
+            <div className="space-y-3 pt-5">
                 <div className="flex flex-wrap items-center gap-2">
                     {/* Layer 1: Status Administratif */}
-                    <Badge variant="outline" className="font-semibold text-xs tracking-wide py-1 px-2.5 bg-background">
+                    <Badge
+                        variant="outline"
+                        className="bg-background px-2.5 py-1 text-xs font-semibold tracking-wide"
+                    >
                         {tiket.status.replace(/_/g, ' ')}
                     </Badge>
 
@@ -212,17 +253,19 @@ export default function TiketHeader({
                     {getKeparahanBadge(tiket.keparahan)}
                 </div>
 
-                <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-foreground leading-snug">
+                <h1 className="font-display text-2xl leading-snug font-bold tracking-tight text-foreground md:text-3xl">
                     {tiket.judul}
                 </h1>
             </div>
 
             {/* Meta Informasi & Tombol Navigasi Spasial */}
-            <div className="pt-4 mt-4 border-t border-border/60 flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
-                <div className="flex flex-wrap items-center gap-y-2 gap-x-4">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-4 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                     {/* Kategori Fasilitas */}
                     <div className="flex items-center gap-1.5">
-                        <span className="font-medium text-foreground">{tiket.kategori_nama}</span>
+                        <span className="font-medium text-foreground">
+                            {tiket.kategori_nama}
+                        </span>
                     </div>
 
                     <span className="text-border">•</span>
@@ -230,7 +273,9 @@ export default function TiketHeader({
                     {/* Instansi Penanggung Jawab */}
                     <div className="flex items-center gap-1.5">
                         <Building2 className="size-3.5 text-muted-foreground" />
-                        <span>{tiket.instansi_nama || 'Menunggu Disposisi Dinas'}</span>
+                        <span>
+                            {tiket.instansi_nama || 'Menunggu Disposisi Dinas'}
+                        </span>
                     </div>
 
                     <span className="text-border">•</span>
@@ -238,7 +283,10 @@ export default function TiketHeader({
                     {/* Wilayah */}
                     <div className="flex items-center gap-1.5">
                         <MapPin className="size-3.5 text-muted-foreground" />
-                        <span>Kel. {tiket.kelurahan_nama}, Kec. {tiket.kecamatan_nama}</span>
+                        <span>
+                            Kel. {tiket.kelurahan_nama}, Kec.{' '}
+                            {tiket.kecamatan_nama}
+                        </span>
                     </div>
 
                     <span className="text-border">•</span>
@@ -246,14 +294,23 @@ export default function TiketHeader({
                     {/* Waktu Pelaporan */}
                     <div className="flex items-center gap-1.5">
                         <Calendar className="size-3.5 text-muted-foreground" />
-                        <span>{new Date(tiket.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        <span>
+                            {new Date(tiket.created_at).toLocaleDateString(
+                                'id-ID',
+                                {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric',
+                                },
+                            )}
+                        </span>
                     </div>
                 </div>
 
                 {/* Tombol Deep Linking ke Peta */}
                 <Link
                     href={`/peta?fokus=${encodeURIComponent(tiket.nomor_tiket)}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline group"
+                    className="group inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
                 >
                     <MapPin className="size-3.5 transition-transform group-hover:scale-110" />
                     <span>Lihat Titik di Peta Kota</span>

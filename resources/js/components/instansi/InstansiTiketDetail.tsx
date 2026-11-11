@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 
 import { Link } from '@inertiajs/react';
 
@@ -36,7 +36,11 @@ import { toast } from '@/components/ui/toast';
 
 import { antrean } from '@/routes/instansi';
 
-import type { TiketDetail, LampiranFoto, RiwayatStatusItem } from '@/types/tiket';
+import type {
+    TiketDetail,
+    LampiranFoto,
+    RiwayatStatusItem,
+} from '@/types/tiket';
 
 import ModalDetailTimelineNode from '@/components/tiket/ModalDetailTimelineNode';
 
@@ -83,6 +87,8 @@ function EvidencePhoto({
                     <img
                         src={photo.url}
                         alt={title}
+                        loading="lazy"
+                        decoding="async"
                         onError={() => setFailed(true)}
                         className="size-full object-cover"
                     />
@@ -109,8 +115,15 @@ function EvidencePhoto({
 }
 
 export default function InstansiTiketDetail({ tiket }: { tiket: TiketDetail }) {
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     const [preview, setPreview] = useState<LampiranFoto | null>(null);
-    const [selectedTimelineItem, setSelectedTimelineItem] = useState<RiwayatStatusItem | null>(null);
+    const [selectedTimelineItem, setSelectedTimelineItem] =
+        useState<RiwayatStatusItem | null>(null);
 
     const [documentPage, setDocumentPage] = useState(1);
 
@@ -450,11 +463,17 @@ export default function InstansiTiketDetail({ tiket }: { tiket: TiketDetail }) {
                                                             type="button"
                                                             variant="outline"
                                                             size="sm"
-                                                            onClick={() => setSelectedTimelineItem(item)}
-                                                            className="h-8 gap-1.5 rounded-lg border-primary/30 bg-primary/5 text-caption-xs font-semibold text-primary hover:bg-primary/10 hover:border-primary/50"
+                                                            onClick={() =>
+                                                                setSelectedTimelineItem(
+                                                                    item,
+                                                                )
+                                                            }
+                                                            className="h-8 gap-1.5 rounded-lg border-primary/30 bg-primary/5 text-caption-xs font-semibold text-primary hover:border-primary/50 hover:bg-primary/10"
                                                         >
                                                             <FileText className="size-3.5" />
-                                                            <span>Lihat detail</span>
+                                                            <span>
+                                                                Lihat detail
+                                                            </span>
                                                         </Button>
                                                     </div>
                                                 )}
@@ -498,7 +517,7 @@ export default function InstansiTiketDetail({ tiket }: { tiket: TiketDetail }) {
                                         <MapPin className="size-4" />
                                         Lokasi laporan
                                     </div>
-                                    {validLocation ? (
+                                    {validLocation && isMounted ? (
                                         <Suspense
                                             fallback={
                                                 <Skeleton className="h-64 w-full rounded-none" />
@@ -647,7 +666,9 @@ export default function InstansiTiketDetail({ tiket }: { tiket: TiketDetail }) {
                                                     {item.alasan}
                                                     <span className="mt-1 block text-muted-foreground">
                                                         {date(item.waktu)} ·
-                                                        {item.jalur === 'A' ? 'Jarak Dekat dengan Foto' : 'Jarak Jauh'}
+                                                        {item.jalur === 'A'
+                                                            ? 'Jarak Dekat dengan Foto'
+                                                            : 'Jarak Jauh'}
                                                     </span>
                                                 </p>
                                             ),

@@ -261,9 +261,9 @@ export default function KonfigurasiRoutingTab({
                         <strong className="text-foreground">
                             Hierarki Fallback Evaluasi:
                         </strong>{' '}
-                        Kelurahan &gt; Kecamatan &gt; Kota Depok. Bila tidak ada
-                        aturan cocok atau instansi dinonaktifkan, tiket otomatis
-                        masuk ke Antrean Routing Manual.
+                        Kelurahan &gt; Kecamatan &gt; Kota/Kabupaten. Bila tidak
+                        ada aturan cocok atau instansi dinonaktifkan, tiket
+                        otomatis masuk ke Antrean Routing Manual.
                     </span>
                 </div>
 

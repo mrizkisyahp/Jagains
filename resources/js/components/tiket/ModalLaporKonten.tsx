@@ -21,12 +21,36 @@ interface ModalLaporKontenProps {
 }
 
 const ALASAN_OPTIONS = [
-    { value: 'sara_ujaran_kebencian', label: 'SARA atau Ujaran Kebencian', desc: 'Menghina suku, agama, ras, atau antargolongan.' },
-    { value: 'foto_tidak_senonoh', label: 'Foto Tidak Senonoh / Asusila', desc: 'Memuat gambar vulgar, tidak pantas, atau kekerasan.' },
-    { value: 'spam_promosi', label: 'Spam atau Promosi Komersial', desc: 'Tautan judi online, iklan produk, atau pesan berulang.' },
-    { value: 'informasi_palsu', label: 'Informasi Palsu / Hoaks', desc: 'Foto tidak sesuai lokasi nyata atau laporan manipulatif.' },
-    { value: 'pelanggaran_privasi', label: 'Pelanggaran Data Pribadi', desc: 'Menampilkan NIK, nomor telepon, atau wajah tanpa izin.' },
-    { value: 'lainnya', label: 'Pelanggaran Lainnya', desc: 'Pelanggaran pedoman komunitas lainnya.' },
+    {
+        value: 'sara_ujaran_kebencian',
+        label: 'SARA atau Ujaran Kebencian',
+        desc: 'Menghina suku, agama, ras, atau antargolongan.',
+    },
+    {
+        value: 'foto_tidak_senonoh',
+        label: 'Foto Tidak Senonoh / Asusila',
+        desc: 'Memuat gambar vulgar, tidak pantas, atau kekerasan.',
+    },
+    {
+        value: 'spam_promosi',
+        label: 'Spam atau Promosi Komersial',
+        desc: 'Tautan judi online, iklan produk, atau pesan berulang.',
+    },
+    {
+        value: 'informasi_palsu',
+        label: 'Informasi Palsu / Hoaks',
+        desc: 'Foto tidak sesuai lokasi nyata atau laporan manipulatif.',
+    },
+    {
+        value: 'pelanggaran_privasi',
+        label: 'Pelanggaran Data Pribadi',
+        desc: 'Menampilkan NIK, nomor telepon, atau wajah tanpa izin.',
+    },
+    {
+        value: 'lainnya',
+        label: 'Pelanggaran Lainnya',
+        desc: 'Pelanggaran pedoman komunitas lainnya.',
+    },
 ];
 
 export default function ModalLaporKonten({
@@ -51,12 +75,16 @@ export default function ModalLaporKonten({
         setError(null);
 
         try {
-            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
+            const csrfToken = (
+                document.querySelector(
+                    'meta[name="csrf-token"]',
+                ) as HTMLMetaElement
+            )?.content;
             const res = await fetch(`/tiket/${nomorTiket}/lapor-konten`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                     'X-CSRF-TOKEN': csrfToken || '',
                 },
                 body: JSON.stringify({
@@ -68,20 +96,37 @@ export default function ModalLaporKonten({
             const data = await res.json();
 
             if (!res.ok) {
-                const pesan = data.pesan || (data.errors ? Object.values(data.errors)[0] : 'Gagal mengirim laporan.');
-                setError(typeof pesan === 'string' ? pesan : (pesan as string[])[0]);
-                toast.error('Gagal Melaporkan', typeof pesan === 'string' ? pesan : (pesan as string[])[0]);
+                const pesan =
+                    data.pesan ||
+                    (data.errors
+                        ? Object.values(data.errors)[0]
+                        : 'Gagal mengirim laporan.');
+                setError(
+                    typeof pesan === 'string' ? pesan : (pesan as string[])[0],
+                );
+                toast.error(
+                    'Gagal Melaporkan',
+                    typeof pesan === 'string' ? pesan : (pesan as string[])[0],
+                );
                 return;
             }
 
-            toast.success('Laporan Diterima', 'Laporan Anda telah diteruskan ke antrean moderasi Administrator.');
+            toast.success(
+                'Laporan Diterima',
+                'Laporan Anda telah diteruskan ke antrean moderasi Administrator.',
+            );
             onOpenChange(false);
             setAlasan('');
             setCatatan('');
             onBerhasil?.();
         } catch {
-            setError('Terjadi kendala jaringan saat mengirim laporan. Silakan coba lagi.');
-            toast.error('Kesalahan Jaringan', 'Periksa koneksi Anda dan coba lagi.');
+            setError(
+                'Terjadi kendala jaringan saat mengirim laporan. Silakan coba lagi.',
+            );
+            toast.error(
+                'Kesalahan Jaringan',
+                'Periksa koneksi Anda dan coba lagi.',
+            );
         } finally {
             setLoading(false);
         }
@@ -92,35 +137,38 @@ export default function ModalLaporKonten({
             <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-destructive font-display text-lg">
+                        <DialogTitle className="flex items-center gap-2 font-display text-lg text-destructive">
                             <Flag className="size-5" />
                             Laporkan Konten Aduan
                         </DialogTitle>
-                        <DialogDescription className="text-muted-foreground text-sm pt-1">
-                            Bantu kami menjaga ruang pelaporan tetap aman dan kondusif. Aduan yang melanggar akan segera ditinjau oleh Administrator sistem.
+                        <DialogDescription className="pt-1 text-sm text-muted-foreground">
+                            Bantu kami menjaga ruang pelaporan tetap aman dan
+                            kondusif. Aduan yang melanggar akan segera ditinjau
+                            oleh Administrator sistem.
                         </DialogDescription>
                     </DialogHeader>
 
                     {error && (
                         <div className="mt-3 flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
-                            <AlertTriangle className="size-4 shrink-0 mt-0.5" />
+                            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
                             <span>{error}</span>
                         </div>
                     )}
 
                     <div className="space-y-4 py-4">
                         <div>
-                            <Label className="text-xs font-semibold text-foreground uppercase tracking-wider mb-2 block">
-                                Kategori Pelanggaran <span className="text-destructive">*</span>
+                            <Label className="mb-2 block text-xs font-semibold tracking-wider text-foreground uppercase">
+                                Kategori Pelanggaran{' '}
+                                <span className="text-destructive">*</span>
                             </Label>
                             <div className="space-y-2">
                                 {ALASAN_OPTIONS.map((opt) => (
                                     <label
                                         key={opt.value}
-                                        className={`flex items-start gap-3 p-2.5 rounded-lg border text-sm cursor-pointer transition-all ${
+                                        className={`flex cursor-pointer items-start gap-3 rounded-lg border p-2.5 text-sm transition-all ${
                                             alasan === opt.value
                                                 ? 'border-primary bg-primary/5 text-foreground'
-                                                : 'border-border/70 hover:bg-muted/40 text-muted-foreground'
+                                                : 'border-border/70 text-muted-foreground hover:bg-muted/40'
                                         }`}
                                     >
                                         <input
@@ -135,8 +183,12 @@ export default function ModalLaporKonten({
                                             className="mt-1 text-primary focus:ring-primary"
                                         />
                                         <div>
-                                            <p className="font-medium text-foreground text-xs leading-none">{opt.label}</p>
-                                            <p className="text-[11px] text-muted-foreground mt-0.5">{opt.desc}</p>
+                                            <p className="text-xs leading-none font-medium text-foreground">
+                                                {opt.label}
+                                            </p>
+                                            <p className="mt-0.5 text-[11px] text-muted-foreground">
+                                                {opt.desc}
+                                            </p>
                                         </div>
                                     </label>
                                 ))}
@@ -144,25 +196,32 @@ export default function ModalLaporKonten({
                         </div>
 
                         <div>
-                            <div className="flex justify-between items-center mb-1">
-                                <Label htmlFor="catatan" className="text-xs font-semibold text-foreground">
+                            <div className="mb-1 flex items-center justify-between">
+                                <Label
+                                    htmlFor="catatan"
+                                    className="text-xs font-semibold text-foreground"
+                                >
                                     Keterangan Tambahan (Opsional)
                                 </Label>
-                                <span className="text-[11px] text-muted-foreground">{catatan.length}/256</span>
+                                <span className="text-[11px] text-muted-foreground">
+                                    {catatan.length}/256
+                                </span>
                             </div>
                             <Textarea
                                 id="catatan"
                                 maxLength={256}
                                 placeholder="Jelaskan detail bagian foto atau kalimat yang melanggar pedoman (maks. 256 karakter)..."
                                 value={catatan}
-                                onChange={(e) => setCatatan(e.target.value.slice(0, 256))}
+                                onChange={(e) =>
+                                    setCatatan(e.target.value.slice(0, 256))
+                                }
                                 rows={3}
                                 className="text-xs"
                             />
                         </div>
                     </div>
 
-                    <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+                    <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row">
                         <Button
                             type="button"
                             variant="outline"

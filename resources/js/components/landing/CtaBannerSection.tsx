@@ -5,29 +5,34 @@ import { cn } from 'cn';
 
 export default function CtaBannerSection() {
     return (
-        <section className="py-16 sm:py-20 bg-muted/60 border-t border-border/80">
+        <section className="border-t border-border/80 bg-muted/60 py-16 sm:py-20">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 p-8 sm:p-12 rounded-3xl bg-neutral-900 text-white shadow-xl">
+                <div className="flex flex-col items-center justify-between gap-8 rounded-3xl bg-neutral-900 p-8 text-white shadow-xl sm:p-12 md:flex-row">
                     <div className="space-y-2 text-center md:text-left">
-                        <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                            Lihat kerusakan di sekitar Anda?<br /> Laporkan sekarang.
+                        <h2 className="font-display text-2xl leading-tight font-extrabold tracking-tight text-white sm:text-3xl lg:text-4xl">
+                            Lihat kerusakan di sekitar Anda?
+                            <br /> Laporkan sekarang.
                         </h2>
                         <p className="text-body-base text-neutral-300">
-                            Cukup foto, lokasi otomatis, dan satu jenis kerusakan.
+                            Cukup foto, lokasi otomatis, dan satu jenis
+                            kerusakan.
                         </p>
                     </div>
 
-                    <div className="shrink-0 w-full sm:w-auto">
+                    <div className="w-full shrink-0 sm:w-auto">
                         <Link
                             href="/warga/lapor"
                             className={cn(
-                                buttonVariants({ variant: 'default', size: 'lg' }),
-                                'w-full sm:w-auto h-12 px-8 font-semibold text-body-base rounded-2xl shadow-lg gap-2 text-white bg-primary hover:bg-primary/90'
+                                buttonVariants({
+                                    variant: 'default',
+                                    size: 'lg',
+                                }),
+                                'h-12 w-full gap-2 rounded-2xl bg-primary px-8 text-body-base font-semibold text-white shadow-lg hover:bg-primary/90 sm:w-auto',
                             )}
                         >
-                            <Camera className="size-5 mr-1" />
+                            <Camera className="mr-1 size-5" />
                             <span>Buat Laporan Baru</span>
-                            <ArrowRight className="size-4 ml-1" />
+                            <ArrowRight className="ml-1 size-4" />
                         </Link>
                     </div>
                 </div>

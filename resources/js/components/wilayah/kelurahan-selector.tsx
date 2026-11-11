@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Field, FieldLabel } from '@/components/ui/field';
-import { MapPin, Navigation, CheckCircle2, AlertCircle, Loader2, Building2 } from 'lucide-react';
+import {
+    MapPin,
+    Navigation,
+    CheckCircle2,
+    AlertCircle,
+    Loader2,
+    Building2,
+} from 'lucide-react';
 
 export interface KelurahanItem {
     id: number;
@@ -38,10 +45,15 @@ export default function KelurahanSelector({
     const [kelurahans, setKelurahans] = useState<KelurahanItem[]>([]);
     const [loadingList, setLoadingList] = useState(false);
     const [detecting, setDetecting] = useState(false);
-    const [detectMessage, setDetectMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [detectMessage, setDetectMessage] = useState<{
+        type: 'success' | 'error';
+        text: string;
+    } | null>(null);
 
     const [selectedKotaId, setSelectedKotaId] = useState<number | ''>('');
-    const [selectedKecamatanId, setSelectedKecamatanId] = useState<number | ''>('');
+    const [selectedKecamatanId, setSelectedKecamatanId] = useState<number | ''>(
+        '',
+    );
 
     // Ambil daftar seluruh kelurahan dengan hierarki kecamatan dan kota
     useEffect(() => {
@@ -93,7 +105,12 @@ export default function KelurahanSelector({
             const kotaId = k.kota_id || k.induk?.induk?.id;
             const kecId = k.kecamatan_id || k.induk?.id;
             const kecNama = k.kecamatan_nama || k.induk?.nama;
-            if (kotaId === Number(selectedKotaId) && kecId && kecNama && !map.has(kecId)) {
+            if (
+                kotaId === Number(selectedKotaId) &&
+                kecId &&
+                kecNama &&
+                !map.has(kecId)
+            ) {
                 map.set(kecId, kecNama);
             }
         });
@@ -106,7 +123,11 @@ export default function KelurahanSelector({
     const filteredKelurahanList = useMemo(() => {
         if (!selectedKecamatanId) return [];
         return kelurahans
-            .filter((k) => (k.kecamatan_id || k.induk?.id) === Number(selectedKecamatanId))
+            .filter(
+                (k) =>
+                    (k.kecamatan_id || k.induk?.id) ===
+                    Number(selectedKecamatanId),
+            )
             .sort((a, b) => a.nama.localeCompare(b.nama));
     }, [kelurahans, selectedKecamatanId]);
 
@@ -143,8 +164,13 @@ export default function KelurahanSelector({
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                            Accept: 'application/json',
+                            'X-CSRF-TOKEN':
+                                (
+                                    document.querySelector(
+                                        'meta[name="csrf-token"]',
+                                    ) as HTMLMetaElement
+                                )?.content || '',
                         },
                         body: JSON.stringify({
                             latitude: position.coords.latitude,
@@ -172,7 +198,9 @@ export default function KelurahanSelector({
                     } else {
                         setDetectMessage({
                             type: 'error',
-                            text: data.pesan || 'Lokasi berada di luar wilayah layanan (Kota Depok & DKI Jakarta). Silakan pilih secara manual.',
+                            text:
+                                data.pesan ||
+                                'Lokasi berada di luar wilayah layanan (Jabodetabek). Silakan pilih secara manual.',
                         });
                     }
                 } catch {
@@ -186,16 +214,18 @@ export default function KelurahanSelector({
             },
             (geoError) => {
                 setDetecting(false);
-                let message = 'Izin lokasi ditolak atau tidak tersedia. Silakan pilih wilayah dari daftar.';
+                let message =
+                    'Izin lokasi ditolak atau tidak tersedia. Silakan pilih wilayah dari daftar.';
                 if (geoError.code === geoError.TIMEOUT) {
-                    message = 'Pencarian sinyal GPS kedaluwarsa. Silakan pilih wilayah dari daftar.';
+                    message =
+                        'Pencarian sinyal GPS kedaluwarsa. Silakan pilih wilayah dari daftar.';
                 }
                 setDetectMessage({
                     type: 'error',
                     text: message,
                 });
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
         );
     };
 
@@ -203,11 +233,15 @@ export default function KelurahanSelector({
         <div className="space-y-3.5">
             <div className="flex items-center justify-between">
                 <div>
-                    <FieldLabel htmlFor="kota_id" className="text-body-medium font-semibold text-foreground">
+                    <FieldLabel
+                        htmlFor="kota_id"
+                        className="text-body-medium font-semibold text-foreground"
+                    >
                         Wilayah Domisili
                     </FieldLabel>
                     <p className="text-caption-xs text-muted-foreground">
-                        Pilih Kota, Kecamatan, dan Kelurahan tempat Anda berdomisili.
+                        Pilih Kota, Kecamatan, dan Kelurahan tempat Anda
+                        berdomisili.
                     </p>
                 </div>
 
@@ -215,7 +249,7 @@ export default function KelurahanSelector({
                     type="button"
                     onClick={handleGpsDetect}
                     disabled={detecting || disabled}
-                    className="text-body-sm font-semibold text-primary hover:underline flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:bg-primary/5 transition-colors cursor-pointer disabled:opacity-50"
+                    className="flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1.5 text-body-sm font-semibold text-primary transition-colors hover:bg-primary/5 hover:underline disabled:opacity-50"
                 >
                     {detecting ? (
                         <>
@@ -232,21 +266,30 @@ export default function KelurahanSelector({
             </div>
 
             {/* Hierarki 3-Level: Kota, Kecamatan, Kelurahan */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
                 {/* 1. Kota / Kabupaten */}
                 <div className="space-y-1">
-                    <label htmlFor="kota_id" className="text-caption-xs font-medium text-muted-foreground">
+                    <label
+                        htmlFor="kota_id"
+                        className="text-caption-xs font-medium text-muted-foreground"
+                    >
                         Kota / Kabupaten
                     </label>
                     <select
                         id="kota_id"
                         value={selectedKotaId}
-                        onChange={(e) => handleKotaChange(e.target.value ? Number(e.target.value) : '')}
+                        onChange={(e) =>
+                            handleKotaChange(
+                                e.target.value ? Number(e.target.value) : '',
+                            )
+                        }
                         disabled={disabled || loadingList}
-                        className="w-full h-10 px-2.5 py-1.5 bg-background border border-input rounded-lg text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted disabled:cursor-not-allowed"
+                        className="h-10 w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-body-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:bg-muted"
                     >
                         <option value="">
-                            {loadingList ? 'Memuat data...' : '-- Pilih Kota / Kab --'}
+                            {loadingList
+                                ? 'Memuat data...'
+                                : '-- Pilih Kota / Kab --'}
                         </option>
                         {kotaList.map((kota) => (
                             <option key={kota.id} value={kota.id}>
@@ -258,18 +301,27 @@ export default function KelurahanSelector({
 
                 {/* 2. Kecamatan */}
                 <div className="space-y-1">
-                    <label htmlFor="kecamatan_id" className="text-caption-xs font-medium text-muted-foreground">
+                    <label
+                        htmlFor="kecamatan_id"
+                        className="text-caption-xs font-medium text-muted-foreground"
+                    >
                         Kecamatan
                     </label>
                     <select
                         id="kecamatan_id"
                         value={selectedKecamatanId}
-                        onChange={(e) => handleKecamatanChange(e.target.value ? Number(e.target.value) : '')}
+                        onChange={(e) =>
+                            handleKecamatanChange(
+                                e.target.value ? Number(e.target.value) : '',
+                            )
+                        }
                         disabled={disabled || !selectedKotaId}
-                        className="w-full h-10 px-2.5 py-1.5 bg-background border border-input rounded-lg text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted disabled:cursor-not-allowed"
+                        className="h-10 w-full rounded-lg border border-input bg-background px-2.5 py-1.5 text-body-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:bg-muted"
                     >
                         <option value="">
-                            {!selectedKotaId ? '-- Pilih Kota Terlebih Dahulu --' : '-- Pilih Kecamatan --'}
+                            {!selectedKotaId
+                                ? '-- Pilih Kota Terlebih Dahulu --'
+                                : '-- Pilih Kecamatan --'}
                         </option>
                         {kecamatanList.map((kec) => (
                             <option key={kec.id} value={kec.id}>
@@ -281,20 +333,28 @@ export default function KelurahanSelector({
 
                 {/* 3. Kelurahan */}
                 <div className="space-y-1">
-                    <label htmlFor="kelurahan_id" className="text-caption-xs font-medium text-muted-foreground">
-                        Kelurahan Domisili <span className="text-destructive">*</span>
+                    <label
+                        htmlFor="kelurahan_id"
+                        className="text-caption-xs font-medium text-muted-foreground"
+                    >
+                        Kelurahan Domisili{' '}
+                        <span className="text-destructive">*</span>
                     </label>
                     <select
                         id="kelurahan_id"
                         value={value || ''}
                         onChange={(e) => onChange(Number(e.target.value))}
                         disabled={disabled || !selectedKecamatanId}
-                        className={`w-full h-10 px-2.5 py-1.5 bg-background border rounded-lg text-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted disabled:cursor-not-allowed ${
-                            error ? 'border-destructive focus:ring-destructive' : 'border-input'
+                        className={`h-10 w-full rounded-lg border bg-background px-2.5 py-1.5 text-body-sm text-foreground focus:ring-2 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:bg-muted ${
+                            error
+                                ? 'border-destructive focus:ring-destructive'
+                                : 'border-input'
                         }`}
                     >
                         <option value="">
-                            {!selectedKecamatanId ? '-- Pilih Kecamatan Terlebih Dahulu --' : '-- Pilih Kelurahan --'}
+                            {!selectedKecamatanId
+                                ? '-- Pilih Kecamatan Terlebih Dahulu --'
+                                : '-- Pilih Kelurahan --'}
                         </option>
                         {filteredKelurahanList.map((kel) => (
                             <option key={kel.id} value={kel.id}>
@@ -305,20 +365,22 @@ export default function KelurahanSelector({
                 </div>
             </div>
 
-            {error && <p className="text-caption-xs text-destructive mt-1">{error}</p>}
+            {error && (
+                <p className="mt-1 text-caption-xs text-destructive">{error}</p>
+            )}
 
             {detectMessage && (
                 <div
-                    className={`p-3 rounded-xl text-body-sm flex items-start gap-2 ${
+                    className={`flex items-start gap-2 rounded-xl p-3 text-body-sm ${
                         detectMessage.type === 'success'
-                            ? 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
-                            : 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/30'
+                            ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300'
+                            : 'border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300'
                     }`}
                 >
                     {detectMessage.type === 'success' ? (
-                        <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                     ) : (
-                        <AlertCircle className="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                     )}
                     <span>{detectMessage.text}</span>
                 </div>

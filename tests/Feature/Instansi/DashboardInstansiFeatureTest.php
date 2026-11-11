@@ -108,4 +108,42 @@ class DashboardInstansiFeatureTest extends TestCase
         $this->get('/instansi/dashboard')->assertRedirect('/login');
         $this->actingAs($warga)->get('/instansi/dashboard')->assertForbidden();
     }
+
+    public function test_petugas_instansi_dapat_mengakses_laporan_kualitas_kinerja(): void
+    {
+        $kota = Wilayah::where('tingkat', 'kota')->first() ?? Wilayah::first();
+
+        $instansi = Instansi::create([
+            'nama' => 'Dinas Bina Marga Kinerja',
+            'singkatan' => 'DBMK',
+            'wilayah_id' => $kota->id,
+            'aktif' => true,
+        ]);
+
+        $petugas = User::factory()->instansi()->create([
+            'instansi_id' => $instansi->id,
+        ]);
+
+        $response = $this->actingAs($petugas)->get('/instansi/kualitas-kinerja?periode=30_hari');
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('instansi/kualitas-kinerja')
+            ->where('periode', '30_hari')
+            ->has('instansi.nama')
+            ->has('indikator_kinerja.janji_ditepati')
+            ->has('indikator_kinerja.persentase_verifikasi')
+            ->has('indikator_kinerja.anggaran_menggantung')
+            ->has('tren_kecepatan.labels')
+            ->has('peringkat_instansi')
+        );
+    }
+
+    public function test_warga_dan_guest_ditolak_mengakses_laporan_kualitas_kinerja(): void
+    {
+        $warga = User::factory()->warga()->create();
+
+        $this->get('/instansi/kualitas-kinerja')->assertRedirect('/login');
+        $this->actingAs($warga)->get('/instansi/kualitas-kinerja')->assertForbidden();
+    }
 }

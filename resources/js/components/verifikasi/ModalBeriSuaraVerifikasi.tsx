@@ -69,19 +69,22 @@ export default function ModalBeriSuaraVerifikasi({
     }, []);
 
     // Hitung Jarak Haversine
-    const hitungJarak = useCallback((lat1: number, lon1: number, lat2: number, lon2: number) => {
-        const R = 6371000;
-        const dLat = ((lat2 - lat1) * Math.PI) / 180;
-        const dLon = ((lon2 - lon1) * Math.PI) / 180;
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos((lat1 * Math.PI) / 180) *
-                Math.cos((lat2 * Math.PI) / 180) *
-                Math.sin(dLon / 2) *
-                Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return Math.round(R * c * 10) / 10;
-    }, []);
+    const hitungJarak = useCallback(
+        (lat1: number, lon1: number, lat2: number, lon2: number) => {
+            const R = 6371000;
+            const dLat = ((lat2 - lat1) * Math.PI) / 180;
+            const dLon = ((lon2 - lon1) * Math.PI) / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos((lat1 * Math.PI) / 180) *
+                    Math.cos((lat2 * Math.PI) / 180) *
+                    Math.sin(dLon / 2) *
+                    Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return Math.round(R * c * 10) / 10;
+        },
+        [],
+    );
 
     // Baca Posisi GPS Warga
     const ambilPosisiWarga = useCallback(() => {
@@ -102,16 +105,18 @@ export default function ModalBeriSuaraVerifikasi({
                     Number(tiket.lintang),
                     Number(tiket.bujur),
                     lat,
-                    lng
+                    lng,
                 );
                 setJarakMeter(jarak);
                 setGpsLoading(false);
             },
             () => {
                 setGpsLoading(false);
-                toast.error('Gagal membaca GPS. Pastikan izin lokasi aktif atau pilih verifikasi Jarak Jauh.');
+                toast.error(
+                    'Gagal membaca GPS. Pastikan izin lokasi aktif atau pilih verifikasi Jarak Jauh.',
+                );
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
         );
     }, [tiket, hitungJarak]);
 
@@ -139,7 +144,9 @@ export default function ModalBeriSuaraVerifikasi({
             }
         } catch (err: unknown) {
             const errorMsg =
-                err instanceof Error ? err.message : 'Izin kamera ditolak atau tidak tersedia.';
+                err instanceof Error
+                    ? err.message
+                    : 'Izin kamera ditolak atau tidak tersedia.';
             setCameraError(errorMsg);
         }
     }, []);
@@ -194,7 +201,8 @@ export default function ModalBeriSuaraVerifikasi({
 
             const img = new Image();
             img.onload = () => {
-                const canvas = canvasRef.current || document.createElement('canvas');
+                const canvas =
+                    canvasRef.current || document.createElement('canvas');
                 const maxDim = 1280;
                 let w = img.width;
                 let h = img.height;
@@ -272,7 +280,9 @@ export default function ModalBeriSuaraVerifikasi({
             onError: (errs) => {
                 setIsSubmitting(false);
                 const firstError = Object.values(errs)[0];
-                toast.error(firstError || 'Gagal mengirimkan suara verifikasi.');
+                toast.error(
+                    firstError || 'Gagal mengirimkan suara verifikasi.',
+                );
             },
         });
     };
@@ -280,7 +290,7 @@ export default function ModalBeriSuaraVerifikasi({
     const kategoriNama =
         tiket.kategori?.nama || (tiket as any).kategori_nama || '';
     const kelurahanNama =
-        tiket.kelurahan?.nama || (tiket as any).kelurahan_nama || 'Depok';
+        tiket.kelurahan?.nama || (tiket as any).kelurahan_nama || 'Wilayah';
     const instansiNama =
         tiket.instansi?.nama || (tiket as any).instansi_nama || '';
     const fotoAwalUrl =
@@ -296,7 +306,7 @@ export default function ModalBeriSuaraVerifikasi({
     return (
         <Dialog open={open} onOpenChange={(v) => (!v ? handleClose() : null)}>
             <DialogContent className="max-h-[90dvh] gap-6 overflow-y-auto rounded-2xl p-6 sm:max-w-2xl sm:p-8">
-                <DialogHeader className="space-y-1.5 pb-3 border-b border-border">
+                <DialogHeader className="space-y-1.5 border-b border-border pb-3">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 text-caption-xs text-muted-foreground">
                             <span className="font-mono font-medium text-foreground">
@@ -309,7 +319,10 @@ export default function ModalBeriSuaraVerifikasi({
                                 </>
                             )}
                         </div>
-                        <Badge variant="outline" className="text-[10px] font-medium border-border">
+                        <Badge
+                            variant="outline"
+                            className="border-border text-[10px] font-medium"
+                        >
                             Verifikasi Warga
                         </Badge>
                     </div>
@@ -317,15 +330,16 @@ export default function ModalBeriSuaraVerifikasi({
                         Konfirmasi Hasil Perbaikan
                     </DialogTitle>
                     <DialogDescription className="text-caption-xs text-muted-foreground">
-                        Tinjau dokumentasi fisik hasil pengerjaan dinas dan tentukan apakah perbaikan sudah tuntas.
+                        Tinjau dokumentasi fisik hasil pengerjaan dinas dan
+                        tentukan apakah perbaikan sudah tuntas.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4 pt-2">
                     {/* Ringkasan Aduan & Bukti Dinas */}
-                    <div className="rounded-lg border border-border bg-muted/20 p-3.5 space-y-2.5">
+                    <div className="space-y-2.5 rounded-lg border border-border bg-muted/20 p-3.5">
                         <div className="space-y-0.5">
-                            <h4 className="font-display text-body-sm font-semibold text-foreground">
+                            <h4 className="text-body-sm font-display font-semibold text-foreground">
                                 {tiket.judul}
                             </h4>
                             <p className="text-caption-xs text-muted-foreground">
@@ -344,10 +358,10 @@ export default function ModalBeriSuaraVerifikasi({
                                     <img
                                         src={fotoAwalUrl}
                                         alt="Bukti Awal"
-                                        className="h-24 w-full object-cover rounded-md border border-border"
+                                        className="h-24 w-full rounded-md border border-border object-cover"
                                     />
                                 ) : (
-                                    <div className="h-24 w-full rounded-md border border-border bg-muted/40 flex items-center justify-center text-caption-xs text-muted-foreground">
+                                    <div className="flex h-24 w-full items-center justify-center rounded-md border border-border bg-muted/40 text-caption-xs text-muted-foreground">
                                         Foto awal tidak ada
                                     </div>
                                 )}
@@ -361,10 +375,10 @@ export default function ModalBeriSuaraVerifikasi({
                                     <img
                                         src={fotoSesudahUrl}
                                         alt="Bukti Sesudah Dinas"
-                                        className="h-24 w-full object-cover rounded-md border border-border"
+                                        className="h-24 w-full rounded-md border border-border object-cover"
                                     />
                                 ) : (
-                                    <div className="h-24 w-full rounded-md border border-border bg-muted/40 flex items-center justify-center text-caption-xs text-muted-foreground">
+                                    <div className="flex h-24 w-full items-center justify-center rounded-md border border-border bg-muted/40 text-caption-xs text-muted-foreground">
                                         Foto sesudah tidak ada
                                     </div>
                                 )}
@@ -374,39 +388,48 @@ export default function ModalBeriSuaraVerifikasi({
                         {/* Catatan Berita Acara Dinas */}
                         {beritaAcaraDinas && (
                             <div className="border-t border-border/60 pt-2 text-caption-xs text-muted-foreground">
-                                <span className="font-semibold text-foreground">Catatan Dinas:</span>{' '}
-                                <span>{beritaAcaraDinas.kegiatan} — {beritaAcaraDinas.hasil}</span>
+                                <span className="font-semibold text-foreground">
+                                    Catatan Dinas:
+                                </span>{' '}
+                                <span>
+                                    {beritaAcaraDinas.kegiatan} —{' '}
+                                    {beritaAcaraDinas.hasil}
+                                </span>
                             </div>
                         )}
                     </div>
 
                     {/* Pemilihan Jalur Pembuktian */}
                     <div className="space-y-1.5">
-                        <label className="text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <label className="text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                             Metode Pembuktian
                         </label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                             {/* Jalur B: Jarak Jauh */}
                             <button
                                 type="button"
                                 onClick={() => setJalur('B')}
                                 className={cn(
-                                    'p-3 rounded-lg border text-left transition-colors cursor-pointer space-y-1',
+                                    'cursor-pointer space-y-1 rounded-lg border p-3 text-left transition-colors',
                                     jalur === 'B'
                                         ? 'border-primary bg-primary/5 text-foreground'
-                                        : 'border-border bg-card hover:bg-muted/30 text-muted-foreground',
+                                        : 'border-border bg-card text-muted-foreground hover:bg-muted/30',
                                 )}
                             >
                                 <div className="flex items-center justify-between">
-                                    <span className="font-display text-body-sm font-semibold text-foreground">
+                                    <span className="text-body-sm font-display font-semibold text-foreground">
                                         Jarak Jauh
                                     </span>
-                                    <Badge variant="outline" className="text-[10px] font-medium border-border">
+                                    <Badge
+                                        variant="outline"
+                                        className="border-border text-[10px] font-medium"
+                                    >
                                         Bobot 0.5
                                     </Badge>
                                 </div>
-                                <p className="text-caption-xs text-muted-foreground leading-normal">
-                                    Verifikasi dari pengamatan sekitar tanpa foto langsung di lokasi.
+                                <p className="text-caption-xs leading-normal text-muted-foreground">
+                                    Verifikasi dari pengamatan sekitar tanpa
+                                    foto langsung di lokasi.
                                 </p>
                             </button>
 
@@ -415,22 +438,26 @@ export default function ModalBeriSuaraVerifikasi({
                                 type="button"
                                 onClick={() => setJalur('A')}
                                 className={cn(
-                                    'p-3 rounded-lg border text-left transition-colors cursor-pointer space-y-1',
+                                    'cursor-pointer space-y-1 rounded-lg border p-3 text-left transition-colors',
                                     jalur === 'A'
                                         ? 'border-primary bg-primary/5 text-foreground'
-                                        : 'border-border bg-card hover:bg-muted/30 text-muted-foreground',
+                                        : 'border-border bg-card text-muted-foreground hover:bg-muted/30',
                                 )}
                             >
                                 <div className="flex items-center justify-between">
-                                    <span className="font-display text-body-sm font-semibold text-foreground">
+                                    <span className="text-body-sm font-display font-semibold text-foreground">
                                         Jarak Dekat dengan Foto
                                     </span>
-                                    <Badge variant="outline" className="text-[10px] font-semibold border-primary/40 text-primary">
+                                    <Badge
+                                        variant="outline"
+                                        className="border-primary/40 text-[10px] font-semibold text-primary"
+                                    >
                                         Bobot 1.0 (Penuh)
                                     </Badge>
                                 </div>
-                                <p className="text-caption-xs text-muted-foreground leading-normal">
-                                    Hadir langsung dengan foto kamera peramban & verifikasi GPS (radius ≤ 50m).
+                                <p className="text-caption-xs leading-normal text-muted-foreground">
+                                    Hadir langsung dengan foto kamera peramban &
+                                    verifikasi GPS (radius ≤ 50m).
                                 </p>
                             </button>
                         </div>
@@ -438,15 +465,16 @@ export default function ModalBeriSuaraVerifikasi({
 
                     {/* Area Khusus Jalur A: Kamera Langsung & Geofence GPS */}
                     {jalur === 'A' && (
-                        <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-2.5">
+                        <div className="space-y-2.5 rounded-lg border border-border bg-muted/20 p-3">
                             <div className="flex items-center justify-between text-caption-xs">
-                                <span className="font-semibold text-foreground flex items-center gap-1.5">
+                                <span className="flex items-center gap-1.5 font-semibold text-foreground">
                                     <Camera className="size-3.5 text-muted-foreground" />
                                     <span>Kamera & Validasi Lokasi (GPS)</span>
                                 </span>
                                 {gpsLoading ? (
-                                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                        <Loader2 className="size-3 animate-spin" /> Membaca GPS...
+                                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                        <Loader2 className="size-3 animate-spin" />{' '}
+                                        Membaca GPS...
                                     </span>
                                 ) : jarakMeter !== null ? (
                                     <Badge
@@ -458,7 +486,7 @@ export default function ModalBeriSuaraVerifikasi({
                                                 : 'border-destructive/40 text-destructive',
                                         )}
                                     >
-                                        <MapPin className="size-2.5 mr-1" />
+                                        <MapPin className="mr-1 size-2.5" />
                                         {isGeofenceValid
                                             ? `Lokasi Cocok (${jarakMeter}m ≤ 50m)`
                                             : `Terlalu Jauh (${jarakMeter}m > 50m)`}
@@ -467,7 +495,7 @@ export default function ModalBeriSuaraVerifikasi({
                             </div>
 
                             {/* Viewport Kamera / Hasil Tangkap */}
-                            <div className="relative overflow-hidden rounded-md bg-black aspect-video flex items-center justify-center border border-border">
+                            <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-md border border-border bg-black">
                                 {capturedFoto ? (
                                     <img
                                         src={capturedFoto}
@@ -487,19 +515,23 @@ export default function ModalBeriSuaraVerifikasi({
                                 <canvas ref={canvasRef} className="hidden" />
 
                                 {cameraError && !capturedFoto && (
-                                    <div className="absolute inset-0 bg-background/95 p-4 flex flex-col items-center justify-center text-center">
-                                        <AlertTriangle className="size-6 text-destructive mb-1.5" />
-                                        <p className="text-caption-xs text-foreground font-semibold">{cameraError}</p>
-                                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                                            Aktifkan izin kamera pada browser atau beralih ke verifikasi Jarak Jauh.
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/95 p-4 text-center">
+                                        <AlertTriangle className="mb-1.5 size-6 text-destructive" />
+                                        <p className="text-caption-xs font-semibold text-foreground">
+                                            {cameraError}
                                         </p>
-                                        <div className="flex flex-wrap gap-2 mt-2 justify-center">
+                                        <p className="mt-0.5 text-[11px] text-muted-foreground">
+                                            Aktifkan izin kamera pada browser
+                                            atau beralih ke verifikasi Jarak
+                                            Jauh.
+                                        </p>
+                                        <div className="mt-2 flex flex-wrap justify-center gap-2">
                                             <Button
                                                 type="button"
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => setJalur('B')}
-                                                className="text-caption-xs h-7"
+                                                className="h-7 text-caption-xs"
                                             >
                                                 Pilih Jarak Jauh (Bobot 0.5)
                                             </Button>
@@ -507,10 +539,13 @@ export default function ModalBeriSuaraVerifikasi({
                                                 type="button"
                                                 size="sm"
                                                 variant="secondary"
-                                                onClick={() => fileInputRef.current?.click()}
-                                                className="text-caption-xs h-7 gap-1"
+                                                onClick={() =>
+                                                    fileInputRef.current?.click()
+                                                }
+                                                className="h-7 gap-1 text-caption-xs"
                                             >
-                                                <Upload className="size-3" /> Ambil dari File
+                                                <Upload className="size-3" />{' '}
+                                                Ambil dari File
                                             </Button>
                                         </div>
                                     </div>
@@ -527,18 +562,22 @@ export default function ModalBeriSuaraVerifikasi({
                                             variant="outline"
                                             onClick={handleSnap}
                                             disabled={!!cameraError}
-                                            className="flex-1 text-caption-xs h-8 gap-1.5 font-medium cursor-pointer"
+                                            className="h-8 flex-1 cursor-pointer gap-1.5 text-caption-xs font-medium"
                                         >
-                                            <Camera className="size-3.5" /> Ambil Foto Bukti
+                                            <Camera className="size-3.5" />{' '}
+                                            Ambil Foto Bukti
                                         </Button>
                                         <Button
                                             type="button"
                                             size="sm"
                                             variant="secondary"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="text-caption-xs h-8 gap-1.5 font-medium cursor-pointer"
+                                            onClick={() =>
+                                                fileInputRef.current?.click()
+                                            }
+                                            className="h-8 cursor-pointer gap-1.5 text-caption-xs font-medium"
                                         >
-                                            <Upload className="size-3.5" /> Ambil dari File
+                                            <Upload className="size-3.5" />{' '}
+                                            Ambil dari File
                                         </Button>
                                     </div>
                                 ) : (
@@ -548,18 +587,22 @@ export default function ModalBeriSuaraVerifikasi({
                                             size="sm"
                                             variant="outline"
                                             onClick={handleRetake}
-                                            className="flex-1 text-caption-xs h-8 gap-1.5 font-medium cursor-pointer"
+                                            className="h-8 flex-1 cursor-pointer gap-1.5 text-caption-xs font-medium"
                                         >
-                                            <RotateCcw className="size-3.5" /> Ambil Ulang Foto
+                                            <RotateCcw className="size-3.5" />{' '}
+                                            Ambil Ulang Foto
                                         </Button>
                                         <Button
                                             type="button"
                                             size="sm"
                                             variant="secondary"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="text-caption-xs h-8 gap-1.5 font-medium cursor-pointer"
+                                            onClick={() =>
+                                                fileInputRef.current?.click()
+                                            }
+                                            className="h-8 cursor-pointer gap-1.5 text-caption-xs font-medium"
                                         >
-                                            <Upload className="size-3.5" /> Ganti dari File
+                                            <Upload className="size-3.5" />{' '}
+                                            Ganti dari File
                                         </Button>
                                     </div>
                                 )}
@@ -574,8 +617,11 @@ export default function ModalBeriSuaraVerifikasi({
                             />
 
                             {!isGeofenceValid && jarakMeter !== null && (
-                                <p className="text-[11px] text-destructive leading-tight">
-                                    Posisi GPS Anda ({jarakMeter}m) melebihi batas radius 50 meter dari titik aduan. Silakan gunakan verifikasi Jarak Jauh (Bobot 0.5).
+                                <p className="text-[11px] leading-tight text-destructive">
+                                    Posisi GPS Anda ({jarakMeter}m) melebihi
+                                    batas radius 50 meter dari titik aduan.
+                                    Silakan gunakan verifikasi Jarak Jauh (Bobot
+                                    0.5).
                                 </p>
                             )}
                         </div>
@@ -583,16 +629,16 @@ export default function ModalBeriSuaraVerifikasi({
 
                     {/* Keputusan Suara Warga */}
                     <div className="space-y-1.5">
-                        <label className="text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <label className="text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                             Penilaian Hasil Pengerjaan
                         </label>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                             <button
                                 type="button"
                                 onClick={() => setSetuju(true)}
                                 className={cn(
-                                    'p-3 rounded-lg border text-left transition-colors cursor-pointer space-y-1',
+                                    'cursor-pointer space-y-1 rounded-lg border p-3 text-left transition-colors',
                                     setuju === true
                                         ? 'border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/20'
                                         : 'border-border bg-card hover:bg-muted/30',
@@ -602,15 +648,18 @@ export default function ModalBeriSuaraVerifikasi({
                                     <CheckCircle2
                                         className={cn(
                                             'size-4',
-                                            setuju === true ? 'text-emerald-600' : 'text-muted-foreground',
+                                            setuju === true
+                                                ? 'text-emerald-600'
+                                                : 'text-muted-foreground',
                                         )}
                                     />
-                                    <span className="font-display text-body-sm font-semibold text-foreground">
+                                    <span className="text-body-sm font-display font-semibold text-foreground">
                                         Sesuai Standar
                                     </span>
                                 </div>
-                                <p className="text-caption-xs text-muted-foreground leading-normal pl-5.5">
-                                    Pekerjaan selesai dan fasilitas kembali berfungsi baik.
+                                <p className="pl-5.5 text-caption-xs leading-normal text-muted-foreground">
+                                    Pekerjaan selesai dan fasilitas kembali
+                                    berfungsi baik.
                                 </p>
                             </button>
 
@@ -618,7 +667,7 @@ export default function ModalBeriSuaraVerifikasi({
                                 type="button"
                                 onClick={() => setSetuju(false)}
                                 className={cn(
-                                    'p-3 rounded-lg border text-left transition-colors cursor-pointer space-y-1',
+                                    'cursor-pointer space-y-1 rounded-lg border p-3 text-left transition-colors',
                                     setuju === false
                                         ? 'border-destructive bg-destructive/10 dark:bg-destructive/20'
                                         : 'border-border bg-card hover:bg-muted/30',
@@ -628,15 +677,18 @@ export default function ModalBeriSuaraVerifikasi({
                                     <XCircle
                                         className={cn(
                                             'size-4',
-                                            setuju === false ? 'text-destructive' : 'text-muted-foreground',
+                                            setuju === false
+                                                ? 'text-destructive'
+                                                : 'text-muted-foreground',
                                         )}
                                     />
-                                    <span className="font-display text-body-sm font-semibold text-foreground">
+                                    <span className="text-body-sm font-display font-semibold text-foreground">
                                         Belum Sesuai
                                     </span>
                                 </div>
-                                <p className="text-caption-xs text-muted-foreground leading-normal pl-5.5">
-                                    Masih ada kerusakan atau perbaikan belum tuntas.
+                                <p className="pl-5.5 text-caption-xs leading-normal text-muted-foreground">
+                                    Masih ada kerusakan atau perbaikan belum
+                                    tuntas.
                                 </p>
                             </button>
                         </div>
@@ -644,9 +696,9 @@ export default function ModalBeriSuaraVerifikasi({
 
                     {/* Alasan Penolakan jika Memilih Belum Sesuai */}
                     {setuju === false && (
-                        <div className="space-y-1.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 animate-in fade-in">
+                        <div className="animate-in space-y-1.5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 fade-in">
                             <div className="flex items-center justify-between text-caption-xs">
-                                <label className="font-semibold text-destructive flex items-center gap-1">
+                                <label className="flex items-center gap-1 font-semibold text-destructive">
                                     <AlertTriangle className="size-3.5" />
                                     <span>Alasan Penolakan (Wajib):</span>
                                 </label>
@@ -654,7 +706,7 @@ export default function ModalBeriSuaraVerifikasi({
                                     className={cn(
                                         'font-mono text-[11px]',
                                         alasan.trim().length >= 10
-                                            ? 'text-emerald-600 font-semibold'
+                                            ? 'font-semibold text-emerald-600'
                                             : 'text-destructive',
                                     )}
                                 >
@@ -667,30 +719,32 @@ export default function ModalBeriSuaraVerifikasi({
                                 placeholder="Jelaskan bagian yang belum tuntas atau masih rusak (maks. 256 karakter)..."
                                 value={alasan}
                                 onChange={(e) => setAlasan(e.target.value)}
-                                className="text-body-sm bg-background border-border"
+                                className="border-border bg-background text-body-sm"
                             />
                             <p className="text-[11px] text-muted-foreground">
-                                Catatan ini akan diteruskan ke dinas dan auditor sebagai bahan evaluasi tindak lanjut.
+                                Catatan ini akan diteruskan ke dinas dan auditor
+                                sebagai bahan evaluasi tindak lanjut.
                             </p>
                         </div>
                     )}
 
                     {/* Jaminan Privasi Anonim */}
-                    <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-caption-xs text-muted-foreground flex items-center gap-2">
-                        <ShieldCheck className="size-3.5 text-muted-foreground shrink-0" />
+                    <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-caption-xs text-muted-foreground">
+                        <ShieldCheck className="size-3.5 shrink-0 text-muted-foreground" />
                         <span>
-                            Suara Anda bersifat <strong>anonim</strong> dan tidak dapat diubah setelah dikirimkan.
+                            Suara Anda bersifat <strong>anonim</strong> dan
+                            tidak dapat diubah setelah dikirimkan.
                         </span>
                     </div>
 
                     {/* Tombol Aksi Bawah */}
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+                    <div className="flex items-center justify-end gap-2 border-t border-border pt-2">
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
                             onClick={handleClose}
-                            className="h-9 px-4 rounded-lg text-caption-xs font-semibold cursor-pointer"
+                            className="h-9 cursor-pointer rounded-lg px-4 text-caption-xs font-semibold"
                         >
                             Batal
                         </Button>
@@ -698,11 +752,11 @@ export default function ModalBeriSuaraVerifikasi({
                             type="submit"
                             size="sm"
                             disabled={!isReadySubmit || isSubmitting}
-                            className="h-9 px-4 rounded-lg text-caption-xs font-semibold cursor-pointer"
+                            className="h-9 cursor-pointer rounded-lg px-4 text-caption-xs font-semibold"
                         >
                             {isSubmitting ? (
                                 <>
-                                    <Loader2 className="size-3.5 animate-spin mr-1.5" />
+                                    <Loader2 className="mr-1.5 size-3.5 animate-spin" />
                                     <span>Menyimpan Suara...</span>
                                 </>
                             ) : (

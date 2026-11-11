@@ -13,14 +13,16 @@ interface BantuanPageProps {
 
 export default function BantuanPage({ transparansiData }: BantuanPageProps) {
     return (
-        <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <div className="flex min-h-screen flex-col bg-background text-foreground">
             <Head title="Bantuan & Kebijakan Privasi - Jagains" />
 
             <LandingNavbar />
 
             <main className="flex-1 py-12 sm:py-16 lg:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <BantuanPrivasiContent transparansiData={transparansiData} />
+                    <BantuanPrivasiContent
+                        transparansiData={transparansiData}
+                    />
                 </div>
             </main>
 

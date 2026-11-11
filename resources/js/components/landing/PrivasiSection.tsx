@@ -26,18 +26,24 @@ const PRIVASI_ITEMS = [
 
 export default function PrivasiSection() {
     return (
-        <section id="privasi" className="py-20 sm:py-28 bg-muted/20 border-y border-border/80">
+        <section
+            id="privasi"
+            className="border-y border-border/80 bg-muted/20 py-20 sm:py-28"
+        >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
                     {/* Kolom Kiri: Heading & 3 Item List Berupa Card */}
-                    <div className="lg:col-span-6 space-y-8">
+                    <div className="space-y-8 lg:col-span-6">
                         <div className="space-y-4">
-                            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
-                                Suara Anda Terdengar, Identitas Anda Terkunci Aman
+                            <h2 className="font-display text-3xl leading-[1.15] font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                                Suara Anda Terdengar, Identitas Anda Terkunci
+                                Aman
                             </h2>
 
-                            <p className="text-body-base sm:text-body-large text-muted-foreground leading-relaxed">
-                                Dirancang dengan arsitektur privasi ketat agar pelapor terlindungi penuh dari risiko intimidasi.
+                            <p className="sm:text-body-large text-body-base leading-relaxed text-muted-foreground">
+                                Dirancang dengan arsitektur privasi ketat agar
+                                pelapor terlindungi penuh dari risiko
+                                intimidasi.
                             </p>
                         </div>
 
@@ -49,17 +55,17 @@ export default function PrivasiSection() {
                                 return (
                                     <div
                                         key={item.id}
-                                        className="flex items-start gap-4 p-4 rounded-2xl bg-card border border-border/60 shadow-2xs hover:shadow-xs transition-shadow"
+                                        className="flex items-start gap-4 rounded-2xl border border-border/60 bg-card p-4 shadow-2xs transition-shadow hover:shadow-xs"
                                     >
-                                        <div className="size-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                                        <div className="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
                                             <Icon className="size-5" />
                                         </div>
 
                                         <div className="space-y-1">
-                                            <h3 className="font-display text-body-base font-bold text-foreground">
+                                            <h3 className="text-body-base font-display font-bold text-foreground">
                                                 {item.judul}
                                             </h3>
-                                            <p className="text-body-sm text-muted-foreground leading-relaxed">
+                                            <p className="text-body-sm leading-relaxed text-muted-foreground">
                                                 {item.deskripsi}
                                             </p>
                                         </div>
@@ -70,11 +76,11 @@ export default function PrivasiSection() {
                     </div>
 
                     {/* Kolom Kanan: Asset Ilustrasi person_with_lock.png langsung (tanpa card) */}
-                    <div className="lg:col-span-6 flex items-center justify-center">
+                    <div className="flex items-center justify-center lg:col-span-6">
                         <img
                             src="/images/landing/person_with_lock.png"
                             alt="Ilustrasi Privasi dan Keamanan Jagains"
-                            className="w-full max-w-md lg:max-w-lg h-auto object-contain mx-auto"
+                            className="mx-auto h-auto w-full max-w-md object-contain lg:max-w-lg"
                             loading="lazy"
                         />
                     </div>

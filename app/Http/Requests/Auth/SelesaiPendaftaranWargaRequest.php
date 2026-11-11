@@ -42,7 +42,7 @@ class SelesaiPendaftaranWargaRequest extends FormRequest
             'username.regex' => 'Username hanya boleh berisi huruf, angka, tanda hubung (-), dan garis bawah (_).',
             'username.unique' => 'Username ini sudah digunakan. Silakan pilih username lain.',
             'password.min' => 'Kata sandi minimal terdiri dari 8 karakter.',
-            'kelurahan_id.exists' => 'Kelurahan yang dipilih tidak valid dalam wilayah Kota Depok.',
+            'kelurahan_id.exists' => 'Kelurahan yang dipilih tidak valid dalam wilayah Jabodetabek.',
         ];
     }
 }

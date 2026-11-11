@@ -44,9 +44,11 @@ export interface RiwayatStatusDetailPayload {
         terkini: BeritaAcaraItem | null;
         riwayat_versi: BeritaAcaraItem[];
     };
-    verifikasi_ringkasan?: (KuorumVerifikasiData & {
-        daftar_pemilih?: PemilihVerifikasiItem[];
-    }) | null;
+    verifikasi_ringkasan?:
+        | (KuorumVerifikasiData & {
+              daftar_pemilih?: PemilihVerifikasiItem[];
+          })
+        | null;
     catatan_auditor?: CatatanAuditorItem[];
 }
 
@@ -113,6 +115,7 @@ export interface TiketDetail {
     instansi_nama: string | null;
     kelurahan_nama: string;
     kecamatan_nama: string;
+    kota_nama?: string;
     lintang: number;
     bujur: number;
     akurasi_gps_m: number | null;

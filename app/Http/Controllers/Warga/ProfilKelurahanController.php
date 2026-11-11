@@ -20,7 +20,7 @@ class ProfilKelurahanController extends Controller
      */
     public function tampilkanProfil(Request $request): Response
     {
-        $user = $request->user()->load('kelurahan.induk');
+        $user = $request->user()->load('kelurahan.induk.induk');
 
         $diubahPada = $user->kelurahan_diubah_pada;
         $bisaGanti = true;
@@ -45,6 +45,7 @@ class ProfilKelurahanController extends Controller
                     'id' => $user->kelurahan?->id,
                     'nama' => $user->kelurahan?->nama,
                     'kecamatan' => $user->kelurahan?->induk?->nama,
+                    'kota' => $user->kelurahan?->induk?->induk?->nama,
                 ],
                 'kelurahan_diubah_pada' => $diubahPada?->format('d F Y H:i'),
                 'bisa_ganti_kelurahan' => $bisaGanti,

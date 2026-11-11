@@ -32,28 +32,33 @@ export default function KartuTiketVerifikasi({
     const fotoSesudah = tiket.ronde_verifikasi?.[0]?.lampiran_sesudah?.path;
 
     return (
-        <div className="group overflow-hidden rounded-2xl border border-border bg-card shadow-xs transition-all hover:border-foreground/30 hover:shadow-md flex flex-col justify-between">
+        <div className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-border bg-card shadow-xs transition-all hover:border-foreground/30 hover:shadow-md">
             <div>
                 {/* Komparasi Foto Sebelum vs Sesudah Dinas (Top Half Split Banner 16:9 Sesuai Format Riwayat) */}
-                <div className="relative aspect-[16/9] w-full bg-black overflow-hidden grid grid-cols-2 border-b border-border/60">
+                <div className="relative grid aspect-[16/9] w-full grid-cols-2 overflow-hidden border-b border-border/60 bg-black">
                     {/* Foto Sebelum */}
-                    <div className="relative size-full overflow-hidden bg-black flex items-center justify-center border-r border-border/40">
+                    <div className="relative flex size-full items-center justify-center overflow-hidden border-r border-border/40 bg-black">
                         {fotoAwal ? (
                             <img
                                 src={`/storage/${fotoAwal}`}
                                 alt="Foto Sebelum Perbaikan"
+                                loading="lazy"
+                                decoding="async"
                                 className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 onError={(e) => {
-                                    (e.target as HTMLElement).style.display = 'none';
-                                    const fallback = (e.target as HTMLElement).nextElementSibling as HTMLElement;
-                                    if (fallback) fallback.style.display = 'flex';
+                                    (e.target as HTMLElement).style.display =
+                                        'none';
+                                    const fallback = (e.target as HTMLElement)
+                                        .nextElementSibling as HTMLElement;
+                                    if (fallback)
+                                        fallback.style.display = 'flex';
                                 }}
                             />
                         ) : null}
                         <div
                             className={cn(
-                                'size-full flex-col items-center justify-center gap-1.5 bg-zinc-900 text-zinc-400 text-caption-xs font-semibold',
-                                fotoAwal ? 'hidden' : 'flex'
+                                'size-full flex-col items-center justify-center gap-1.5 bg-zinc-900 text-caption-xs font-semibold text-zinc-400',
+                                fotoAwal ? 'hidden' : 'flex',
                             )}
                         >
                             <ImageIcon className="size-6 text-zinc-600" />
@@ -65,23 +70,28 @@ export default function KartuTiketVerifikasi({
                     </div>
 
                     {/* Foto Sesudah Dinas */}
-                    <div className="relative size-full overflow-hidden bg-black flex items-center justify-center">
+                    <div className="relative flex size-full items-center justify-center overflow-hidden bg-black">
                         {fotoSesudah ? (
                             <img
                                 src={`/storage/${fotoSesudah}`}
                                 alt="Foto Sesudah Dinas"
+                                loading="lazy"
+                                decoding="async"
                                 className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                                 onError={(e) => {
-                                    (e.target as HTMLElement).style.display = 'none';
-                                    const fallback = (e.target as HTMLElement).nextElementSibling as HTMLElement;
-                                    if (fallback) fallback.style.display = 'flex';
+                                    (e.target as HTMLElement).style.display =
+                                        'none';
+                                    const fallback = (e.target as HTMLElement)
+                                        .nextElementSibling as HTMLElement;
+                                    if (fallback)
+                                        fallback.style.display = 'flex';
                                 }}
                             />
                         ) : null}
                         <div
                             className={cn(
-                                'size-full flex-col items-center justify-center gap-1.5 bg-zinc-900 text-zinc-400 text-caption-xs font-semibold',
-                                fotoSesudah ? 'hidden' : 'flex'
+                                'size-full flex-col items-center justify-center gap-1.5 bg-zinc-900 text-caption-xs font-semibold text-zinc-400',
+                                fotoSesudah ? 'hidden' : 'flex',
                             )}
                         >
                             <ImageIcon className="size-6 text-zinc-600" />
@@ -95,7 +105,7 @@ export default function KartuTiketVerifikasi({
                 </div>
 
                 {/* Informasi Tiket Verifikasi (Bottom Half) */}
-                <div className="p-5 sm:p-6 space-y-3.5">
+                <div className="space-y-3.5 p-5 sm:p-6">
                     {/* Header Baris 1: Sisa Waktu & Ronde */}
                     <div className="flex items-center justify-between gap-2">
                         <Badge
@@ -105,7 +115,7 @@ export default function KartuTiketVerifikasi({
                             <Clock className="size-3" />
                             <span>Sisa {kuorum_info.sisa_hari} Hari</span>
                         </Badge>
-                        <span className="text-caption-xs text-muted-foreground font-medium">
+                        <span className="text-caption-xs font-medium text-muted-foreground">
                             Ronde {kuorum_info.nomor_ronde}
                         </span>
                     </div>
@@ -113,9 +123,9 @@ export default function KartuTiketVerifikasi({
                     {/* Judul Laporan */}
                     <Link
                         href={`/warga/verifikasi/${tiket.nomor_tiket}?from=verifikasi`}
-                        className="block group/title"
+                        className="group/title block"
                     >
-                        <h3 className="font-display text-body-lg sm:text-title-sm font-bold text-foreground leading-snug line-clamp-2 group-hover/title:text-primary transition-colors">
+                        <h3 className="line-clamp-2 text-body-lg font-display leading-snug font-bold text-foreground transition-colors group-hover/title:text-primary sm:text-title-sm">
                             {tiket.judul}
                         </h3>
                     </Link>
@@ -123,39 +133,51 @@ export default function KartuTiketVerifikasi({
                     {/* Kategori Fasilitas */}
                     {tiket.kategori?.nama && (
                         <div className="flex items-center gap-2 text-body-sm font-medium text-foreground/80">
-                            <Wrench className="size-4 text-muted-foreground shrink-0" />
+                            <Wrench className="size-4 shrink-0 text-muted-foreground" />
                             <span>{tiket.kategori.nama}</span>
                         </div>
                     )}
 
                     {/* Lokasi & Instansi Penanggung Jawab */}
                     <div className="flex items-center gap-2 text-body-sm text-muted-foreground">
-                        <MapPin className="size-4 text-muted-foreground shrink-0" />
+                        <MapPin className="size-4 shrink-0 text-muted-foreground" />
                         <span className="truncate">
-                            Kel. {tiket.kelurahan?.nama ?? 'Depok'}
-                            {tiket.instansi?.nama ? ` · ${tiket.instansi.nama}` : ''}
+                            Kel. {tiket.kelurahan?.nama ?? 'Wilayah'}
+                            {tiket.instansi?.nama
+                                ? ` · ${tiket.instansi.nama}`
+                                : ''}
                         </span>
                     </div>
 
                     {/* Ringkasan Berita Acara Dinas jika ada */}
                     {tiket.berita_acara && tiket.berita_acara.length > 0 && (
-                        <div className="rounded-xl border border-border/80 bg-muted/20 p-3 space-y-1 text-caption-xs leading-relaxed">
-                            <div className="flex items-center justify-between text-foreground font-semibold">
+                        <div className="space-y-1 rounded-xl border border-border/80 bg-muted/20 p-3 text-caption-xs leading-relaxed">
+                            <div className="flex items-center justify-between font-semibold text-foreground">
                                 <span className="flex items-center gap-1.5">
-                                    <FileText className="size-3.5 text-primary shrink-0" />
-                                    <span>Berita Acara · Versi {tiket.berita_acara[0].versi}</span>
+                                    <FileText className="size-3.5 shrink-0 text-primary" />
+                                    <span>
+                                        Berita Acara · Versi{' '}
+                                        {tiket.berita_acara[0].versi}
+                                    </span>
                                 </span>
-                                <span className="text-[11px] text-muted-foreground font-normal">
+                                <span className="text-[11px] font-normal text-muted-foreground">
                                     {new Intl.DateTimeFormat('id-ID', {
                                         day: '2-digit',
                                         month: 'short',
                                         year: 'numeric',
-                                    }).format(new Date(tiket.berita_acara[0].created_at))}
+                                    }).format(
+                                        new Date(
+                                            tiket.berita_acara[0].created_at,
+                                        ),
+                                    )}
                                 </span>
                             </div>
-                            <p className="text-muted-foreground line-clamp-2">
-                                <span className="font-medium text-foreground">Hasil: </span>
-                                {tiket.berita_acara[0].hasil || tiket.berita_acara[0].kegiatan}
+                            <p className="line-clamp-2 text-muted-foreground">
+                                <span className="font-medium text-foreground">
+                                    Hasil:{' '}
+                                </span>
+                                {tiket.berita_acara[0].hasil ||
+                                    tiket.berita_acara[0].kegiatan}
                             </p>
                         </div>
                     )}
@@ -165,7 +187,8 @@ export default function KartuTiketVerifikasi({
                         <div className="flex items-center justify-between text-caption-xs">
                             <span className="flex items-center gap-1.5 font-semibold text-foreground">
                                 <Users className="size-3.5 text-primary" />
-                                Target Kuorum: <strong>{kuorum_info.target_k} K</strong>
+                                Target Kuorum:{' '}
+                                <strong>{kuorum_info.target_k} K</strong>
                             </span>
                             <span className="font-bold text-foreground">
                                 {kuorum_info.persentase_setuju}%
@@ -198,33 +221,45 @@ export default function KartuTiketVerifikasi({
             </div>
 
             {/* Footer Kartu & Tombol Aksi */}
-            <div className="p-5 sm:p-6 pt-0">
+            <div className="p-5 pt-0 sm:p-6">
                 <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-3">
                     <Link
                         href={`/tiket/${tiket.nomor_tiket}`}
-                        className="flex items-center gap-1.5 text-body-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                        className="flex items-center gap-1.5 text-body-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
                     >
                         <span>Detail Publik</span>
                         <ArrowRight className="size-3.5" />
                     </Link>
 
                     {kuorum_info.sudah_memberi_suara ? (
-                        <Link href={`/warga/verifikasi/${tiket.nomor_tiket}?from=verifikasi`}>
+                        <Link
+                            href={`/warga/verifikasi/${tiket.nomor_tiket}?from=verifikasi`}
+                        >
                             <Badge
                                 variant={
                                     kuorum_info.suara_user?.setuju
                                         ? 'closed'
                                         : 'destructive'
                                 }
-                                className="px-3 py-1.5 text-caption-xs font-semibold cursor-pointer hover:opacity-90"
+                                className="cursor-pointer px-3 py-1.5 text-caption-xs font-semibold hover:opacity-90"
                             >
                                 {kuorum_info.suara_user?.setuju ? (
                                     <span className="flex items-center gap-1.5">
-                                        <CheckCircle2 className="size-3.5" /> Anda: Setuju ({kuorum_info.suara_user?.jalur === 'A' ? 'Jarak Dekat' : 'Jarak Jauh'})
+                                        <CheckCircle2 className="size-3.5" />{' '}
+                                        Anda: Setuju (
+                                        {kuorum_info.suara_user?.jalur === 'A'
+                                            ? 'Jarak Dekat'
+                                            : 'Jarak Jauh'}
+                                        )
                                     </span>
                                 ) : (
                                     <span className="flex items-center gap-1.5">
-                                        <XCircle className="size-3.5" /> Anda: Tolak ({kuorum_info.suara_user?.jalur === 'A' ? 'Jarak Dekat' : 'Jarak Jauh'})
+                                        <XCircle className="size-3.5" /> Anda:
+                                        Tolak (
+                                        {kuorum_info.suara_user?.jalur === 'A'
+                                            ? 'Jarak Dekat'
+                                            : 'Jarak Jauh'}
+                                        )
                                     </span>
                                 )}
                             </Badge>
@@ -234,7 +269,8 @@ export default function KartuTiketVerifikasi({
                             href={`/warga/verifikasi/${tiket.nomor_tiket}?from=verifikasi`}
                             className={buttonVariants({
                                 size: 'sm',
-                                className: 'h-9 px-4 rounded-xl text-body-sm font-bold gap-1.5 cursor-pointer shadow-xs',
+                                className:
+                                    'h-9 px-4 rounded-xl text-body-sm font-bold gap-1.5 cursor-pointer shadow-xs',
                             })}
                         >
                             <ShieldCheck className="size-4" />

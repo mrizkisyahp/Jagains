@@ -60,7 +60,11 @@ interface VerifikasiProsesPageProps {
                 hambatan?: string;
                 catatan?: string;
                 created_at: string;
-                instansi?: { id: number; nama: string; singkatan?: string } | null;
+                instansi?: {
+                    id: number;
+                    nama: string;
+                    singkatan?: string;
+                } | null;
             }>;
             ronde_verifikasi?: Array<{
                 id: number;
@@ -113,7 +117,10 @@ interface VerifikasiProsesPageProps {
     from?: string | null;
 }
 
-export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesPageProps) {
+export default function VerifikasiProsesPage({
+    detail,
+    from,
+}: VerifikasiProsesPageProps) {
     const {
         laporan,
         ronde_aktif,
@@ -144,7 +151,8 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
     const origin = from || fromParam;
     const isFromVerifikasi = origin === 'verifikasi';
     const isFromRiwayat = origin === 'riwayat';
-    const isFromTiket = origin === 'tiket' || (!isFromVerifikasi && !isFromRiwayat);
+    const isFromTiket =
+        origin === 'tiket' || (!isFromVerifikasi && !isFromRiwayat);
 
     const breadcrumbText = isFromVerifikasi
         ? `Warga > Verifikasi > #${laporan.nomor_tiket} > Hasil Pengerjaan`
@@ -153,8 +161,8 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
     const backButtonLabel = isFromVerifikasi
         ? 'Kembali ke Antrean Verifikasi'
         : isFromRiwayat
-        ? 'Kembali ke Riwayat Laporan'
-        : `Kembali ke Detail Laporan #${laporan.nomor_tiket}`;
+          ? 'Kembali ke Riwayat Laporan'
+          : `Kembali ke Detail Laporan #${laporan.nomor_tiket}`;
 
     const handleKembali = () => {
         if (isFromVerifikasi) {
@@ -169,7 +177,10 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
     };
 
     // Zoom foto modal
-    const [previewImage, setPreviewImage] = useState<{ src: string; title: string } | null>(null);
+    const [previewImage, setPreviewImage] = useState<{
+        src: string;
+        title: string;
+    } | null>(null);
 
     // Modal Verifikasi Hasil Wizard states
     const [modalVerifikasiOpen, setModalVerifikasiOpen] = useState(false);
@@ -182,7 +193,9 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Hardware states (Kamera & GPS Jalur A)
-    const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+    const [facingMode, setFacingMode] = useState<'environment' | 'user'>(
+        'environment',
+    );
     const [capturedFoto, setCapturedFoto] = useState<string | null>(null);
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [gpsLoading, setGpsLoading] = useState(false);
@@ -206,19 +219,22 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
         }
     }, []);
 
-    const hitungJarak = useCallback((lat1: number, lon1: number, lat2: number, lon2: number) => {
-        const R = 6371000;
-        const dLat = ((lat2 - lat1) * Math.PI) / 180;
-        const dLon = ((lon2 - lon1) * Math.PI) / 180;
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos((lat1 * Math.PI) / 180) *
-                Math.cos((lat2 * Math.PI) / 180) *
-                Math.sin(dLon / 2) *
-                Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return Math.round(R * c * 10) / 10;
-    }, []);
+    const hitungJarak = useCallback(
+        (lat1: number, lon1: number, lat2: number, lon2: number) => {
+            const R = 6371000;
+            const dLat = ((lat2 - lat1) * Math.PI) / 180;
+            const dLon = ((lon2 - lon1) * Math.PI) / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos((lat1 * Math.PI) / 180) *
+                    Math.cos((lat2 * Math.PI) / 180) *
+                    Math.sin(dLon / 2) *
+                    Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return Math.round(R * c * 10) / 10;
+        },
+        [],
+    );
 
     const ambilPosisiWarga = useCallback(() => {
         if (!navigator.geolocation || !laporan) return;
@@ -238,21 +254,25 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
                     Number(laporan.lintang),
                     Number(laporan.bujur),
                     lat,
-                    lng
+                    lng,
                 );
                 setJarakMeter(jarak);
                 setGpsLoading(false);
                 if (jarak <= 50.0) {
                     toast.success(`Lokasi GPS cocok (${jarak}m dari aduan).`);
                 } else {
-                    toast.warning(`Di luar radius (${jarak}m dari lokasi aduan, batas maksimal 50m).`);
+                    toast.warning(
+                        `Di luar radius (${jarak}m dari lokasi aduan, batas maksimal 50m).`,
+                    );
                 }
             },
             () => {
                 setGpsLoading(false);
-                toast.error('Gagal membaca GPS. Pastikan izin lokasi aktif atau klik "Lewati Tahap".');
+                toast.error(
+                    'Gagal membaca GPS. Pastikan izin lokasi aktif atau klik "Lewati Tahap".',
+                );
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
         );
     }, [laporan, hitungJarak]);
 
@@ -283,7 +303,9 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
             }
         } catch (err: unknown) {
             const errorMsg =
-                err instanceof Error ? err.message : 'Izin kamera ditolak atau tidak tersedia.';
+                err instanceof Error
+                    ? err.message
+                    : 'Izin kamera ditolak atau tidak tersedia.';
             setCameraError(errorMsg);
         }
     }, [facingMode]);
@@ -324,7 +346,9 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
     ]);
 
     const toggleFacingMode = () => {
-        setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'));
+        setFacingMode((prev) =>
+            prev === 'environment' ? 'user' : 'environment',
+        );
     };
 
     const handleSnap = () => {
@@ -355,7 +379,8 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
 
             const img = new Image();
             img.onload = () => {
-                const canvas = canvasRef.current || document.createElement('canvas');
+                const canvas =
+                    canvasRef.current || document.createElement('canvas');
                 const maxDim = 1280;
                 let w = img.width;
                 let h = img.height;
@@ -411,11 +436,12 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
     };
 
     const isGeofenceValid = jarakMeter !== null && jarakMeter <= 50.0;
-    
+
     // Validasi form: jika di luar radius 50m saat Jalur A, kita tawarkan alihkan ke Jalur B
     const isReadySubmit =
         setuju !== null &&
-        (setuju || (alasan.trim().length >= 10 && alasan.trim().length <= 256)) &&
+        (setuju ||
+            (alasan.trim().length >= 10 && alasan.trim().length <= 256)) &&
         (jalur === 'B' || (capturedFoto !== null && isGeofenceValid));
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -427,14 +453,16 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
             toast.warning(
                 !capturedFoto
                     ? 'Tanpa foto bukti langsung, suara Anda dicatat melalui verifikasi Jarak Jauh (Bobot 0.5).'
-                    : `Lokasi Anda (${jarakMeter ?? '?'}m) di luar radius 50m. Suara dialihkan ke verifikasi Jarak Jauh (Bobot 0.5).`
+                    : `Lokasi Anda (${jarakMeter ?? '?'}m) di luar radius 50m. Suara dialihkan ke verifikasi Jarak Jauh (Bobot 0.5).`,
             );
             finalJalur = 'B';
             setJalur('B');
         }
 
         if (setuju === null) {
-            toast.error('Silakan tentukan penilaian: Sudah Sesuai atau Tidak Sesuai.');
+            toast.error(
+                'Silakan tentukan penilaian: Sudah Sesuai atau Tidak Sesuai.',
+            );
             return;
         }
 
@@ -472,7 +500,9 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
             onError: (errs) => {
                 setIsSubmitting(false);
                 const firstError = Object.values(errs)[0];
-                toast.error(firstError || 'Gagal mengirimkan suara verifikasi.');
+                toast.error(
+                    firstError || 'Gagal mengirimkan suara verifikasi.',
+                );
             },
         });
     };
@@ -484,7 +514,9 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
     const beritaAcaraDinas = laporan.berita_acara?.[0];
 
     const persentaseKuorum =
-        target_k > 0 ? Math.min(100, Math.round((suara_setuju_bobot / target_k) * 100)) : 0;
+        target_k > 0
+            ? Math.min(100, Math.round((suara_setuju_bobot / target_k) * 100))
+            : 0;
 
     const formatTanggal = (dateStr?: string) => {
         if (!dateStr) return '00 Nov 0000';
@@ -533,896 +565,1079 @@ export default function VerifikasiProsesPage({ detail, from }: VerifikasiProsesP
                     <button
                         type="button"
                         onClick={handleKembali}
-                        className="inline-flex items-center gap-2 text-body-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                        className="inline-flex cursor-pointer items-center gap-2 text-body-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
                         <span>{backButtonLabel}</span>
                     </button>
                 </div>
 
-            {/* Segmented Tabs Kapsul Sesuai Wireframe */}
-            <div className="w-full rounded-2xl bg-muted/70 p-1 flex items-center">
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('detail')}
-                    className={cn(
-                        'flex-1 py-2.5 px-4 rounded-xl text-center text-body-sm font-semibold transition-all cursor-pointer',
-                        activeTab === 'detail'
-                            ? 'bg-background text-foreground shadow-2xs'
-                            : 'text-muted-foreground hover:text-foreground'
-                    )}
-                >
-                    Detail Hasil Pengerjaan
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('riwayat')}
-                    className={cn(
-                        'flex-1 py-2.5 px-4 rounded-xl text-center text-body-sm font-semibold transition-all cursor-pointer',
-                        activeTab === 'riwayat'
-                            ? 'bg-background text-foreground shadow-2xs'
-                            : 'text-muted-foreground hover:text-foreground'
-                    )}
-                >
-                    Riwayat Verifikasi Warga
-                </button>
-            </div>
+                {/* Segmented Tabs Kapsul Sesuai Wireframe */}
+                <div className="flex w-full items-center rounded-2xl bg-muted/70 p-1">
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('detail')}
+                        className={cn(
+                            'flex-1 cursor-pointer rounded-xl px-4 py-2.5 text-center text-body-sm font-semibold transition-all',
+                            activeTab === 'detail'
+                                ? 'bg-background text-foreground shadow-2xs'
+                                : 'text-muted-foreground hover:text-foreground',
+                        )}
+                    >
+                        Detail Hasil Pengerjaan
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('riwayat')}
+                        className={cn(
+                            'flex-1 cursor-pointer rounded-xl px-4 py-2.5 text-center text-body-sm font-semibold transition-all',
+                            activeTab === 'riwayat'
+                                ? 'bg-background text-foreground shadow-2xs'
+                                : 'text-muted-foreground hover:text-foreground',
+                        )}
+                    >
+                        Riwayat Verifikasi Warga
+                    </button>
+                </div>
 
-            {/* ===================== TAB 1: DETAIL HASIL PENGERJAAN ===================== */}
-            {activeTab === 'detail' && (
-                <div className="space-y-8">
-                    {/* Bagian 1: Perbandingan Pengerjaan */}
-                    <section className="space-y-4">
-                        <h2 className="font-display text-display-xs sm:text-display-sm font-bold text-foreground">
-                            Perbandingan Pengerjaan
-                        </h2>
+                {/* ===================== TAB 1: DETAIL HASIL PENGERJAAN ===================== */}
+                {activeTab === 'detail' && (
+                    <div className="space-y-8">
+                        {/* Bagian 1: Perbandingan Pengerjaan */}
+                        <section className="space-y-4">
+                            <h2 className="text-display-xs font-display font-bold text-foreground sm:text-display-sm">
+                                Perbandingan Pengerjaan
+                            </h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                            {/* Card Sebelum */}
-                            <div
-                                onClick={() => {
-                                    if (fotoAwal) {
-                                        setPreviewImage({
-                                            src: `/storage/${fotoAwal}`,
-                                            title: 'Foto Sebelum Pengerjaan',
-                                        });
-                                    }
-                                }}
-                                className={cn(
-                                    'relative aspect-video w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-border/80 bg-zinc-950 flex items-center justify-center transition-all shadow-xs',
-                                    fotoAwal ? 'cursor-pointer group' : ''
-                                )}
-                            >
-                                {fotoAwal ? (
-                                    <>
-                                        <img
-                                            src={`/storage/${fotoAwal}`}
-                                            alt="Foto Sebelum Pengerjaan"
-                                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                                        />
-                                        <span className="absolute bottom-3 left-3 rounded-lg bg-black/75 px-3 py-1 text-caption-xs font-bold text-white backdrop-blur-xs">
+                            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+                                {/* Card Sebelum */}
+                                <div
+                                    onClick={() => {
+                                        if (fotoAwal) {
+                                            setPreviewImage({
+                                                src: `/storage/${fotoAwal}`,
+                                                title: 'Foto Sebelum Pengerjaan',
+                                            });
+                                        }
+                                    }}
+                                    className={cn(
+                                        'relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-2xl border border-border/80 bg-zinc-950 shadow-xs transition-all sm:rounded-3xl',
+                                        fotoAwal ? 'group cursor-pointer' : '',
+                                    )}
+                                >
+                                    {fotoAwal ? (
+                                        <>
+                                            <img
+                                                src={`/storage/${fotoAwal}`}
+                                                alt="Foto Sebelum Pengerjaan"
+                                                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                                            />
+                                            <span className="absolute bottom-3 left-3 rounded-lg bg-black/75 px-3 py-1 text-caption-xs font-bold text-white backdrop-blur-xs">
+                                                Sebelum
+                                            </span>
+                                            <div className="absolute top-3 right-3 rounded-lg bg-black/60 p-1.5 text-white opacity-0 transition group-hover:opacity-100">
+                                                <Maximize2 className="size-4" />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <span className="text-body-base font-semibold text-zinc-400 sm:text-body-lg">
                                             Sebelum
                                         </span>
-                                        <div className="absolute top-3 right-3 rounded-lg bg-black/60 p-1.5 text-white opacity-0 transition group-hover:opacity-100">
-                                            <Maximize2 className="size-4" />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <span className="text-body-base sm:text-body-lg font-semibold text-zinc-400">
-                                        Sebelum
-                                    </span>
-                                )}
-                            </div>
+                                    )}
+                                </div>
 
-                            {/* Card Sesudah */}
-                            <div
-                                onClick={() => {
-                                    if (fotoSesudah) {
-                                        setPreviewImage({
-                                            src: `/storage/${fotoSesudah}`,
-                                            title: 'Foto Sesudah Pengerjaan',
-                                        });
-                                    }
-                                }}
-                                className={cn(
-                                    'relative aspect-video w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-border/80 bg-zinc-950 flex items-center justify-center transition-all shadow-xs',
-                                    fotoSesudah ? 'cursor-pointer group' : ''
-                                )}
-                            >
-                                {fotoSesudah ? (
-                                    <>
-                                        <img
-                                            src={`/storage/${fotoSesudah}`}
-                                            alt="Foto Sesudah Pengerjaan"
-                                            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                                        />
-                                        <span className="absolute bottom-3 left-3 rounded-lg bg-black/75 px-3 py-1 text-caption-xs font-bold text-white backdrop-blur-xs">
+                                {/* Card Sesudah */}
+                                <div
+                                    onClick={() => {
+                                        if (fotoSesudah) {
+                                            setPreviewImage({
+                                                src: `/storage/${fotoSesudah}`,
+                                                title: 'Foto Sesudah Pengerjaan',
+                                            });
+                                        }
+                                    }}
+                                    className={cn(
+                                        'relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-2xl border border-border/80 bg-zinc-950 shadow-xs transition-all sm:rounded-3xl',
+                                        fotoSesudah
+                                            ? 'group cursor-pointer'
+                                            : '',
+                                    )}
+                                >
+                                    {fotoSesudah ? (
+                                        <>
+                                            <img
+                                                src={`/storage/${fotoSesudah}`}
+                                                alt="Foto Sesudah Pengerjaan"
+                                                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                                            />
+                                            <span className="absolute bottom-3 left-3 rounded-lg bg-black/75 px-3 py-1 text-caption-xs font-bold text-white backdrop-blur-xs">
+                                                Sesudah
+                                            </span>
+                                            <div className="absolute top-3 right-3 rounded-lg bg-black/60 p-1.5 text-white opacity-0 transition group-hover:opacity-100">
+                                                <Maximize2 className="size-4" />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <span className="text-body-base font-semibold text-zinc-400 sm:text-body-lg">
                                             Sesudah
                                         </span>
-                                        <div className="absolute top-3 right-3 rounded-lg bg-black/60 p-1.5 text-white opacity-0 transition group-hover:opacity-100">
-                                            <Maximize2 className="size-4" />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <span className="text-body-base sm:text-body-lg font-semibold text-zinc-400">
-                                        Sesudah
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Bagian 2: Berita Acara */}
+                        <section className="space-y-6 pt-2">
+                            {/* Header Berita Acara & Versi */}
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-display-xs font-display font-bold text-foreground sm:text-display-sm">
+                                    Berita Acara
+                                </h2>
+                                {beritaAcaraDinas && (
+                                    <span className="text-body-sm font-semibold text-muted-foreground">
+                                        Versi {beritaAcaraDinas.versi}
                                     </span>
                                 )}
                             </div>
-                        </div>
-                    </section>
 
-                    {/* Bagian 2: Berita Acara */}
-                    <section className="space-y-6 pt-2">
-                        {/* Header Berita Acara & Versi */}
-                        <div className="flex items-center justify-between">
-                            <h2 className="font-display text-display-xs sm:text-display-sm font-bold text-foreground">
-                                Berita Acara
+                            {beritaAcaraDinas ? (
+                                <>
+                                    {/* Baris 1: Tanggal Pelaksanaan & Penanggung Jawab */}
+                                    <div className="grid grid-cols-1 items-start gap-4 sm:gap-8 md:grid-cols-2">
+                                        <div>
+                                            <h4 className="text-body-sm font-bold text-foreground sm:text-body-base">
+                                                Tanggal Pelaksanaan
+                                            </h4>
+                                            <p className="mt-1 text-body-sm text-muted-foreground sm:text-body-base">
+                                                {formatTanggal(
+                                                    beritaAcaraDinas.created_at,
+                                                )}
+                                            </p>
+                                        </div>
+                                        <div className="md:text-right">
+                                            <h4 className="text-body-sm font-bold text-foreground sm:text-body-base">
+                                                Penanggung Jawab
+                                            </h4>
+                                            <p className="mt-1 text-body-sm text-muted-foreground sm:text-body-base">
+                                                {beritaAcaraDinas.instansi
+                                                    ?.nama ||
+                                                    laporan.instansi?.nama ||
+                                                    'Dinas Penanggung Jawab'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Baris 2: Kegiatan & Hasil Capaian */}
+                                    <div className="grid grid-cols-1 items-start gap-4 sm:gap-8 md:grid-cols-2">
+                                        <div>
+                                            <h4 className="text-body-sm font-bold text-foreground sm:text-body-base">
+                                                Kegiatan yang Dilaksanakan di
+                                                Lapangan
+                                            </h4>
+                                            <p className="mt-2 text-body-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+                                                {beritaAcaraDinas.kegiatan ||
+                                                    'Pekerjaan penanganan fisik sarana dan prasarana umum.'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-body-sm font-bold text-foreground sm:text-body-base">
+                                                Hasil Capaian Pekerjaan
+                                            </h4>
+                                            <p className="mt-2 text-body-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+                                                {beritaAcaraDinas.hasil ||
+                                                    'Perbaikan fisik selesai dan siap diverifikasi oleh warga.'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Baris 3: Kendala Lapangan */}
+                                    <div>
+                                        <h4 className="text-body-sm font-bold text-foreground sm:text-body-base">
+                                            Kendala Lapangan
+                                        </h4>
+                                        <p className="mt-2 text-body-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+                                            {beritaAcaraDinas.hambatan ||
+                                                beritaAcaraDinas.catatan ||
+                                                'Tidak ada kendala lapangan yang dilaporkan.'}
+                                        </p>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="space-y-1.5 rounded-2xl border border-dashed border-border/80 bg-muted/20 p-6 text-center">
+                                    <p className="text-body-sm font-semibold text-foreground">
+                                        Belum Ada Dokumen Berita Acara
+                                    </p>
+                                    <p className="text-caption-xs text-muted-foreground">
+                                        Dinas pelaksana (
+                                        {laporan.instansi?.nama || 'terkait'})
+                                        belum menerbitkan lembar Berita Acara
+                                        untuk pengerjaan ini.
+                                    </p>
+                                </div>
+                            )}
+                        </section>
+                    </div>
+                )}
+
+                {/* ===================== TAB 2: RIWAYAT VERIFIKASI WARGA ===================== */}
+                {activeTab === 'riwayat' && (
+                    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+                        {/* Kolom Kiri: Daftar Verifikasi (lg:col-span-8) */}
+                        <div className="space-y-4 lg:col-span-8">
+                            <h2 className="text-display-xs font-display font-bold text-foreground sm:text-display-sm">
+                                Daftar Verifikasi
                             </h2>
-                            {beritaAcaraDinas && (
-                                <span className="text-body-sm font-semibold text-muted-foreground">
-                                    Versi {beritaAcaraDinas.versi}
-                                </span>
+
+                            {daftar_suara_publik &&
+                            daftar_suara_publik.length > 0 ? (
+                                <div className="space-y-3">
+                                    {daftar_suara_publik.map((suara, idx) => (
+                                        <div
+                                            key={suara.id}
+                                            className="flex items-center justify-between gap-4 rounded-2xl border border-border/80 bg-card p-3 shadow-2xs transition-all hover:border-border sm:p-4"
+                                        >
+                                            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                                                {/* Thumbnail Foto / Kotak Gelap */}
+                                                <div
+                                                    onClick={() => {
+                                                        if (
+                                                            suara.lampiran_foto
+                                                        ) {
+                                                            setPreviewImage({
+                                                                src: suara.lampiran_foto,
+                                                                title: `Foto Verifikasi Warga #${idx + 1}`,
+                                                            });
+                                                        }
+                                                    }}
+                                                    className={cn(
+                                                        'flex size-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/60 bg-zinc-950 sm:size-16',
+                                                        suara.lampiran_foto
+                                                            ? 'cursor-pointer hover:opacity-90'
+                                                            : '',
+                                                    )}
+                                                >
+                                                    {suara.lampiran_foto ? (
+                                                        <img
+                                                            src={
+                                                                suara.lampiran_foto
+                                                            }
+                                                            alt={`Foto Warga #${idx + 1}`}
+                                                            className="size-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="size-full bg-zinc-950" />
+                                                    )}
+                                                </div>
+
+                                                {/* Info Identitas Anonim & Waktu */}
+                                                <div className="min-w-0">
+                                                    <h4 className="text-body-sm font-display font-bold text-foreground sm:text-body-base">
+                                                        Warga #{idx + 1}
+                                                    </h4>
+                                                    <p className="mt-0.5 text-caption-xs text-muted-foreground">
+                                                        Waktu:{' '}
+                                                        {formatWaktuLengkap(
+                                                            suara.waktu,
+                                                        )}
+                                                    </p>
+                                                    {suara.alasan && (
+                                                        <p className="mt-1 line-clamp-1 text-caption-xs text-muted-foreground italic">
+                                                            &quot;{suara.alasan}
+                                                            &quot;
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Status Penilaian di Kanan */}
+                                            <div className="flex-shrink-0">
+                                                {suara.setuju ? (
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/80 px-3.5 py-1.5 text-caption-xs font-semibold text-foreground">
+                                                        <span>
+                                                            Sudah Sesuai
+                                                        </span>
+                                                        <CheckCircle2 className="size-3.5 text-foreground" />
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3.5 py-1.5 text-caption-xs font-semibold text-destructive">
+                                                        <span>
+                                                            Belum Sesuai
+                                                        </span>
+                                                        <XCircle className="size-3.5 text-destructive" />
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                /* State Kosong */
+                                <div className="space-y-2 rounded-2xl border border-dashed border-border/80 bg-muted/20 p-8 text-center">
+                                    <h3 className="text-body-base font-display font-bold text-foreground">
+                                        Belum Ada Verifikasi Warga
+                                    </h3>
+                                    <p className="mx-auto max-w-sm text-caption-xs text-muted-foreground">
+                                        Belum ada suara verifikasi warga yang
+                                        masuk untuk tiket ini.
+                                    </p>
+                                </div>
                             )}
                         </div>
 
-                        {beritaAcaraDinas ? (
-                            <>
-                                {/* Baris 1: Tanggal Pelaksanaan & Penanggung Jawab */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-start">
-                                    <div>
-                                        <h4 className="text-body-sm sm:text-body-base font-bold text-foreground">
-                                            Tanggal Pelaksanaan
-                                        </h4>
-                                        <p className="text-body-sm sm:text-body-base text-muted-foreground mt-1">
-                                            {formatTanggal(beritaAcaraDinas.created_at)}
-                                        </p>
+                        {/* Kolom Kanan: Card Capaian Kuorum (lg:col-span-4) */}
+                        <div className="sticky top-6 lg:col-span-4">
+                            <div className="space-y-6 rounded-3xl border border-border/80 bg-card p-6 shadow-xs">
+                                {/* Baris Atas: Donut Chart & Statistik Pemilih */}
+                                <div className="flex items-center gap-5">
+                                    {/* Circular Progress Indicator */}
+                                    <div className="relative flex size-24 shrink-0 items-center justify-center">
+                                        <svg
+                                            className="size-full -rotate-90"
+                                            viewBox="0 0 100 100"
+                                        >
+                                            <circle
+                                                cx="50"
+                                                cy="50"
+                                                r="40"
+                                                fill="transparent"
+                                                className="stroke-muted"
+                                                strokeWidth="12"
+                                            />
+                                            <circle
+                                                cx="50"
+                                                cy="50"
+                                                r="40"
+                                                fill="transparent"
+                                                className="stroke-foreground"
+                                                strokeWidth="12"
+                                                strokeDasharray={251.2}
+                                                strokeDashoffset={
+                                                    251.2 -
+                                                    (251.2 *
+                                                        Math.min(
+                                                            100,
+                                                            persentaseKuorum,
+                                                        )) /
+                                                        100
+                                                }
+                                                strokeLinecap="round"
+                                            />
+                                        </svg>
+                                        <div className="absolute inset-0 flex items-center justify-center text-body-sm font-bold text-foreground">
+                                            {persentaseKuorum}%
+                                        </div>
                                     </div>
-                                    <div className="md:text-right">
-                                        <h4 className="text-body-sm sm:text-body-base font-bold text-foreground">
-                                            Penanggung Jawab
-                                        </h4>
-                                        <p className="text-body-sm sm:text-body-base text-muted-foreground mt-1">
-                                            {beritaAcaraDinas.instansi?.nama ||
-                                                laporan.instansi?.nama ||
-                                                'Dinas Penanggung Jawab'}
-                                        </p>
+
+                                    {/* Statistik Angka */}
+                                    <div className="min-w-0 flex-1 space-y-3">
+                                        <div>
+                                            <span className="block text-caption-xs font-bold text-foreground">
+                                                Total Pemilih
+                                            </span>
+                                            <span className="text-body-sm font-semibold text-muted-foreground">
+                                                {daftar_suara_publik?.length ??
+                                                    0}{' '}
+                                                Suara
+                                            </span>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <span className="block text-caption-xs font-bold text-foreground">
+                                                    Setuju
+                                                </span>
+                                                <span className="text-caption-xs font-semibold text-emerald-600 sm:text-body-sm dark:text-emerald-400">
+                                                    +{suara_setuju_bobot}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="block text-caption-xs font-bold text-foreground">
+                                                    Tidak Setuju
+                                                </span>
+                                                <span className="text-caption-xs font-semibold text-destructive sm:text-body-sm">
+                                                    -{suara_tolak_bobot}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Baris 2: Kegiatan & Hasil Capaian */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-start">
-                                    <div>
-                                        <h4 className="text-body-sm sm:text-body-base font-bold text-foreground">
-                                            Kegiatan yang Dilaksanakan di Lapangan
-                                        </h4>
-                                        <p className="text-body-sm leading-relaxed text-muted-foreground mt-2 whitespace-pre-line">
-                                            {beritaAcaraDinas.kegiatan ||
-                                                'Pekerjaan penanganan fisik sarana dan prasarana umum.'}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <h4 className="text-body-sm sm:text-body-base font-bold text-foreground">
-                                            Hasil Capaian Pekerjaan
-                                        </h4>
-                                        <p className="text-body-sm leading-relaxed text-muted-foreground mt-2 whitespace-pre-line">
-                                            {beritaAcaraDinas.hasil ||
-                                                'Perbaikan fisik selesai dan siap diverifikasi oleh warga.'}
-                                        </p>
-                                    </div>
-                                </div>
+                                {/* Garis Pemisah */}
+                                <div className="border-t border-border/70" />
 
-                                {/* Baris 3: Kendala Lapangan */}
-                                <div>
-                                    <h4 className="text-body-sm sm:text-body-base font-bold text-foreground">
-                                        Kendala Lapangan
-                                    </h4>
-                                    <p className="text-body-sm leading-relaxed text-muted-foreground mt-2 whitespace-pre-line">
-                                        {beritaAcaraDinas.hambatan ||
-                                            beritaAcaraDinas.catatan ||
-                                            'Tidak ada kendala lapangan yang dilaporkan.'}
-                                    </p>
+                                {/* Bagian Bawah: Capaian Kuorum */}
+                                <div className="space-y-3">
+                                    <h3 className="text-body-sm font-display font-bold text-foreground">
+                                        Capaian Kuorum
+                                    </h3>
+
+                                    <div className="flex items-center justify-between gap-2 text-caption-xs">
+                                        <span className="rounded-full bg-muted/80 px-3 py-1 font-semibold text-muted-foreground">
+                                            {persentaseKuorum >= 100
+                                                ? 'Kuorum Tercapai'
+                                                : 'Sedang Berlangsung'}
+                                        </span>
+                                        <span className="font-medium text-muted-foreground">
+                                            Batas Akhir:{' '}
+                                            {formatTanggal(
+                                                ronde_aktif?.batas_waktu,
+                                            )}
+                                        </span>
+                                    </div>
                                 </div>
-                            </>
-                        ) : (
-                            <div className="rounded-2xl border border-dashed border-border/80 bg-muted/20 p-6 text-center space-y-1.5">
-                                <p className="text-body-sm font-semibold text-foreground">
-                                    Belum Ada Dokumen Berita Acara
-                                </p>
-                                <p className="text-caption-xs text-muted-foreground">
-                                    Dinas pelaksana ({laporan.instansi?.nama || 'terkait'}) belum menerbitkan lembar Berita Acara untuk pengerjaan ini.
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ===================== FLOATING ACTION BUTTON (KANAN BAWAH) ===================== */}
+                <div className="fixed right-6 bottom-6 z-30 sm:right-10">
+                    <Button
+                        type="button"
+                        onClick={() => {
+                            setWizardStep('foto');
+                            setModalVerifikasiOpen(true);
+                        }}
+                        className="h-12 cursor-pointer gap-2.5 rounded-2xl border border-border bg-background px-5 text-body-sm font-bold text-foreground shadow-lg transition-all hover:bg-muted hover:shadow-xl sm:px-6"
+                    >
+                        <span>
+                            {sudah_memberi_suara
+                                ? 'Suara Anda Telah Dicatat'
+                                : 'Verifikasi Hasil'}
+                        </span>
+                        <CheckSquare className="size-4 text-foreground" />
+                    </Button>
+                </div>
+
+                {/* ===================== MODAL VERIFIKASI HASIL (CARD WIZARD 2 TAHAP) ===================== */}
+                <Dialog
+                    open={modalVerifikasiOpen}
+                    onOpenChange={setModalVerifikasiOpen}
+                >
+                    <DialogContent
+                        showCloseButton={false}
+                        className="w-[calc(100vw-2rem)] rounded-3xl border border-border/80 bg-background p-6 shadow-2xl transition-all duration-200 sm:w-[760px] sm:max-w-[760px] sm:p-8"
+                    >
+                        {/* Header: Tombol Tutup di Kiri Atas */}
+                        <div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    stopCamera();
+                                    setModalVerifikasiOpen(false);
+                                }}
+                                className="inline-flex cursor-pointer items-center gap-1.5 text-body-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                                <X className="size-4" />
+                                <span>Tutup</span>
+                            </button>
+                        </div>
+
+                        <DialogHeader className="p-0">
+                            <DialogTitle className="text-left text-display-xs font-display font-bold text-foreground sm:text-display-sm">
+                                Verifikasi Hasil
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        {/* Jika Sudah Memberikan Suara */}
+                        {sudah_memberi_suara ? (
+                            <div className="mt-2 space-y-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5">
+                                <div className="flex items-center gap-2 text-body-base font-bold text-emerald-700 dark:text-emerald-400">
+                                    <CheckCircle2 className="size-5" />
+                                    <span>
+                                        Anda Sudah Memberikan Suara untuk Tiket
+                                        Ini
+                                    </span>
+                                </div>
+                                <p className="text-body-sm leading-relaxed text-foreground/80">
+                                    Pilihan Anda:{' '}
+                                    <strong>
+                                        {suara_user?.setuju
+                                            ? '✓ Setuju (Sudah Sesuai)'
+                                            : '✕ Menolak (Tidak Sesuai)'}
+                                    </strong>{' '}
+                                    melalui metode{' '}
+                                    <strong>
+                                        {suara_user?.jalur === 'A'
+                                            ? 'Jarak Dekat dengan Foto'
+                                            : 'Jarak Jauh'}
+                                    </strong>{' '}
+                                    (Bobot {suara_user?.bobot}).
+                                    {suara_user?.alasan && (
+                                        <span className="mt-1 block text-muted-foreground italic">
+                                            &quot;{suara_user.alasan}&quot;
+                                        </span>
+                                    )}
                                 </p>
                             </div>
-                        )}
-                    </section>
-                </div>
-            )}
-
-            {/* ===================== TAB 2: RIWAYAT VERIFIKASI WARGA ===================== */}
-            {activeTab === 'riwayat' && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    {/* Kolom Kiri: Daftar Verifikasi (lg:col-span-8) */}
-                    <div className="lg:col-span-8 space-y-4">
-                        <h2 className="font-display text-display-xs sm:text-display-sm font-bold text-foreground">
-                            Daftar Verifikasi
-                        </h2>
-
-                        {daftar_suara_publik && daftar_suara_publik.length > 0 ? (
-                            <div className="space-y-3">
-                                {daftar_suara_publik.map((suara, idx) => (
-                                    <div
-                                        key={suara.id}
-                                        className="rounded-2xl border border-border/80 bg-card p-3 sm:p-4 flex items-center justify-between gap-4 shadow-2xs transition-all hover:border-border"
+                        ) : !bisa_memberi_suara ? (
+                            <div className="mt-2 space-y-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
+                                <div className="flex items-center gap-2 text-body-base font-bold text-amber-700 dark:text-amber-400">
+                                    <AlertTriangle className="size-5" />
+                                    <span>Tidak Dapat Memberikan Suara</span>
+                                </div>
+                                <p className="text-body-sm leading-relaxed text-foreground/80">
+                                    {alasan_tidak_bisa ??
+                                        'Anda tidak memenuhi kriteria untuk memberikan suara pada tiket ini.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="w-full space-y-5">
+                                {/* Stepper / Segmented Tabs di Dalam Card Modal */}
+                                <div className="flex w-full items-center rounded-2xl bg-muted/80 p-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setWizardStep('foto')}
+                                        className={cn(
+                                            'flex-1 cursor-pointer rounded-xl px-3 py-2 text-center text-body-sm font-semibold transition-all',
+                                            wizardStep === 'foto'
+                                                ? 'bg-background text-foreground shadow-2xs'
+                                                : 'text-muted-foreground hover:text-foreground',
+                                        )}
                                     >
-                                        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                                            {/* Thumbnail Foto / Kotak Gelap */}
+                                        Foto Bukti Hasil (Opsional)
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setWizardStep('penilaian')
+                                        }
+                                        className={cn(
+                                            'flex-1 cursor-pointer rounded-xl px-3 py-2 text-center text-body-sm font-semibold transition-all',
+                                            wizardStep === 'penilaian'
+                                                ? 'bg-background text-foreground shadow-2xs'
+                                                : 'text-muted-foreground hover:text-foreground',
+                                        )}
+                                    >
+                                        Penilaian Pengerjaan
+                                    </button>
+                                </div>
+
+                                {/* TAHAP 1: FOTO BUKTI HASIL (OPSIONAL) */}
+                                {wizardStep === 'foto' && (
+                                    <div className="space-y-4">
+                                        <p className="text-body-sm leading-relaxed text-muted-foreground">
+                                            Foto hasil yang Kamu temui sebagai
+                                            bukti verifikasi. Kamu dapat
+                                            melewati tahapan ini, dengan catatan
+                                            bobot verifikasimu akan berkurang
+                                        </p>
+
+                                        {capturedFoto ? (
+                                            /* Foto Terambil (Wireframe 2) */
+                                            <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden rounded-2xl border border-border/80 bg-zinc-950 sm:aspect-[16/9] sm:rounded-3xl">
+                                                <img
+                                                    src={capturedFoto}
+                                                    alt="Foto Hasil Bukti"
+                                                    className="size-full object-cover"
+                                                />
+                                                {/* Tombol Ambil Ulang & Selanjutnya di Kanan Bawah */}
+                                                <div className="absolute right-4 bottom-4 flex items-center gap-2.5 sm:right-5">
+                                                    <Button
+                                                        type="button"
+                                                        onClick={handleRetake}
+                                                        className="h-10 cursor-pointer gap-2 rounded-xl border border-border bg-background px-4 text-body-sm font-semibold text-foreground shadow-md hover:bg-muted"
+                                                    >
+                                                        <RotateCcw className="size-4" />
+                                                        <span>Ambil Ulang</span>
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        onClick={
+                                                            handleLanjutKePenilaian
+                                                        }
+                                                        className="h-10 cursor-pointer gap-2 rounded-xl border border-border bg-background px-4 text-body-sm font-semibold text-foreground shadow-md hover:bg-muted"
+                                                    >
+                                                        <span>Selanjutnya</span>
+                                                        <ArrowRight className="size-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ) : jarakMeter !== null &&
+                                          !isGeofenceValid ? (
+                                            /* Kondisi GPS Melebihi Batas: Card peringatan proporsional, kamera TIDAK dinyalakan & tanpa box 16:9 hitam */
+                                            <div className="space-y-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-5">
+                                                <div className="flex items-start gap-3.5">
+                                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                                                        <MapPinOff className="size-5" />
+                                                    </div>
+                                                    <div className="flex-1 space-y-1.5">
+                                                        <h4 className="text-body-base font-bold text-amber-900 dark:text-amber-200">
+                                                            Radius GPS Melebihi
+                                                            Batas ({jarakMeter}{' '}
+                                                            meter dari lokasi
+                                                            aduan)
+                                                        </h4>
+                                                        <p className="text-body-sm leading-relaxed text-foreground/80">
+                                                            Verifikasi jarak
+                                                            dekat dengan foto
+                                                            (Bobot 1.0)
+                                                            memerlukan jarak
+                                                            maksimal 50 meter
+                                                            dari lokasi aduan.
+                                                            Kamera tidak
+                                                            diaktifkan karena
+                                                            Anda berada di luar
+                                                            radius. Anda dapat
+                                                            memperbarui lokasi
+                                                            GPS atau lanjut ke{' '}
+                                                            <strong>
+                                                                Verifikasi Jarak
+                                                                Jauh (Bobot 0.5)
+                                                            </strong>{' '}
+                                                            tanpa foto.
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col items-stretch justify-end gap-2.5 border-t border-amber-500/20 pt-3 sm:flex-row sm:items-center">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={
+                                                            ambilPosisiWarga
+                                                        }
+                                                        disabled={gpsLoading}
+                                                        className="h-10 cursor-pointer gap-2 rounded-xl border-border/80 px-4 text-body-sm font-semibold"
+                                                    >
+                                                        {gpsLoading ? (
+                                                            <Loader2 className="size-4 animate-spin" />
+                                                        ) : (
+                                                            <Crosshair className="size-4" />
+                                                        )}
+                                                        <span>
+                                                            {gpsLoading
+                                                                ? 'Mendeteksi GPS...'
+                                                                : 'Perbarui Lokasi GPS'}
+                                                        </span>
+                                                    </Button>
+
+                                                    <Button
+                                                        type="button"
+                                                        onClick={
+                                                            handleLewatiTahap
+                                                        }
+                                                        className="h-10 cursor-pointer gap-2 rounded-xl bg-foreground px-5 text-body-sm font-bold text-background shadow-xs hover:bg-foreground/90"
+                                                    >
+                                                        <span>
+                                                            Lanjut ke Verifikasi
+                                                            Jarak Jauh (Bobot
+                                                            0.5)
+                                                        </span>
+                                                        <ChevronRight className="size-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            /* Live Viewfinder Kamera (Wireframe 1) - Aktif saat dalam radius atau GPS masih proses deteksi */
+                                            <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden rounded-2xl border border-border/80 bg-zinc-950 sm:aspect-[16/9] sm:rounded-3xl">
+                                                <video
+                                                    ref={videoRef}
+                                                    playsInline
+                                                    muted
+                                                    className="size-full object-cover"
+                                                />
+
+                                                {/* Status Teks Lokasi di Bagian Atas Viewfinder */}
+                                                <div className="pointer-events-none absolute top-4 right-16 left-4 text-center">
+                                                    <p
+                                                        className={cn(
+                                                            'inline-block max-w-md rounded-xl px-3 py-1.5 text-caption-xs font-medium backdrop-blur-xs sm:text-body-xs',
+                                                            isGeofenceValid
+                                                                ? 'bg-emerald-700/80 text-white'
+                                                                : 'bg-black/60 text-white/90',
+                                                        )}
+                                                    >
+                                                        {gpsLoading
+                                                            ? 'Mencari koordinat lokasi GPS...'
+                                                            : isGeofenceValid
+                                                              ? `✓ Lokasi GPS terverifikasi (${jarakMeter}m dari aduan)`
+                                                              : 'Lokasi tidak terdeteksi, tidak dapat mengambil foto. Tekan tombol di samping untuk mengambil lokasi secara otomatis'}
+                                                    </p>
+                                                </div>
+
+                                                {cameraError && (
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center space-y-2 bg-black/85 p-4 text-center text-white">
+                                                        <AlertTriangle className="size-7 text-amber-400" />
+                                                        <p className="max-w-sm text-caption-xs text-muted-foreground">
+                                                            {cameraError}
+                                                        </p>
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant="secondary"
+                                                            onClick={
+                                                                startCamera
+                                                            }
+                                                            className="gap-1 rounded-xl text-caption-xs"
+                                                        >
+                                                            <RotateCcw className="size-3" />{' '}
+                                                            Coba Nyalakan
+                                                        </Button>
+                                                    </div>
+                                                )}
+
+                                                {/* Control Bar Strip di Sisi Kanan Viewfinder Sesuai Wireframe */}
+                                                <div className="absolute top-1/2 right-3 z-10 flex -translate-y-1/2 flex-col items-center gap-3 rounded-full border border-white/10 bg-black/40 p-1.5 backdrop-blur-md sm:right-4">
+                                                    {/* Tombol Ambil Lokasi GPS (Crosshair) */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            ambilPosisiWarga
+                                                        }
+                                                        disabled={gpsLoading}
+                                                        title="Ambil Lokasi Otomatis"
+                                                        className={cn(
+                                                            'flex size-10 cursor-pointer items-center justify-center rounded-full transition-all',
+                                                            isGeofenceValid
+                                                                ? 'bg-emerald-500 text-white'
+                                                                : 'bg-white text-black hover:bg-white/90',
+                                                        )}
+                                                    >
+                                                        {gpsLoading ? (
+                                                            <Loader2 className="size-5 animate-spin text-black" />
+                                                        ) : (
+                                                            <Crosshair className="size-5" />
+                                                        )}
+                                                    </button>
+
+                                                    {/* Tombol Ganti Kamera Depan/Belakang */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            toggleFacingMode
+                                                        }
+                                                        title="Putar Kamera"
+                                                        className="flex size-10 cursor-pointer items-center justify-center rounded-full text-white transition-all hover:bg-white/20"
+                                                    >
+                                                        <RotateCw className="size-5" />
+                                                    </button>
+
+                                                    {/* Tombol Shutter Ambil Foto (Kamera) */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleSnap}
+                                                        disabled={Boolean(
+                                                            cameraError,
+                                                        )}
+                                                        title="Jepret Foto"
+                                                        className="flex size-12 cursor-pointer items-center justify-center rounded-full bg-white text-black shadow-lg transition-all hover:scale-105 disabled:opacity-50"
+                                                    >
+                                                        <Camera className="size-6" />
+                                                    </button>
+
+                                                    {/* Tombol Cadangan Unggah File */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            fileInputRef.current?.click()
+                                                        }
+                                                        title="Unggah Foto dari Galeri"
+                                                        className="flex size-10 cursor-pointer items-center justify-center rounded-full text-white transition-all hover:bg-white/20"
+                                                    >
+                                                        <Upload className="size-4" />
+                                                    </button>
+                                                </div>
+
+                                                {/* Tombol Lewati Tahap di Kanan Bawah Sesuai Wireframe */}
+                                                <div className="absolute right-4 bottom-4 sm:right-5">
+                                                    <Button
+                                                        type="button"
+                                                        onClick={
+                                                            handleLewatiTahap
+                                                        }
+                                                        className="h-10 cursor-pointer gap-2 rounded-xl border border-border bg-background px-4 text-body-sm font-semibold text-foreground shadow-md hover:bg-muted"
+                                                    >
+                                                        <span>
+                                                            Lewati Tahap
+                                                        </span>
+                                                        <ChevronRight className="size-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* TAHAP 2: PENILAIAN PENGERJAAN (Wireframe 3) */}
+                                {wizardStep === 'penilaian' && (
+                                    <form
+                                        onSubmit={handleSubmit}
+                                        className="w-full space-y-6"
+                                    >
+                                        <div>
+                                            <h3 className="text-body-base font-display font-bold text-foreground sm:text-body-lg">
+                                                Apakah Pengerjaan Sudah Sesuai?
+                                            </h3>
+                                        </div>
+
+                                        {/* Dua Pilihan Card: Sudah Sesuai vs Tidak Sesuai */}
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            {/* Opsi Sudah Sesuai */}
                                             <div
-                                                onClick={() => {
-                                                    if (suara.lampiran_foto) {
-                                                        setPreviewImage({
-                                                            src: suara.lampiran_foto,
-                                                            title: `Foto Verifikasi Warga #${idx + 1}`,
-                                                        });
-                                                    }
-                                                }}
+                                                onClick={() => setSetuju(true)}
                                                 className={cn(
-                                                    'size-14 sm:size-16 rounded-xl bg-zinc-950 flex-shrink-0 flex items-center justify-center overflow-hidden border border-border/60',
-                                                    suara.lampiran_foto ? 'cursor-pointer hover:opacity-90' : ''
+                                                    'flex h-full min-h-[140px] cursor-pointer flex-col justify-start space-y-3 rounded-2xl border-2 p-5 transition-all sm:p-6',
+                                                    setuju === true
+                                                        ? 'border-foreground bg-muted/30 shadow-xs'
+                                                        : 'border-transparent bg-muted/40 hover:bg-muted/60',
                                                 )}
                                             >
-                                                {suara.lampiran_foto ? (
-                                                    <img
-                                                        src={suara.lampiran_foto}
-                                                        alt={`Foto Warga #${idx + 1}`}
-                                                        className="size-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="size-full bg-zinc-950" />
-                                                )}
-                                            </div>
-
-                                            {/* Info Identitas Anonim & Waktu */}
-                                            <div className="min-w-0">
-                                                <h4 className="font-display text-body-sm sm:text-body-base font-bold text-foreground">
-                                                    Warga #{idx + 1}
-                                                </h4>
-                                                <p className="text-caption-xs text-muted-foreground mt-0.5">
-                                                    Waktu: {formatWaktuLengkap(suara.waktu)}
-                                                </p>
-                                                {suara.alasan && (
-                                                    <p className="text-caption-xs italic text-muted-foreground mt-1 line-clamp-1">
-                                                        &quot;{suara.alasan}&quot;
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Status Penilaian di Kanan */}
-                                        <div className="flex-shrink-0">
-                                            {suara.setuju ? (
-                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/80 px-3.5 py-1.5 text-caption-xs font-semibold text-foreground">
-                                                    <span>Sudah Sesuai</span>
-                                                    <CheckCircle2 className="size-3.5 text-foreground" />
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3.5 py-1.5 text-caption-xs font-semibold text-destructive">
-                                                    <span>Belum Sesuai</span>
-                                                    <XCircle className="size-3.5 text-destructive" />
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            /* State Kosong */
-                            <div className="rounded-2xl border border-dashed border-border/80 bg-muted/20 p-8 text-center space-y-2">
-                                <h3 className="font-display text-body-base font-bold text-foreground">
-                                    Belum Ada Verifikasi Warga
-                                </h3>
-                                <p className="text-caption-xs text-muted-foreground max-w-sm mx-auto">
-                                    Belum ada suara verifikasi warga yang masuk untuk tiket ini.
-                                </p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Kolom Kanan: Card Capaian Kuorum (lg:col-span-4) */}
-                    <div className="lg:col-span-4 sticky top-6">
-                        <div className="rounded-3xl border border-border/80 bg-card p-6 space-y-6 shadow-xs">
-                            {/* Baris Atas: Donut Chart & Statistik Pemilih */}
-                            <div className="flex items-center gap-5">
-                                {/* Circular Progress Indicator */}
-                                <div className="relative size-24 shrink-0 flex items-center justify-center">
-                                    <svg className="size-full -rotate-90" viewBox="0 0 100 100">
-                                        <circle
-                                            cx="50"
-                                            cy="50"
-                                            r="40"
-                                            fill="transparent"
-                                            className="stroke-muted"
-                                            strokeWidth="12"
-                                        />
-                                        <circle
-                                            cx="50"
-                                            cy="50"
-                                            r="40"
-                                            fill="transparent"
-                                            className="stroke-foreground"
-                                            strokeWidth="12"
-                                            strokeDasharray={251.2}
-                                            strokeDashoffset={
-                                                251.2 - (251.2 * Math.min(100, persentaseKuorum)) / 100
-                                            }
-                                            strokeLinecap="round"
-                                        />
-                                    </svg>
-                                    <div className="absolute inset-0 flex items-center justify-center text-body-sm font-bold text-foreground">
-                                        {persentaseKuorum}%
-                                    </div>
-                                </div>
-
-                                {/* Statistik Angka */}
-                                <div className="space-y-3 flex-1 min-w-0">
-                                    <div>
-                                        <span className="block text-caption-xs font-bold text-foreground">
-                                            Total Pemilih
-                                        </span>
-                                        <span className="text-body-sm font-semibold text-muted-foreground">
-                                            {daftar_suara_publik?.length ?? 0} Suara
-                                        </span>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <span className="block text-caption-xs font-bold text-foreground">
-                                                Setuju
-                                            </span>
-                                            <span className="text-caption-xs sm:text-body-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                                                +{suara_setuju_bobot}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span className="block text-caption-xs font-bold text-foreground">
-                                                Tidak Setuju
-                                            </span>
-                                            <span className="text-caption-xs sm:text-body-sm font-semibold text-destructive">
-                                                -{suara_tolak_bobot}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Garis Pemisah */}
-                            <div className="border-t border-border/70" />
-
-                            {/* Bagian Bawah: Capaian Kuorum */}
-                            <div className="space-y-3">
-                                <h3 className="font-display text-body-sm font-bold text-foreground">
-                                    Capaian Kuorum
-                                </h3>
-
-                                <div className="flex items-center justify-between gap-2 text-caption-xs">
-                                    <span className="rounded-full bg-muted/80 px-3 py-1 font-semibold text-muted-foreground">
-                                        {persentaseKuorum >= 100 ? 'Kuorum Tercapai' : 'Sedang Berlangsung'}
-                                    </span>
-                                    <span className="text-muted-foreground font-medium">
-                                        Batas Akhir: {formatTanggal(ronde_aktif?.batas_waktu)}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ===================== FLOATING ACTION BUTTON (KANAN BAWAH) ===================== */}
-            <div className="fixed bottom-6 right-6 sm:right-10 z-30">
-                <Button
-                    type="button"
-                    onClick={() => {
-                        setWizardStep('foto');
-                        setModalVerifikasiOpen(true);
-                    }}
-                    className="h-12 px-5 sm:px-6 rounded-2xl bg-background border border-border text-foreground hover:bg-muted shadow-lg hover:shadow-xl font-bold text-body-sm gap-2.5 cursor-pointer transition-all"
-                >
-                    <span>{sudah_memberi_suara ? 'Suara Anda Telah Dicatat' : 'Verifikasi Hasil'}</span>
-                    <CheckSquare className="size-4 text-foreground" />
-                </Button>
-            </div>
-
-            {/* ===================== MODAL VERIFIKASI HASIL (CARD WIZARD 2 TAHAP) ===================== */}
-            <Dialog open={modalVerifikasiOpen} onOpenChange={setModalVerifikasiOpen}>
-                <DialogContent
-                    showCloseButton={false}
-                    className="w-[calc(100vw-2rem)] sm:w-[760px] sm:max-w-[760px] p-6 sm:p-8 rounded-3xl bg-background border border-border/80 shadow-2xl transition-all duration-200"
-                >
-                    {/* Header: Tombol Tutup di Kiri Atas */}
-                    <div>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                stopCamera();
-                                setModalVerifikasiOpen(false);
-                            }}
-                            className="inline-flex items-center gap-1.5 text-body-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                        >
-                            <X className="size-4" />
-                            <span>Tutup</span>
-                        </button>
-                    </div>
-
-                    <DialogHeader className="p-0">
-                        <DialogTitle className="font-display text-display-xs sm:text-display-sm font-bold text-foreground text-left">
-                            Verifikasi Hasil
-                        </DialogTitle>
-                    </DialogHeader>
-
-                    {/* Jika Sudah Memberikan Suara */}
-                    {sudah_memberi_suara ? (
-                        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 space-y-2 mt-2">
-                            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-body-base">
-                                <CheckCircle2 className="size-5" />
-                                <span>Anda Sudah Memberikan Suara untuk Tiket Ini</span>
-                            </div>
-                            <p className="text-body-sm text-foreground/80 leading-relaxed">
-                                Pilihan Anda:{' '}
-                                <strong>
-                                    {suara_user?.setuju ? '✓ Setuju (Sudah Sesuai)' : '✕ Menolak (Tidak Sesuai)'}
-                                </strong>{' '}
-                                melalui metode <strong>{suara_user?.jalur === 'A' ? 'Jarak Dekat dengan Foto' : 'Jarak Jauh'}</strong> (Bobot {suara_user?.bobot}).
-                                {suara_user?.alasan && (
-                                    <span className="block mt-1 italic text-muted-foreground">
-                                        &quot;{suara_user.alasan}&quot;
-                                    </span>
-                                )}
-                            </p>
-                        </div>
-                    ) : !bisa_memberi_suara ? (
-                        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 space-y-2 mt-2">
-                            <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-body-base">
-                                <AlertTriangle className="size-5" />
-                                <span>Tidak Dapat Memberikan Suara</span>
-                            </div>
-                            <p className="text-body-sm text-foreground/80 leading-relaxed">
-                                {alasan_tidak_bisa ?? 'Anda tidak memenuhi kriteria untuk memberikan suara pada tiket ini.'}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-5 w-full">
-                            {/* Stepper / Segmented Tabs di Dalam Card Modal */}
-                            <div className="w-full rounded-2xl bg-muted/80 p-1 flex items-center">
-                                <button
-                                    type="button"
-                                    onClick={() => setWizardStep('foto')}
-                                    className={cn(
-                                        'flex-1 py-2 px-3 rounded-xl text-center text-body-sm font-semibold transition-all cursor-pointer',
-                                        wizardStep === 'foto'
-                                            ? 'bg-background text-foreground shadow-2xs'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    )}
-                                >
-                                    Foto Bukti Hasil (Opsional)
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setWizardStep('penilaian')}
-                                    className={cn(
-                                        'flex-1 py-2 px-3 rounded-xl text-center text-body-sm font-semibold transition-all cursor-pointer',
-                                        wizardStep === 'penilaian'
-                                            ? 'bg-background text-foreground shadow-2xs'
-                                            : 'text-muted-foreground hover:text-foreground'
-                                    )}
-                                >
-                                    Penilaian Pengerjaan
-                                </button>
-                            </div>
-
-                            {/* TAHAP 1: FOTO BUKTI HASIL (OPSIONAL) */}
-                            {wizardStep === 'foto' && (
-                                <div className="space-y-4">
-                                    <p className="text-body-sm text-muted-foreground leading-relaxed">
-                                        Foto hasil yang Kamu temui sebagai bukti verifikasi. Kamu dapat melewati tahapan ini, dengan catatan bobot verifikasimu akan berkurang
-                                    </p>
-
-                                    {capturedFoto ? (
-                                        /* Foto Terambil (Wireframe 2) */
-                                        <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-zinc-950 border border-border/80 flex items-center justify-center">
-                                            <img
-                                                src={capturedFoto}
-                                                alt="Foto Hasil Bukti"
-                                                className="size-full object-cover"
-                                            />
-                                            {/* Tombol Ambil Ulang & Selanjutnya di Kanan Bawah */}
-                                            <div className="absolute bottom-4 right-4 sm:right-5 flex items-center gap-2.5">
-                                                <Button
-                                                    type="button"
-                                                    onClick={handleRetake}
-                                                    className="h-10 px-4 rounded-xl bg-background border border-border text-foreground hover:bg-muted font-semibold text-body-sm gap-2 shadow-md cursor-pointer"
-                                                >
-                                                    <RotateCcw className="size-4" />
-                                                    <span>Ambil Ulang</span>
-                                                </Button>
-                                                <Button
-                                                    type="button"
-                                                    onClick={handleLanjutKePenilaian}
-                                                    className="h-10 px-4 rounded-xl bg-background border border-border text-foreground hover:bg-muted font-semibold text-body-sm gap-2 shadow-md cursor-pointer"
-                                                >
-                                                    <span>Selanjutnya</span>
-                                                    <ArrowRight className="size-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ) : jarakMeter !== null && !isGeofenceValid ? (
-                                        /* Kondisi GPS Melebihi Batas: Card peringatan proporsional, kamera TIDAK dinyalakan & tanpa box 16:9 hitam */
-                                        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-5 space-y-4">
-                                            <div className="flex items-start gap-3.5">
-                                                <div className="size-10 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
-                                                    <MapPinOff className="size-5" />
-                                                </div>
-                                                <div className="space-y-1.5 flex-1">
-                                                    <h4 className="font-bold text-body-base text-amber-900 dark:text-amber-200">
-                                                        Radius GPS Melebihi Batas ({jarakMeter} meter dari lokasi aduan)
+                                                <div className="flex items-center gap-2.5">
+                                                    <CheckCircle2 className="size-7 text-foreground" />
+                                                    <h4 className="text-body-base font-display font-bold text-foreground sm:text-body-lg">
+                                                        Sudah Sesuai
                                                     </h4>
-                                                    <p className="text-body-sm text-foreground/80 leading-relaxed">
-                                                        Verifikasi jarak dekat dengan foto (Bobot 1.0) memerlukan jarak maksimal 50 meter dari lokasi aduan. Kamera tidak diaktifkan karena Anda berada di luar radius. Anda dapat memperbarui lokasi GPS atau lanjut ke <strong>Verifikasi Jarak Jauh (Bobot 0.5)</strong> tanpa foto.
-                                                    </p>
                                                 </div>
-                                            </div>
-
-                                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-amber-500/20">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={ambilPosisiWarga}
-                                                    disabled={gpsLoading}
-                                                    className="rounded-xl h-10 px-4 text-body-sm font-semibold gap-2 border-border/80 cursor-pointer"
-                                                >
-                                                    {gpsLoading ? (
-                                                        <Loader2 className="size-4 animate-spin" />
-                                                    ) : (
-                                                        <Crosshair className="size-4" />
-                                                    )}
-                                                    <span>{gpsLoading ? 'Mendeteksi GPS...' : 'Perbarui Lokasi GPS'}</span>
-                                                </Button>
-
-                                                <Button
-                                                    type="button"
-                                                    onClick={handleLewatiTahap}
-                                                    className="rounded-xl h-10 px-5 text-body-sm font-bold bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer shadow-xs"
-                                                >
-                                                    <span>Lanjut ke Verifikasi Jarak Jauh (Bobot 0.5)</span>
-                                                    <ChevronRight className="size-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        /* Live Viewfinder Kamera (Wireframe 1) - Aktif saat dalam radius atau GPS masih proses deteksi */
-                                        <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-zinc-950 border border-border/80 flex items-center justify-center">
-                                            <video
-                                                ref={videoRef}
-                                                playsInline
-                                                muted
-                                                className="size-full object-cover"
-                                            />
-
-                                            {/* Status Teks Lokasi di Bagian Atas Viewfinder */}
-                                            <div className="absolute top-4 left-4 right-16 text-center pointer-events-none">
-                                                <p
-                                                    className={cn(
-                                                        'text-caption-xs sm:text-body-xs px-3 py-1.5 rounded-xl backdrop-blur-xs inline-block max-w-md font-medium',
-                                                        isGeofenceValid
-                                                            ? 'text-white bg-emerald-700/80'
-                                                            : 'text-white/90 bg-black/60'
-                                                    )}
-                                                >
-                                                    {gpsLoading
-                                                        ? 'Mencari koordinat lokasi GPS...'
-                                                        : isGeofenceValid
-                                                        ? `✓ Lokasi GPS terverifikasi (${jarakMeter}m dari aduan)`
-                                                        : 'Lokasi tidak terdeteksi, tidak dapat mengambil foto. Tekan tombol di samping untuk mengambil lokasi secara otomatis'}
+                                                <p className="text-body-sm leading-relaxed text-muted-foreground">
+                                                    Pekerjaan selesai dan
+                                                    fasilitas kembali berfungsi
+                                                    baik.
                                                 </p>
                                             </div>
 
-                                            {cameraError && (
-                                                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-black/85 text-white space-y-2">
-                                                    <AlertTriangle className="size-7 text-amber-400" />
-                                                    <p className="text-caption-xs text-muted-foreground max-w-sm">
-                                                        {cameraError}
-                                                    </p>
+                                            {/* Opsi Tidak Sesuai */}
+                                            <div
+                                                onClick={() => setSetuju(false)}
+                                                className={cn(
+                                                    'flex h-full min-h-[140px] cursor-pointer flex-col justify-start space-y-3 rounded-2xl border-2 p-5 transition-all sm:p-6',
+                                                    setuju === false
+                                                        ? 'border-destructive bg-destructive/10 shadow-xs'
+                                                        : 'border-transparent bg-muted/40 hover:bg-muted/60',
+                                                )}
+                                            >
+                                                <div className="flex items-center gap-2.5 text-foreground">
+                                                    <XCircle className="size-7" />
+                                                    <h4 className="text-body-base font-display font-bold text-foreground sm:text-body-lg">
+                                                        Tidak Sesuai
+                                                    </h4>
+                                                </div>
+                                                <p className="text-body-sm leading-relaxed text-muted-foreground">
+                                                    Masih ada kerusakan atau
+                                                    perbaikan belum tuntas.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Input Alasan jika Tidak Sesuai */}
+                                        {setuju === false && (
+                                            <div className="space-y-2 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 sm:p-5">
+                                                <label className="flex items-center justify-between text-caption-xs font-bold text-foreground">
+                                                    <span>
+                                                        Alasan Penolakan (Wajib
+                                                        Diisi)
+                                                    </span>
+                                                    <span
+                                                        className={cn(
+                                                            'font-mono text-[11px]',
+                                                            alasan.trim()
+                                                                .length >= 10 &&
+                                                                alasan.trim()
+                                                                    .length <=
+                                                                    256
+                                                                ? 'text-emerald-600 dark:text-emerald-400'
+                                                                : 'font-bold text-destructive',
+                                                        )}
+                                                    >
+                                                        Min. 10 karakter (
+                                                        {alasan.trim().length}
+                                                        /256)
+                                                    </span>
+                                                </label>
+                                                <Textarea
+                                                    rows={3}
+                                                    placeholder="Jelaskan secara spesifik kerusakan fisik yang masih tersisa..."
+                                                    value={alasan}
+                                                    onChange={(e) =>
+                                                        setAlasan(
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    maxLength={256}
+                                                    className="resize-none bg-background text-body-sm"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* Informasi & Penanganan Status Radius GPS Langsung di Card */}
+                                        {jalur === 'A' && !isGeofenceValid ? (
+                                            <div className="space-y-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
+                                                <div className="flex items-start gap-3">
+                                                    <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                                                    <div className="flex-1 space-y-1 text-caption-xs sm:text-body-sm">
+                                                        <p className="font-bold text-amber-800 dark:text-amber-300">
+                                                            {jarakMeter !== null
+                                                                ? `Lokasi GPS Melebihi Radius (${jarakMeter}m dari lokasi aduan)`
+                                                                : 'Koordinat Lokasi GPS Belum Terverifikasi'}
+                                                        </p>
+                                                        <p className="leading-relaxed text-muted-foreground">
+                                                            Verifikasi jarak
+                                                            dekat dengan foto
+                                                            (Bobot 1.0)
+                                                            memerlukan jarak
+                                                            maksimal 50 meter.
+                                                            Anda dapat beralih
+                                                            ke{' '}
+                                                            <strong>
+                                                                Verifikasi Jarak
+                                                                Jauh (Bobot 0.5)
+                                                            </strong>{' '}
+                                                            agar suara Anda
+                                                            dapat langsung
+                                                            dikirimkan sekarang.
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-amber-500/20 pt-2">
                                                     <Button
                                                         type="button"
                                                         size="sm"
-                                                        variant="secondary"
-                                                        onClick={startCamera}
-                                                        className="text-caption-xs gap-1 rounded-xl"
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            setWizardStep(
+                                                                'foto',
+                                                            );
+                                                            handleRetake();
+                                                        }}
+                                                        className="h-8 cursor-pointer gap-1.5 rounded-xl text-caption-xs"
                                                     >
-                                                        <RotateCcw className="size-3" /> Coba Nyalakan
+                                                        <RotateCcw className="size-3" />
+                                                        <span>
+                                                            Cek GPS Lagi
+                                                        </span>
+                                                    </Button>
+
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setJalur('B');
+                                                            toast.info(
+                                                                'Beralih ke verifikasi Jarak Jauh (Bobot 0.5).',
+                                                            );
+                                                        }}
+                                                        className="h-8 cursor-pointer gap-1.5 rounded-xl bg-foreground text-caption-xs font-bold text-background shadow-xs hover:bg-foreground/90"
+                                                    >
+                                                        <span>
+                                                            Alihkan ke
+                                                            Verifikasi Jarak
+                                                            Jauh (Bobot 0.5)
+                                                        </span>
+                                                        <ArrowRight className="size-3" />
                                                     </Button>
                                                 </div>
-                                            )}
-
-                                            {/* Control Bar Strip di Sisi Kanan Viewfinder Sesuai Wireframe */}
-                                            <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-3 bg-black/40 backdrop-blur-md p-1.5 rounded-full border border-white/10 z-10">
-                                                {/* Tombol Ambil Lokasi GPS (Crosshair) */}
-                                                <button
-                                                    type="button"
-                                                    onClick={ambilPosisiWarga}
-                                                    disabled={gpsLoading}
-                                                    title="Ambil Lokasi Otomatis"
-                                                    className={cn(
-                                                        'size-10 rounded-full flex items-center justify-center transition-all cursor-pointer',
-                                                        isGeofenceValid
-                                                            ? 'bg-emerald-500 text-white'
-                                                            : 'bg-white text-black hover:bg-white/90'
-                                                    )}
-                                                >
-                                                    {gpsLoading ? (
-                                                        <Loader2 className="size-5 animate-spin text-black" />
-                                                    ) : (
-                                                        <Crosshair className="size-5" />
-                                                    )}
-                                                </button>
-
-                                                {/* Tombol Ganti Kamera Depan/Belakang */}
-                                                <button
-                                                    type="button"
-                                                    onClick={toggleFacingMode}
-                                                    title="Putar Kamera"
-                                                    className="size-10 rounded-full text-white hover:bg-white/20 flex items-center justify-center transition-all cursor-pointer"
-                                                >
-                                                    <RotateCw className="size-5" />
-                                                </button>
-
-                                                {/* Tombol Shutter Ambil Foto (Kamera) */}
-                                                <button
-                                                    type="button"
-                                                    onClick={handleSnap}
-                                                    disabled={Boolean(cameraError)}
-                                                    title="Jepret Foto"
-                                                    className="size-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg hover:scale-105 transition-all cursor-pointer disabled:opacity-50"
-                                                >
-                                                    <Camera className="size-6" />
-                                                </button>
-
-                                                {/* Tombol Cadangan Unggah File */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                    title="Unggah Foto dari Galeri"
-                                                    className="size-10 rounded-full text-white hover:bg-white/20 flex items-center justify-center transition-all cursor-pointer"
-                                                >
-                                                    <Upload className="size-4" />
-                                                </button>
                                             </div>
-
-                                            {/* Tombol Lewati Tahap di Kanan Bawah Sesuai Wireframe */}
-                                            <div className="absolute bottom-4 right-4 sm:right-5">
-                                                <Button
-                                                    type="button"
-                                                    onClick={handleLewatiTahap}
-                                                    className="h-10 px-4 rounded-xl bg-background border border-border text-foreground hover:bg-muted font-semibold text-body-sm gap-2 shadow-md cursor-pointer"
-                                                >
-                                                    <span>Lewati Tahap</span>
-                                                    <ChevronRight className="size-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* TAHAP 2: PENILAIAN PENGERJAAN (Wireframe 3) */}
-                            {wizardStep === 'penilaian' && (
-                                <form onSubmit={handleSubmit} className="space-y-6 w-full">
-                                    <div>
-                                        <h3 className="font-display text-body-base sm:text-body-lg font-bold text-foreground">
-                                            Apakah Pengerjaan Sudah Sesuai?
-                                        </h3>
-                                    </div>
-
-                                    {/* Dua Pilihan Card: Sudah Sesuai vs Tidak Sesuai */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {/* Opsi Sudah Sesuai */}
-                                        <div
-                                            onClick={() => setSetuju(true)}
-                                            className={cn(
-                                                'cursor-pointer rounded-2xl border-2 p-5 sm:p-6 space-y-3 transition-all h-full min-h-[140px] flex flex-col justify-start',
-                                                setuju === true
-                                                    ? 'border-foreground bg-muted/30 shadow-xs'
-                                                    : 'border-transparent bg-muted/40 hover:bg-muted/60'
-                                            )}
-                                        >
-                                            <div className="flex items-center gap-2.5">
-                                                <CheckCircle2 className="size-7 text-foreground" />
-                                                <h4 className="font-display text-body-base sm:text-body-lg font-bold text-foreground">
-                                                    Sudah Sesuai
-                                                </h4>
-                                            </div>
-                                            <p className="text-body-sm text-muted-foreground leading-relaxed">
-                                                Pekerjaan selesai dan fasilitas kembali berfungsi baik.
-                                            </p>
-                                        </div>
-
-                                        {/* Opsi Tidak Sesuai */}
-                                        <div
-                                            onClick={() => setSetuju(false)}
-                                            className={cn(
-                                                'cursor-pointer rounded-2xl border-2 p-5 sm:p-6 space-y-3 transition-all h-full min-h-[140px] flex flex-col justify-start',
-                                                setuju === false
-                                                    ? 'border-destructive bg-destructive/10 shadow-xs'
-                                                    : 'border-transparent bg-muted/40 hover:bg-muted/60'
-                                            )}
-                                        >
-                                            <div className="flex items-center gap-2.5 text-foreground">
-                                                <XCircle className="size-7" />
-                                                <h4 className="font-display text-body-base sm:text-body-lg font-bold text-foreground">
-                                                    Tidak Sesuai
-                                                </h4>
-                                            </div>
-                                            <p className="text-body-sm text-muted-foreground leading-relaxed">
-                                                Masih ada kerusakan atau perbaikan belum tuntas.
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Input Alasan jika Tidak Sesuai */}
-                                    {setuju === false && (
-                                        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 sm:p-5 space-y-2">
-                                            <label className="text-caption-xs font-bold text-foreground flex items-center justify-between">
-                                                <span>Alasan Penolakan (Wajib Diisi)</span>
-                                                <span
-                                                    className={cn(
-                                                        'text-[11px] font-mono',
-                                                        alasan.trim().length >= 10 && alasan.trim().length <= 256
-                                                            ? 'text-emerald-600 dark:text-emerald-400'
-                                                            : 'text-destructive font-bold'
-                                                    )}
-                                                >
-                                                    Min. 10 karakter ({alasan.trim().length}/256)
+                                        ) : jalur === 'B' ? (
+                                            <div className="flex items-center justify-between rounded-xl border border-border/80 bg-muted/20 px-4 py-2.5 text-caption-xs text-muted-foreground">
+                                                <span className="flex items-center gap-2">
+                                                    <Shield className="size-3.5 text-primary" />
+                                                    <span>
+                                                        Metode Verifikasi:{' '}
+                                                        <strong>
+                                                            Jarak Jauh
+                                                        </strong>
+                                                    </span>
                                                 </span>
-                                            </label>
-                                            <Textarea
-                                                rows={3}
-                                                placeholder="Jelaskan secara spesifik kerusakan fisik yang masih tersisa..."
-                                                value={alasan}
-                                                onChange={(e) => setAlasan(e.target.value)}
-                                                maxLength={256}
-                                                className="resize-none bg-background text-body-sm"
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* Informasi & Penanganan Status Radius GPS Langsung di Card */}
-                                    {jalur === 'A' && !isGeofenceValid ? (
-                                        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 space-y-3">
-                                            <div className="flex items-start gap-3">
-                                                <AlertTriangle className="size-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                                                <div className="space-y-1 text-caption-xs sm:text-body-sm flex-1">
-                                                    <p className="font-bold text-amber-800 dark:text-amber-300">
-                                                        {jarakMeter !== null
-                                                            ? `Lokasi GPS Melebihi Radius (${jarakMeter}m dari lokasi aduan)`
-                                                            : 'Koordinat Lokasi GPS Belum Terverifikasi'}
-                                                    </p>
-                                                    <p className="text-muted-foreground leading-relaxed">
-                                                        Verifikasi jarak dekat dengan foto (Bobot 1.0) memerlukan jarak maksimal 50 meter. Anda dapat beralih ke <strong>Verifikasi Jarak Jauh (Bobot 0.5)</strong> agar suara Anda dapat langsung dikirimkan sekarang.
-                                                    </p>
-                                                </div>
+                                                <span className="font-semibold text-foreground">
+                                                    Bobot: 0.5
+                                                </span>
                                             </div>
-
-                                            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-amber-500/20">
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        setWizardStep('foto');
-                                                        handleRetake();
-                                                    }}
-                                                    className="rounded-xl text-caption-xs h-8 gap-1.5 cursor-pointer"
-                                                >
-                                                    <RotateCcw className="size-3" />
-                                                    <span>Cek GPS Lagi</span>
-                                                </Button>
-
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        setJalur('B');
-                                                        toast.info('Beralih ke verifikasi Jarak Jauh (Bobot 0.5).');
-                                                    }}
-                                                    className="rounded-xl text-caption-xs font-bold h-8 bg-foreground text-background hover:bg-foreground/90 gap-1.5 cursor-pointer shadow-xs"
-                                                >
-                                                    <span>Alihkan ke Verifikasi Jarak Jauh (Bobot 0.5)</span>
-                                                    <ArrowRight className="size-3" />
-                                                </Button>
+                                        ) : (
+                                            <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-caption-xs text-emerald-700 dark:text-emerald-400">
+                                                <span className="flex items-center gap-2 font-medium">
+                                                    <CheckCircle2 className="size-4 shrink-0" />
+                                                    <span>
+                                                        Metode Verifikasi:{' '}
+                                                        <strong>
+                                                            Jarak Dekat dengan
+                                                            Foto ({jarakMeter}m)
+                                                        </strong>
+                                                    </span>
+                                                </span>
+                                                <span className="font-bold">
+                                                    Bobot: 1.0 (Penuh)
+                                                </span>
                                             </div>
-                                        </div>
-                                    ) : jalur === 'B' ? (
-                                        <div className="rounded-xl border border-border/80 bg-muted/20 px-4 py-2.5 flex items-center justify-between text-caption-xs text-muted-foreground">
-                                            <span className="flex items-center gap-2">
-                                                <Shield className="size-3.5 text-primary" />
-                                                <span>Metode Verifikasi: <strong>Jarak Jauh</strong></span>
-                                            </span>
-                                            <span className="font-semibold text-foreground">Bobot: 0.5</span>
-                                        </div>
-                                    ) : (
-                                        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 flex items-center justify-between text-caption-xs text-emerald-700 dark:text-emerald-400">
-                                            <span className="flex items-center gap-2 font-medium">
-                                                <CheckCircle2 className="size-4 shrink-0" />
-                                                <span>Metode Verifikasi: <strong>Jarak Dekat dengan Foto ({jarakMeter}m)</strong></span>
-                                            </span>
-                                            <span className="font-bold">Bobot: 1.0 (Penuh)</span>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* Tombol Aksi Bawah: Verifikasi */}
-                                    <div className="flex items-center justify-end gap-3 pt-2">
-                                        <Button
-                                            type="submit"
-                                            disabled={
-                                                setuju === null ||
-                                                (setuju === false && alasan.trim().length < 10) ||
-                                                isSubmitting
-                                            }
-                                            className={cn(
-                                                'h-11 px-6 rounded-xl font-bold text-body-sm gap-2.5 transition-all shadow-xs cursor-pointer',
-                                                setuju !== null && (setuju === true || alasan.trim().length >= 10) && !isSubmitting
-                                                    ? 'bg-foreground text-background hover:bg-foreground/90 shadow-md'
-                                                    : 'bg-muted text-muted-foreground opacity-50 cursor-not-allowed'
-                                            )}
-                                        >
-                                            {isSubmitting ? (
-                                                <>
-                                                    <Loader2 className="size-4 animate-spin" />
-                                                    <span>Memproses...</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <span>Verifikasi</span>
-                                                    <Send className="size-4" />
-                                                </>
-                                            )}
-                                        </Button>
-                                    </div>
-                                </form>
-                            )}
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+                                        {/* Tombol Aksi Bawah: Verifikasi */}
+                                        <div className="flex items-center justify-end gap-3 pt-2">
+                                            <Button
+                                                type="submit"
+                                                disabled={
+                                                    setuju === null ||
+                                                    (setuju === false &&
+                                                        alasan.trim().length <
+                                                            10) ||
+                                                    isSubmitting
+                                                }
+                                                className={cn(
+                                                    'h-11 cursor-pointer gap-2.5 rounded-xl px-6 text-body-sm font-bold shadow-xs transition-all',
+                                                    setuju !== null &&
+                                                        (setuju === true ||
+                                                            alasan.trim()
+                                                                .length >=
+                                                                10) &&
+                                                        !isSubmitting
+                                                        ? 'bg-foreground text-background shadow-md hover:bg-foreground/90'
+                                                        : 'cursor-not-allowed bg-muted text-muted-foreground opacity-50',
+                                                )}
+                                            >
+                                                {isSubmitting ? (
+                                                    <>
+                                                        <Loader2 className="size-4 animate-spin" />
+                                                        <span>
+                                                            Memproses...
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span>Verifikasi</span>
+                                                        <Send className="size-4" />
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
 
-            {/* Hidden Input & Canvas untuk Kamera */}
-            <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileSelect}
-            />
-            <canvas ref={canvasRef} className="hidden" />
+                {/* Hidden Input & Canvas untuk Kamera */}
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                />
+                <canvas ref={canvasRef} className="hidden" />
 
-            {/* Modal Zoom Foto */}
-            <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
-                <DialogContent className="max-w-3xl p-4 sm:p-6 rounded-2xl">
-                    <DialogHeader>
-                        <DialogTitle className="text-body-base font-bold">
-                            {previewImage?.title}
-                        </DialogTitle>
-                    </DialogHeader>
-                    {previewImage && (
-                        <div className="mt-2 overflow-hidden rounded-xl border border-border">
-                            <img
-                                src={previewImage.src}
-                                alt={previewImage.title}
-                                className="h-auto max-h-[75vh] w-full object-contain bg-black"
-                            />
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+                {/* Modal Zoom Foto */}
+                <Dialog
+                    open={!!previewImage}
+                    onOpenChange={(open) => !open && setPreviewImage(null)}
+                >
+                    <DialogContent className="max-w-3xl rounded-2xl p-4 sm:p-6">
+                        <DialogHeader>
+                            <DialogTitle className="text-body-base font-bold">
+                                {previewImage?.title}
+                            </DialogTitle>
+                        </DialogHeader>
+                        {previewImage && (
+                            <div className="mt-2 overflow-hidden rounded-xl border border-border">
+                                <img
+                                    src={previewImage.src}
+                                    alt={previewImage.title}
+                                    className="h-auto max-h-[75vh] w-full bg-black object-contain"
+                                />
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
             </div>
         </InternalLayout>
     );

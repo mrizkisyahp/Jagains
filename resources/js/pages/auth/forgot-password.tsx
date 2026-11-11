@@ -1,8 +1,12 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+    FieldError,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from '@/components/ui/toast';
 import GuestLayouts from '@/layouts/GuestLayout';
 import AuthSplitCard from '@/components/auth/AuthSplitCard';
@@ -13,7 +17,10 @@ interface ForgotPasswordProps {
     tokenError?: string;
 }
 
-export default function ForgotPassword({ status, tokenError }: ForgotPasswordProps) {
+export default function ForgotPassword({
+    status,
+    tokenError,
+}: ForgotPasswordProps) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
@@ -54,18 +61,20 @@ export default function ForgotPassword({ status, tokenError }: ForgotPasswordPro
             >
                 {status && (
                     <div className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-caption-xs font-semibold text-emerald-800 dark:text-emerald-300">
-                        <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <CheckCircle2 className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                         <span>{status}</span>
                     </div>
                 )}
 
                 {tokenError && (
                     <div
-                        className="mb-3.5 inline-flex items-center gap-1.5 rounded-lg border border-destructive/20 bg-destructive/10 px-2.5 py-1 text-caption-xs font-semibold text-destructive max-w-full"
+                        className="mb-3.5 inline-flex max-w-full items-center gap-1.5 rounded-lg border border-destructive/20 bg-destructive/10 px-2.5 py-1 text-caption-xs font-semibold text-destructive"
                         title={tokenError}
                     >
                         <AlertTriangle className="size-3.5 shrink-0" />
-                        <span className="truncate">Tautan Kedaluwarsa: Silakan ajukan permintaan baru</span>
+                        <span className="truncate">
+                            Tautan Kedaluwarsa: Silakan ajukan permintaan baru
+                        </span>
                     </div>
                 )}
 

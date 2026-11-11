@@ -37,7 +37,7 @@ class BantuanPrivasiController extends Controller
                     'Satu orang secara teknis dapat memiliki lebih dari satu alamat email, namun normalisasi ketat menolak alias plus (+) dan titik pada penyedia email populer.',
                     'Kelurahan domisili dipilih sendiri oleh warga saat registrasi; perubahan kelurahan dibatasi dengan jeda minimal 90 hari kalender.',
                     'Koordinat perangkat hanya dibaca sekali saat rekomendasi kelurahan dan langsung dibuang dari memori server.',
-                    'Data akun pelapor suatu tiket hanya dapat disingkap oleh Administrator dan Auditor Ombudsman dalam kondisi investigasi hukum khusus (FR-ADM-08), dengan kewajiban mengisi alasan tertulis yang dicatat permanen dalam Audit Log tak dapat dihapus.',
+                    'Data akun pelapor suatu tiket hanya dapat disingkap oleh Administrator dan Auditor Ombudsman dalam kondisi investigasi hukum khusus, dengan kewajiban mengisi alasan tertulis yang dicatat permanen dalam Audit Log tak dapat dihapus.',
                 ],
             ],
         ]);

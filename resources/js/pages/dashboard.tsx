@@ -5,7 +5,11 @@ import LandingFooter from '@/components/landing/LandingFooter';
 import DashboardMetricCard from '@/components/dashboard/DashboardMetricCard';
 import DashboardFilterTabs from '@/components/dashboard/DashboardFilterTabs';
 import DashboardComparisonTable from '@/components/dashboard/DashboardComparisonTable';
-import { MatriksKinerjaRow, PeriodeDashboard, SegmenDashboard } from '@/types/dashboard';
+import {
+    MatriksKinerjaRow,
+    PeriodeDashboard,
+    SegmenDashboard,
+} from '@/types/dashboard';
 import { TrendingUp, Clock, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 interface DashboardPageProps {
@@ -23,37 +27,51 @@ export default function DashboardPage({
 }: DashboardPageProps) {
     const [segmen, setSegmen] = useState<SegmenDashboard>('kecamatan');
 
-    // Ringkasan Agregat Seluruh Kota Depok
-    const totalSemuaTiket = dataKecamatan.reduce((acc, k) => acc + k.total_tiket, 0);
-    const totalTiketSelesai = dataKecamatan.reduce((acc, k) => acc + k.tiket_selesai, 0);
-    const totalAnggaranGantung = dataKecamatan.reduce((acc, k) => acc + k.anggaran_menggantung_total, 0);
+    // Ringkasan Agregat Seluruh Wilayah
+    const totalSemuaTiket = dataKecamatan.reduce(
+        (acc, k) => acc + k.total_tiket,
+        0,
+    );
+    const totalTiketSelesai = dataKecamatan.reduce(
+        (acc, k) => acc + k.tiket_selesai,
+        0,
+    );
+    const totalAnggaranGantung = dataKecamatan.reduce(
+        (acc, k) => acc + k.anggaran_menggantung_total,
+        0,
+    );
 
     const activeRows = segmen === 'kecamatan' ? dataKecamatan : dataInstansi;
 
     return (
-        <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <div className="flex min-h-screen flex-col bg-background text-foreground">
             <Head title="Dashboard Komparasi Kinerja Publik - Jagains" />
 
             <LandingNavbar />
 
             <main className="flex-1 py-10 sm:py-14 lg:py-16">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
+                <div className="mx-auto max-w-7xl space-y-10 px-4 sm:px-6 lg:px-8">
                     {/* Header Deskripsi */}
                     <div className="space-y-3">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3.5 py-1 text-caption-xs font-semibold text-primary border border-primary/20">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-caption-xs font-semibold text-primary">
                             <TrendingUp className="size-3.5" />
-                            <span>Dashboard Objektif Akuntabilitas Publik (FR-DSH-01)</span>
+                            <span>
+                                Dashboard Objektif Akuntabilitas Publik
+                            </span>
                         </div>
-                        <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-                            Komparasi Kinerja Layanan Publik Kota Depok
+                        <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+                            Komparasi Kinerja Layanan Publik Jabodetabek
                         </h1>
-                        <p className="text-body-base text-muted-foreground max-w-3xl leading-relaxed">
-                            Peringkat dan evaluasi komparatif performa penanganan fasilitas publik antarkecamatan dan antarinstansi perangkat daerah berbasis data riil tanpa manipulasi.
+                        <p className="max-w-3xl text-body-base leading-relaxed text-muted-foreground">
+                            Peringkat dan evaluasi komparatif performa
+                            penanganan fasilitas publik antarkecamatan dan
+                            antarinstansi perangkat daerah berbasis data riil
+                            tanpa manipulasi.
                         </p>
                     </div>
 
                     {/* Ringkasan KPI Kota */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <DashboardMetricCard
                             title="Total Aduan Masuk"
                             value={totalSemuaTiket.toString()}
@@ -95,10 +113,15 @@ export default function DashboardPage({
                     <div className="space-y-3">
                         <div className="flex items-center justify-between text-caption-xs text-muted-foreground">
                             <span>
-                                Menampilkan perbandingan <strong>{activeRows.length}</strong> {segmen === 'kecamatan' ? 'Kecamatan di Depok' : 'Instansi Perangkat Daerah'}
+                                Menampilkan perbandingan{' '}
+                                <strong>{activeRows.length}</strong>{' '}
+                                {segmen === 'kecamatan'
+                                    ? 'Kecamatan di Jabodetabek'
+                                    : 'Instansi Perangkat Daerah'}
                             </span>
                             <span>
-                                Klik pada judul kolom tabel untuk mengurutkan nilai
+                                Klik pada judul kolom tabel untuk mengurutkan
+                                nilai
                             </span>
                         </div>
                         <DashboardComparisonTable

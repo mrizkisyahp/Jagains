@@ -45,7 +45,7 @@ class GantiKelurahanRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'kelurahan_id.exists' => 'Kelurahan yang dipilih tidak valid di wilayah Kota Depok.',
+            'kelurahan_id.exists' => 'Kelurahan yang dipilih tidak valid di wilayah Jabodetabek.',
         ];
     }
 }

@@ -16,7 +16,7 @@ class PetaLaporanController extends Controller
     ) {}
 
     /**
-     * Menampilkan Landing Page publik Kota Depok dengan Peta Sebaran di bagian bawah.
+     * Menampilkan Landing Page publik Jabodetabek dengan Peta Sebaran di bagian bawah.
      */
     public function landingPage(Request $request): Response
     {

@@ -109,9 +109,7 @@ export default function KelurahanSearchDropdown({
     // Handler Deteksi GPS Otomatis
     const handleGpsDetect = () => {
         if (!navigator.geolocation) {
-            toast.error(
-                'Geolokasi tidak didukung oleh browser Anda.',
-            );
+            toast.error('Geolokasi tidak didukung oleh browser Anda.');
             return;
         }
 
@@ -149,11 +147,13 @@ export default function KelurahanSearchDropdown({
                     } else {
                         toast.error(
                             data.pesan ||
-                                'Lokasi GPS Anda berada di luar area Kota Depok.',
+                                'Lokasi GPS Anda berada di luar area Jabodetabek.',
                         );
                     }
                 } catch (err) {
-                    toast.error('Gagal mendeteksi lokasi kelurahan melalui GPS.');
+                    toast.error(
+                        'Gagal mendeteksi lokasi kelurahan melalui GPS.',
+                    );
                 } finally {
                     setDetecting(false);
                 }
@@ -172,34 +172,36 @@ export default function KelurahanSearchDropdown({
         <div ref={containerRef} className="w-full space-y-1">
             <div className="flex items-center gap-2">
                 {/* 1. Dropdown Pencarian Kelurahan */}
-                <div className="relative flex-1 min-w-0">
+                <div className="relative min-w-0 flex-1">
                     <button
                         type="button"
                         disabled={disabled || loading}
                         onClick={() => setIsOpen(!isOpen)}
                         className={cn(
-                            'h-11 w-full rounded-xl border px-3.5 text-left text-body-sm flex items-center justify-between gap-2 transition-all outline-none',
+                            'flex h-11 w-full items-center justify-between gap-2 rounded-xl border px-3.5 text-left text-body-sm transition-all outline-none',
                             isOpen
-                                ? 'border-primary ring-2 ring-primary/20 bg-background'
-                                : 'border-input bg-muted/30 hover:bg-muted/50 hover:border-foreground/20',
-                            error && 'border-destructive ring-1 ring-destructive',
-                            disabled && 'opacity-50 cursor-not-allowed',
+                                ? 'border-primary bg-background ring-2 ring-primary/20'
+                                : 'border-input bg-muted/30 hover:border-foreground/20 hover:bg-muted/50',
+                            error &&
+                                'border-destructive ring-1 ring-destructive',
+                            disabled && 'cursor-not-allowed opacity-50',
                         )}
                         aria-expanded={isOpen}
                     >
-                        <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex min-w-0 items-center gap-2">
                             <MapPin className="size-4 shrink-0 text-muted-foreground" />
                             {selectedKelurahan ? (
                                 <span className="truncate font-medium text-foreground">
                                     Kel. {selectedKelurahan.nama}
                                     {selectedKelurahan.kecamatan_nama && (
-                                        <span className="text-muted-foreground font-normal">
-                                            , Kec. {selectedKelurahan.kecamatan_nama}
+                                        <span className="font-normal text-muted-foreground">
+                                            , Kec.{' '}
+                                            {selectedKelurahan.kecamatan_nama}
                                         </span>
                                     )}
                                 </span>
                             ) : (
-                                <span className="text-muted-foreground truncate">
+                                <span className="truncate text-muted-foreground">
                                     {loading
                                         ? 'Memuat kelurahan...'
                                         : 'Cari & pilih kelurahan domisili...'}
@@ -217,23 +219,25 @@ export default function KelurahanSearchDropdown({
 
                     {/* Popover Pencarian Kelurahan */}
                     {isOpen && (
-                        <div className="absolute left-0 right-0 z-50 mt-1.5 rounded-xl border border-border bg-popover shadow-xl overflow-hidden p-2 text-popover-foreground animate-in fade-in-0 zoom-in-95">
+                        <div className="absolute right-0 left-0 z-50 mt-1.5 animate-in overflow-hidden rounded-xl border border-border bg-popover p-2 text-popover-foreground shadow-xl fade-in-0 zoom-in-95">
                             {/* Input Cari */}
                             <div className="relative mb-2">
-                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                                <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     ref={searchInputRef}
                                     type="text"
                                     placeholder="Ketik nama kelurahan atau kecamatan..."
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="h-9 w-full rounded-lg pl-8 pr-7 text-xs"
+                                    onChange={(e) =>
+                                        setSearchQuery(e.target.value)
+                                    }
+                                    className="h-9 w-full rounded-lg pr-7 pl-8 text-xs"
                                 />
                                 {searchQuery && (
                                     <button
                                         type="button"
                                         onClick={() => setSearchQuery('')}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                        className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                     >
                                         <X className="size-3.5" />
                                     </button>
@@ -241,10 +245,11 @@ export default function KelurahanSearchDropdown({
                             </div>
 
                             {/* Daftar Opsi Kelurahan */}
-                            <div className="max-h-52 overflow-y-auto space-y-0.5 text-xs">
+                            <div className="max-h-52 space-y-0.5 overflow-y-auto text-xs">
                                 {filteredList.length === 0 ? (
                                     <div className="py-6 text-center text-muted-foreground">
-                                        Kelurahan &quot;{searchQuery}&quot; tidak ditemukan.
+                                        Kelurahan &quot;{searchQuery}&quot;
+                                        tidak ditemukan.
                                     </div>
                                 ) : (
                                     filteredList.map((k) => {
@@ -260,10 +265,10 @@ export default function KelurahanSearchDropdown({
                                                     setSearchQuery('');
                                                 }}
                                                 className={cn(
-                                                    'w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-left transition-colors',
+                                                    'flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors',
                                                     isSelected
-                                                        ? 'bg-primary text-primary-foreground font-semibold'
-                                                        : 'hover:bg-muted text-foreground',
+                                                        ? 'bg-primary font-semibold text-primary-foreground'
+                                                        : 'text-foreground hover:bg-muted',
                                                 )}
                                             >
                                                 <div className="min-w-0">
@@ -272,14 +277,18 @@ export default function KelurahanSearchDropdown({
                                                     </span>
                                                     <span
                                                         className={cn(
-                                                            'block text-[11px] truncate',
+                                                            'block truncate text-[11px]',
                                                             isSelected
                                                                 ? 'text-primary-foreground/80'
                                                                 : 'text-muted-foreground',
                                                         )}
                                                     >
-                                                        Kec. {k.kecamatan_nama || '-'}
-                                                        {k.kota_nama ? `, ${k.kota_nama}` : ''}
+                                                        Kec.{' '}
+                                                        {k.kecamatan_nama ||
+                                                            '-'}
+                                                        {k.kota_nama
+                                                            ? `, ${k.kota_nama}`
+                                                            : ''}
                                                     </span>
                                                 </div>
 
@@ -301,13 +310,15 @@ export default function KelurahanSearchDropdown({
                     variant="outline"
                     onClick={handleGpsDetect}
                     disabled={detecting || disabled}
-                    className="h-11 px-3.5 rounded-xl gap-1.5 shrink-0 text-xs font-semibold hover:border-primary/40 hover:text-primary transition-colors"
+                    className="h-11 shrink-0 gap-1.5 rounded-xl px-3.5 text-xs font-semibold transition-colors hover:border-primary/40 hover:text-primary"
                     title="Deteksi kelurahan otomatis berdasarkan sensor GPS perangkat"
                 >
                     {detecting ? (
                         <>
                             <Loader2 className="size-3.5 animate-spin text-primary" />
-                            <span className="hidden sm:inline">Mendeteksi...</span>
+                            <span className="hidden sm:inline">
+                                Mendeteksi...
+                            </span>
                         </>
                     ) : (
                         <>
@@ -319,7 +330,7 @@ export default function KelurahanSearchDropdown({
             </div>
 
             {error && (
-                <p className="text-caption-xs text-destructive font-medium">
+                <p className="text-caption-xs font-medium text-destructive">
                     {error}
                 </p>
             )}

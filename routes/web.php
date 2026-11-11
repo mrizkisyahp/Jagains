@@ -20,6 +20,7 @@ use App\Http\Controllers\Publik\BantuanPrivasiController;
 use App\Http\Controllers\Publik\DashboardKinerjaController;
 use App\Http\Controllers\Tiket\TiketInteraksiController;
 use App\Http\Controllers\Tiket\TiketPublikController;
+use App\Http\Controllers\Warga\BerandaWargaController;
 use App\Http\Controllers\Warga\LaporanWargaController;
 use App\Http\Controllers\Warga\ProfilKelurahanController;
 use App\Http\Controllers\Warga\VerifikasiWargaController;
@@ -64,6 +65,7 @@ Route::middleware(['auth', 'role:admin,auditor'])->group(function () {
 
 // Modul Profil, Kelurahan, Pelaporan & Peta Internal Warga (FR-AKN-04, FR-LAP-01 s.d. FR-LAP-05, FR-PET-01)
 Route::middleware(['auth', 'role:warga'])->group(function () {
+    Route::get('/warga/beranda', [BerandaWargaController::class, 'index'])->name('warga.beranda');
     Route::get('/peta', [PetaLaporanController::class, 'tampilkanPeta'])->name('warga.peta');
     Route::get('/warga/profil', [ProfilKelurahanController::class, 'tampilkanProfil'])->name('warga.profil');
     Route::post('/warga/kelurahan', [ProfilKelurahanController::class, 'gantiKelurahan'])->name('warga.kelurahan.update');
@@ -110,6 +112,7 @@ Route::middleware(['auth', 'role:instansi'])->prefix('instansi')->name('instansi
 
     Route::get('/sengketa', fn () => redirect()->route('instansi.antrean', ['status' => 'sengketa']))->name('sengketa');
     Route::get('/dashboard', [DashboardInstansiController::class, 'index'])->name('dashboard');
+    Route::get('/kualitas-kinerja', [DashboardInstansiController::class, 'kualitasKinerja'])->name('kualitas-kinerja');
     Route::get('/profil', fn () => Inertia::render('instansi/profil'))->name('profil');
 });
 

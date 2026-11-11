@@ -18,22 +18,22 @@ export default function DashboardFilterTabs({
         router.get(
             '/dashboard',
             { periode },
-            { preserveState: true, replace: true }
+            { preserveState: true, replace: true },
         );
     };
 
     return (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-2 rounded-2xl bg-muted/40 border border-border">
+        <div className="flex flex-col items-stretch justify-between gap-4 rounded-2xl border border-border bg-muted/40 p-2 sm:flex-row sm:items-center">
             {/* Toggle Segmen: Kecamatan vs Instansi */}
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-background/80 border border-border/60">
+            <div className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/80 p-1">
                 <Button
                     type="button"
                     variant={segmenAktif === 'kecamatan' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => onSelectSegmen('kecamatan')}
-                    className="h-9 px-4 rounded-lg font-semibold text-caption-xs transition-all"
+                    className="h-9 rounded-lg px-4 text-caption-xs font-semibold transition-all"
                 >
-                    <MapPin className="size-3.5 mr-1.5" />
+                    <MapPin className="mr-1.5 size-3.5" />
                     Antarkecamatan (11 Wilayah)
                 </Button>
                 <Button
@@ -41,17 +41,17 @@ export default function DashboardFilterTabs({
                     variant={segmenAktif === 'instansi' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => onSelectSegmen('instansi')}
-                    className="h-9 px-4 rounded-lg font-semibold text-caption-xs transition-all"
+                    className="h-9 rounded-lg px-4 text-caption-xs font-semibold transition-all"
                 >
-                    <Building2 className="size-3.5 mr-1.5" />
+                    <Building2 className="mr-1.5 size-3.5" />
                     Antarinstansi OPD
                 </Button>
             </div>
 
             {/* Filter Rentang Periode */}
             <div className="flex items-center gap-2 px-2">
-                <Calendar className="size-4 text-muted-foreground shrink-0 hidden sm:inline" />
-                <span className="text-caption-xs font-medium text-muted-foreground hidden sm:inline">
+                <Calendar className="hidden size-4 shrink-0 text-muted-foreground sm:inline" />
+                <span className="hidden text-caption-xs font-medium text-muted-foreground sm:inline">
                     Periode:
                 </span>
                 <div className="flex items-center gap-1">
@@ -64,10 +64,10 @@ export default function DashboardFilterTabs({
                             key={p.value}
                             type="button"
                             onClick={() => handlePeriodeChange(p.value)}
-                            className={`px-3 py-1.5 rounded-lg text-caption-xs font-semibold transition-colors ${
+                            className={`rounded-lg px-3 py-1.5 text-caption-xs font-semibold transition-colors ${
                                 periodeAktif === p.value
                                     ? 'bg-primary text-primary-foreground shadow-sm'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-background'
+                                    : 'text-muted-foreground hover:bg-background hover:text-foreground'
                             }`}
                         >
                             {p.label}

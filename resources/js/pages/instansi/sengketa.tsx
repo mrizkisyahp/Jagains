@@ -11,15 +11,16 @@ export default function SengketaInstansiPage() {
         <div className="flex min-w-0 flex-col gap-5">
             <Head title="Tiket Sengketa" />
             <header className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-display-sm font-display font-semibold tracking-tight">
-                            Tiket sengketa
-                        </h1>
-                        <p className="mt-1 text-body-sm text-muted-foreground">
-                            Tiket sengketa yang memerlukan respons akan muncul di sini.
-                        </p>
-                    </div>                                     
-            </header>            
+                <div>
+                    <h1 className="text-display-sm font-display font-semibold tracking-tight">
+                        Tiket sengketa
+                    </h1>
+                    <p className="mt-1 text-body-sm text-muted-foreground">
+                        Tiket sengketa yang memerlukan respons akan muncul di
+                        sini.
+                    </p>
+                </div>
+            </header>
             <section
                 className="overflow-hidden rounded-xl border border-border bg-card"
                 aria-label="Antrean sengketa"

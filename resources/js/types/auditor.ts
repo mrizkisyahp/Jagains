@@ -1,6 +1,9 @@
 export type PemicuEskalasi = 'SLA' | 'SANGGAHAN' | 'RONDE' | 'TANPA_KUORUM';
 
-export type JenisKeputusanAuditor = 'PERINTAH' | 'PERBAIKAN_SAH' | 'KERJAKAN_ULANG';
+export type JenisKeputusanAuditor =
+    | 'PERINTAH'
+    | 'PERBAIKAN_SAH'
+    | 'KERJAKAN_ULANG';
 
 export interface KeputusanAuditorItem {
     id: number;
@@ -132,4 +135,3 @@ export interface PolaPengawasanData {
     pengalihan: MatriksPengalihanItem[];
     performa_instansi: PerformaInstansiItem[];
 }
-

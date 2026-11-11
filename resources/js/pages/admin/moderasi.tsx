@@ -466,7 +466,7 @@ export default function ModerasiPage({
                                             </span>
                                         </div>
                                         {item.catatan_moderator && (
-                                            <p className="text-body-xs mt-1 text-muted-foreground">
+                                            <p className="mt-1 text-body-xs text-muted-foreground">
                                                 Catatan: "
                                                 {item.catatan_moderator}"
                                             </p>
@@ -557,7 +557,7 @@ export default function ModerasiPage({
                             className="space-y-4 pt-1"
                         >
                             {/* Ringkasan */}
-                            <div className="text-body-xs space-y-1 rounded-lg border border-border bg-muted/40 p-3">
+                            <div className="space-y-1 rounded-lg border border-border bg-muted/40 p-3 text-body-xs">
                                 <div>
                                     <span className="text-muted-foreground">
                                         Tiket:

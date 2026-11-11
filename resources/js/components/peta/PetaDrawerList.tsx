@@ -1,5 +1,10 @@
 import { useState, useMemo } from 'react';
-import { TitikLaporanPeta, MasterFilterPeta, PetaFilterState, KondisiSla } from '@/types/peta';
+import {
+    TitikLaporanPeta,
+    MasterFilterPeta,
+    PetaFilterState,
+    KondisiSla,
+} from '@/types/peta';
 import {
     Search,
     MapPin,
@@ -62,20 +67,60 @@ const DEFAULT_MASTER_FILTER: MasterFilterPeta = {
 
 const STATUS_OPTIONS: Array<{ value: string; label: string; grup: string }> = [
     // Tahap Penanganan
-    { value: 'PERLU_ROUTING', label: 'Perlu Routing', grup: 'Tahap Penanganan' },
-    { value: 'DITERUSKAN', label: 'Diteruskan ke Dinas', grup: 'Tahap Penanganan' },
+    {
+        value: 'PERLU_ROUTING',
+        label: 'Perlu Routing',
+        grup: 'Tahap Penanganan',
+    },
+    {
+        value: 'DITERUSKAN',
+        label: 'Diteruskan ke Dinas',
+        grup: 'Tahap Penanganan',
+    },
     { value: 'DITERIMA', label: 'Diterima Dinas', grup: 'Tahap Penanganan' },
     { value: 'DISURVEI', label: 'Selesai Survei', grup: 'Tahap Penanganan' },
-    { value: 'TERJADWAL_ANGGARAN', label: 'Terjadwal Anggaran', grup: 'Tahap Penanganan' },
-    { value: 'DIKERJAKAN', label: 'Sedang Dikerjakan', grup: 'Tahap Penanganan' },
+    {
+        value: 'TERJADWAL_ANGGARAN',
+        label: 'Terjadwal Anggaran',
+        grup: 'Tahap Penanganan',
+    },
+    {
+        value: 'DIKERJAKAN',
+        label: 'Sedang Dikerjakan',
+        grup: 'Tahap Penanganan',
+    },
     // Verifikasi & Arbitrase
-    { value: 'MENUNGGU_VERIFIKASI', label: 'Menunggu Verifikasi Warga', grup: 'Verifikasi & Sengketa' },
-    { value: 'DISENGKETAKAN', label: 'Disengketakan', grup: 'Verifikasi & Sengketa' },
-    { value: 'MENUNGGU_KEPUTUSAN_AUDITOR', label: 'Menunggu Keputusan Auditor', grup: 'Verifikasi & Sengketa' },
-    { value: 'USULAN_TOLAK', label: 'Usulan Penolakan', grup: 'Verifikasi & Sengketa' },
+    {
+        value: 'MENUNGGU_VERIFIKASI',
+        label: 'Menunggu Verifikasi Warga',
+        grup: 'Verifikasi & Sengketa',
+    },
+    {
+        value: 'DISENGKETAKAN',
+        label: 'Disengketakan',
+        grup: 'Verifikasi & Sengketa',
+    },
+    {
+        value: 'MENUNGGU_KEPUTUSAN_AUDITOR',
+        label: 'Menunggu Keputusan Auditor',
+        grup: 'Verifikasi & Sengketa',
+    },
+    {
+        value: 'USULAN_TOLAK',
+        label: 'Usulan Penolakan',
+        grup: 'Verifikasi & Sengketa',
+    },
     // Selesai & Tutup
-    { value: 'TERTUTUP_WARGA', label: 'Ditutup Warga', grup: 'Selesai & Tutup' },
-    { value: 'TERTUTUP_AUDITOR', label: 'Ditutup Auditor', grup: 'Selesai & Tutup' },
+    {
+        value: 'TERTUTUP_WARGA',
+        label: 'Ditutup Warga',
+        grup: 'Selesai & Tutup',
+    },
+    {
+        value: 'TERTUTUP_AUDITOR',
+        label: 'Ditutup Auditor',
+        grup: 'Selesai & Tutup',
+    },
     { value: 'DITOLAK', label: 'Ditolak', grup: 'Selesai & Tutup' },
 ];
 
@@ -121,43 +166,61 @@ export default function PetaDrawerList({
     const activeDropdownFilterCount =
         (filters.status !== null ? 1 : 0) +
         (filters.kondisi_sla !== null ? 1 : 0) +
-        (filters.kecamatan_id !== null || (filters.kota_id ?? null) !== null ? 1 : 0) +
+        (filters.kecamatan_id !== null || (filters.kota_id ?? null) !== null
+            ? 1
+            : 0) +
         (filters.kategori_id !== null ? 1 : 0);
 
     const isFilterActive =
-        activeDropdownFilterCount > 0 ||
-        filters.search.trim() !== '';
+        activeDropdownFilterCount > 0 || filters.search.trim() !== '';
 
     // Label untuk badge filter aktif
     const activeStatusLabel = useMemo(() => {
         if (filters.status) {
             return (
-                masterFilter?.status?.find((s) => s.value === filters.status)?.label ??
+                masterFilter?.status?.find((s) => s.value === filters.status)
+                    ?.label ??
                 STATUS_OPTIONS.find((s) => s.value === filters.status)?.label ??
                 filters.status
             );
         }
         if (filters.kondisi_sla) {
-            return KONDISI_SLA_OPTIONS.find((s) => s.value === filters.kondisi_sla)?.label ?? filters.kondisi_sla;
+            return (
+                KONDISI_SLA_OPTIONS.find((s) => s.value === filters.kondisi_sla)
+                    ?.label ?? filters.kondisi_sla
+            );
         }
         return null;
     }, [filters.status, filters.kondisi_sla, masterFilter?.status]);
 
     const activeLocationLabel = useMemo(() => {
         if (filters.kecamatan_id) {
-            const kec = masterFilter?.kecamatan?.find((k) => k.id === filters.kecamatan_id);
+            const kec = masterFilter?.kecamatan?.find(
+                (k) => k.id === filters.kecamatan_id,
+            );
             return kec ? `Kec. ${kec.nama}` : 'Kecamatan';
         }
         if (filters.kota_id) {
-            const kota = masterFilter?.kota?.find((k) => k.id === filters.kota_id);
+            const kota = masterFilter?.kota?.find(
+                (k) => k.id === filters.kota_id,
+            );
             return kota ? kota.nama : 'Kota / Kabupaten';
         }
         return null;
-    }, [filters.kecamatan_id, filters.kota_id, masterFilter?.kecamatan, masterFilter?.kota]);
+    }, [
+        filters.kecamatan_id,
+        filters.kota_id,
+        masterFilter?.kecamatan,
+        masterFilter?.kota,
+    ]);
 
     const activeKategoriLabel = useMemo(() => {
         if (filters.kategori_id) {
-            return masterFilter?.kategori?.find((k) => k.id === filters.kategori_id)?.nama ?? 'Kategori';
+            return (
+                masterFilter?.kategori?.find(
+                    (k) => k.id === filters.kategori_id,
+                )?.nama ?? 'Kategori'
+            );
         }
         return null;
     }, [filters.kategori_id, masterFilter?.kategori]);
@@ -218,7 +281,8 @@ export default function PetaDrawerList({
         }
 
         const orphanKec = kecList.filter(
-            (k) => !k.induk_id || !kotaList.some((kota) => kota.id === k.induk_id),
+            (k) =>
+                !k.induk_id || !kotaList.some((kota) => kota.id === k.induk_id),
         );
         for (const kec of orphanKec) {
             opts.push({
@@ -252,8 +316,8 @@ export default function PetaDrawerList({
     const currentStatusValue = filters.status
         ? filters.status
         : filters.kondisi_sla
-        ? `sla:${filters.kondisi_sla}`
-        : 'semua';
+          ? `sla:${filters.kondisi_sla}`
+          : 'semua';
 
     const handleStatusSelectChange = (val: string | null) => {
         if (!val || val === 'semua') {
@@ -276,8 +340,8 @@ export default function PetaDrawerList({
     const currentLocationValue = filters.kecamatan_id
         ? `kec:${filters.kecamatan_id}`
         : filters.kota_id
-        ? `kota:${filters.kota_id}`
-        : 'semua';
+          ? `kota:${filters.kota_id}`
+          : 'semua';
 
     const handleLocationSelectChange = (val: string | null) => {
         if (!val || val === 'semua') {
@@ -331,9 +395,13 @@ export default function PetaDrawerList({
                 <button
                     type="button"
                     onClick={onToggle}
-                    aria-label={isOpen ? 'Tutup daftar laporan' : 'Buka daftar laporan'}
-                    title={isOpen ? 'Tutup daftar laporan' : 'Buka daftar laporan'}
-                    className="absolute -right-11 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-none border-y border-r border-border bg-card text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={
+                        isOpen ? 'Tutup daftar laporan' : 'Buka daftar laporan'
+                    }
+                    title={
+                        isOpen ? 'Tutup daftar laporan' : 'Buka daftar laporan'
+                    }
+                    className="absolute top-1/2 -right-11 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-none border-y border-r border-border bg-card text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                     <Search className="size-5" />
                 </button>
@@ -346,13 +414,13 @@ export default function PetaDrawerList({
                         className="flex items-center gap-2"
                     >
                         <div className="relative min-w-0 flex-1">
-                            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 type="text"
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
                                 placeholder="Jalan berlubang..."
-                                className="h-10 rounded-xl bg-background pl-9 pr-3 text-body-sm"
+                                className="h-10 rounded-xl bg-background pr-3 pl-9 text-body-sm"
                             />
                         </div>
                         <Button
@@ -377,12 +445,17 @@ export default function PetaDrawerList({
                     <div className="flex items-center justify-between gap-2">
                         <Button
                             type="button"
-                            variant={isFilterOpen || activeDropdownFilterCount > 0 ? 'secondary' : 'outline'}
+                            variant={
+                                isFilterOpen || activeDropdownFilterCount > 0
+                                    ? 'secondary'
+                                    : 'outline'
+                            }
                             size="sm"
                             onClick={() => setIsFilterOpen((prev) => !prev)}
                             className={cn(
-                                'h-8 gap-1.5 rounded-lg text-caption-xs font-semibold shadow-none cursor-pointer transition-colors',
-                                (isFilterOpen || activeDropdownFilterCount > 0) &&
+                                'h-8 cursor-pointer gap-1.5 rounded-lg text-caption-xs font-semibold shadow-none transition-colors',
+                                (isFilterOpen ||
+                                    activeDropdownFilterCount > 0) &&
                                     'border-border bg-muted text-foreground',
                             )}
                             aria-expanded={isFilterOpen}
@@ -397,7 +470,8 @@ export default function PetaDrawerList({
                             <ChevronDown
                                 className={cn(
                                     'size-3 text-muted-foreground transition-transform duration-200',
-                                    isFilterOpen && 'rotate-180 text-foreground',
+                                    isFilterOpen &&
+                                        'rotate-180 text-foreground',
                                 )}
                             />
                         </Button>
@@ -412,7 +486,7 @@ export default function PetaDrawerList({
                                     setSearchInput('');
                                     onResetFilter?.();
                                 }}
-                                className="h-8 gap-1 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                                className="h-8 cursor-pointer gap-1 text-[11px] text-muted-foreground hover:text-foreground"
                                 title="Reset Semua Filter"
                             >
                                 <RotateCcw className="size-3" />
@@ -427,14 +501,19 @@ export default function PetaDrawerList({
                             {filters.search.trim() !== '' && (
                                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-[11px] text-foreground">
                                     <Search className="size-3 text-muted-foreground" />
-                                    <span className="truncate max-w-[120px]">"{filters.search}"</span>
+                                    <span className="max-w-[120px] truncate">
+                                        "{filters.search}"
+                                    </span>
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setSearchInput('');
-                                            onFilterChange?.({ ...filters, search: '' });
+                                            onFilterChange?.({
+                                                ...filters,
+                                                search: '',
+                                            });
                                         }}
-                                        className="ml-0.5 hover:text-destructive cursor-pointer"
+                                        className="ml-0.5 cursor-pointer hover:text-destructive"
                                         aria-label="Hapus filter pencarian"
                                     >
                                         <X className="size-3" />
@@ -445,11 +524,19 @@ export default function PetaDrawerList({
                             {activeStatusLabel && (
                                 <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
                                     <Activity className="size-3" />
-                                    <span className="truncate max-w-[150px]">{activeStatusLabel}</span>
+                                    <span className="max-w-[150px] truncate">
+                                        {activeStatusLabel}
+                                    </span>
                                     <button
                                         type="button"
-                                        onClick={() => onFilterChange?.({ ...filters, status: null, kondisi_sla: null })}
-                                        className="ml-0.5 hover:text-destructive cursor-pointer"
+                                        onClick={() =>
+                                            onFilterChange?.({
+                                                ...filters,
+                                                status: null,
+                                                kondisi_sla: null,
+                                            })
+                                        }
+                                        className="ml-0.5 cursor-pointer hover:text-destructive"
                                         aria-label="Hapus filter status"
                                     >
                                         <X className="size-3" />
@@ -460,11 +547,19 @@ export default function PetaDrawerList({
                             {activeLocationLabel && (
                                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-[11px] text-foreground">
                                     <MapPin className="size-3 text-muted-foreground" />
-                                    <span className="truncate max-w-[150px]">{activeLocationLabel}</span>
+                                    <span className="max-w-[150px] truncate">
+                                        {activeLocationLabel}
+                                    </span>
                                     <button
                                         type="button"
-                                        onClick={() => onFilterChange?.({ ...filters, kecamatan_id: null, kota_id: null })}
-                                        className="ml-0.5 hover:text-destructive cursor-pointer"
+                                        onClick={() =>
+                                            onFilterChange?.({
+                                                ...filters,
+                                                kecamatan_id: null,
+                                                kota_id: null,
+                                            })
+                                        }
+                                        className="ml-0.5 cursor-pointer hover:text-destructive"
                                         aria-label="Hapus filter lokasi"
                                     >
                                         <X className="size-3" />
@@ -475,11 +570,18 @@ export default function PetaDrawerList({
                             {activeKategoriLabel && (
                                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-[11px] text-foreground">
                                     <Tag className="size-3 text-muted-foreground" />
-                                    <span className="truncate max-w-[150px]">{activeKategoriLabel}</span>
+                                    <span className="max-w-[150px] truncate">
+                                        {activeKategoriLabel}
+                                    </span>
                                     <button
                                         type="button"
-                                        onClick={() => onFilterChange?.({ ...filters, kategori_id: null })}
-                                        className="ml-0.5 hover:text-destructive cursor-pointer"
+                                        onClick={() =>
+                                            onFilterChange?.({
+                                                ...filters,
+                                                kategori_id: null,
+                                            })
+                                        }
+                                        className="ml-0.5 cursor-pointer hover:text-destructive"
                                         aria-label="Hapus filter kategori"
                                     >
                                         <X className="size-3" />
@@ -491,7 +593,7 @@ export default function PetaDrawerList({
 
                     {/* 3 Select Dropdowns dalam 1 Baris (Bisa Diketik / Searchable Combobox) */}
                     {isFilterOpen && (
-                        <div className="grid grid-cols-3 gap-2 animate-in fade-in-50 duration-150">
+                        <div className="grid animate-in grid-cols-3 gap-2 duration-150 fade-in-50">
                             {/* 1. Status Dropdown */}
                             <SearchableFilterDropdown
                                 value={currentStatusValue}
@@ -514,14 +616,21 @@ export default function PetaDrawerList({
 
                             {/* 3. Kategori Dropdown */}
                             <SearchableFilterDropdown
-                                value={filters.kategori_id ? String(filters.kategori_id) : 'semua'}
+                                value={
+                                    filters.kategori_id
+                                        ? String(filters.kategori_id)
+                                        : 'semua'
+                                }
                                 placeholder="Semua Kategori"
                                 searchPlaceholder="Ketik kategori..."
                                 options={kategoriDropdownOptions}
                                 onSelect={(val) => {
                                     onFilterChange?.({
                                         ...filters,
-                                        kategori_id: val && val !== 'semua' ? Number(val) : null,
+                                        kategori_id:
+                                            val && val !== 'semua'
+                                                ? Number(val)
+                                                : null,
                                     });
                                 }}
                                 align="end"
@@ -548,7 +657,7 @@ export default function PetaDrawerList({
                                 <Inbox className="size-6" />
                             </div>
                             <div className="space-y-1">
-                                <p className="font-display text-body-medium font-bold text-foreground">
+                                <p className="text-body-medium font-display font-bold text-foreground">
                                     Tidak Ada Laporan
                                 </p>
                                 <p className="max-w-[240px] text-body-sm text-muted-foreground">
@@ -582,8 +691,8 @@ export default function PetaDrawerList({
                                     className={cn(
                                         'group cursor-pointer space-y-2.5 rounded-xl border bg-card p-3.5 transition-all',
                                         isSelected
-                                            ? 'border-primary ring-2 ring-primary/20 bg-primary/5 shadow-sm'
-                                            : 'border-border/80 hover:border-primary/50 hover:bg-muted/40 shadow-none',
+                                            ? 'border-primary bg-primary/5 shadow-sm ring-2 ring-primary/20'
+                                            : 'border-border/80 shadow-none hover:border-primary/50 hover:bg-muted/40',
                                     )}
                                 >
                                     {/* Card Header: Ticket Number & Copy Icon */}
@@ -600,7 +709,8 @@ export default function PetaDrawerList({
                                             className="cursor-pointer rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                                             title="Salin Nomor Tiket"
                                         >
-                                            {copiedTicket === item.nomor_tiket ? (
+                                            {copiedTicket ===
+                                            item.nomor_tiket ? (
                                                 <Check className="size-3.5 text-emerald-600" />
                                             ) : (
                                                 <Copy className="size-3.5" />
@@ -619,11 +729,14 @@ export default function PetaDrawerList({
                                                 <img
                                                     src={item.foto_url}
                                                     alt={item.judul}
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                     onError={(e) => {
                                                         (
                                                             e.target as HTMLElement
-                                                        ).style.display = 'none';
+                                                        ).style.display =
+                                                            'none';
                                                     }}
                                                 />
                                             ) : (
@@ -651,7 +764,7 @@ export default function PetaDrawerList({
                                             </div>
 
                                             {/* Title */}
-                                            <h4 className="font-display text-body-sm font-bold leading-snug text-foreground line-clamp-2">
+                                            <h4 className="line-clamp-2 text-body-sm font-display leading-snug font-bold text-foreground">
                                                 {item.judul}
                                             </h4>
 
@@ -660,7 +773,7 @@ export default function PetaDrawerList({
                                                 <MapPin className="mt-0.5 size-3 shrink-0 text-primary" />
                                                 <span className="truncate">
                                                     {item.kelurahan_nama
-                                                        ? `Kel. ${item.kelurahan_nama}, Kec. ${item.kecamatan_nama}, Kota Depok`
+                                                        ? `Kel. ${item.kelurahan_nama}, Kec. ${item.kecamatan_nama}, ${item.kota_nama || 'Jabodetabek'}`
                                                         : item.kecamatan_nama}
                                                 </span>
                                             </div>

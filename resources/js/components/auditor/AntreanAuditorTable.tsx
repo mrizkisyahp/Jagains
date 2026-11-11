@@ -1,9 +1,5 @@
 import { EskalasiItem } from '@/types/auditor';
-import {
-    Clock,
-    ExternalLink,
-    Scale,
-} from 'lucide-react';
+import { Clock, ExternalLink, Scale } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -40,19 +36,19 @@ export default function AntreanAuditorTable({
             <Table className="w-full min-w-[760px] table-fixed">
                 <TableHeader>
                     <TableRow className="border-b border-border bg-muted/40 hover:bg-muted/40">
-                        <TableHead className="w-[35%] min-w-[220px] text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <TableHead className="w-[35%] min-w-[220px] text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                             Perkara & Laporan
                         </TableHead>
-                        <TableHead className="w-[18%] min-w-[130px] text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <TableHead className="w-[18%] min-w-[130px] text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                             Pemicu & Tahap
                         </TableHead>
-                        <TableHead className="w-[20%] min-w-[140px] text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <TableHead className="w-[20%] min-w-[140px] text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                             Instansi Pelaksana
                         </TableHead>
-                        <TableHead className="w-[15%] min-w-[110px] text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <TableHead className="w-[15%] min-w-[110px] text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                             Status Keterlambatan
                         </TableHead>
-                        <TableHead className="w-[12%] min-w-[105px] text-right text-caption-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <TableHead className="w-[12%] min-w-[105px] text-right text-caption-xs font-semibold tracking-wider text-muted-foreground uppercase">
                             Aksi
                         </TableHead>
                     </TableRow>
@@ -69,14 +65,14 @@ export default function AntreanAuditorTable({
                                 className="border-b border-border transition-colors hover:bg-muted/20"
                             >
                                 {/* Perkara & Laporan */}
-                                <TableCell className="align-top py-3.5 min-w-0">
-                                    <div className="flex flex-col gap-0.5 min-w-0">
+                                <TableCell className="min-w-0 py-3.5 align-top">
+                                    <div className="flex min-w-0 flex-col gap-0.5">
                                         <div className="flex items-center gap-2">
                                             <span className="font-mono text-xs font-semibold text-foreground">
                                                 {laporan.nomor_tiket}
                                             </span>
                                             {laporan.kategori && (
-                                                <span className="text-caption-xs text-muted-foreground truncate">
+                                                <span className="truncate text-caption-xs text-muted-foreground">
                                                     • {laporan.kategori.nama}
                                                 </span>
                                             )}
@@ -89,18 +85,20 @@ export default function AntreanAuditorTable({
                                         </p>
                                         <div className="flex items-center gap-2 text-caption-xs text-muted-foreground">
                                             <span className="truncate">
-                                                Kel. {laporan.kelurahan?.nama || '-'}
+                                                Kel.{' '}
+                                                {laporan.kelurahan?.nama || '-'}
                                             </span>
                                             <span>•</span>
-                                            <span className="tabular-nums shrink-0">
-                                                Masuk {formatTanggal(item.created_at)}
+                                            <span className="shrink-0 tabular-nums">
+                                                Masuk{' '}
+                                                {formatTanggal(item.created_at)}
                                             </span>
                                         </div>
                                     </div>
                                 </TableCell>
 
                                 {/* Pemicu & Tahap */}
-                                <TableCell className="align-top py-3.5 min-w-0">
+                                <TableCell className="min-w-0 py-3.5 align-top">
                                     <div className="flex flex-col gap-1.5">
                                         <Badge
                                             variant={badge.variant}
@@ -118,16 +116,18 @@ export default function AntreanAuditorTable({
                                 </TableCell>
 
                                 {/* Instansi Pelaksana */}
-                                <TableCell className="align-top py-3.5 min-w-0">
-                                    <div className="flex flex-col gap-1 min-w-0">
+                                <TableCell className="min-w-0 py-3.5 align-top">
+                                    <div className="flex min-w-0 flex-col gap-1">
                                         <span
                                             className="truncate text-body-sm font-medium text-foreground"
-                                            title={laporan.instansi?.nama || '-'}
+                                            title={
+                                                laporan.instansi?.nama || '-'
+                                            }
                                         >
                                             {laporan.instansi?.nama || '-'}
                                         </span>
                                         {laporan.instansi?.singkatan && (
-                                            <span className="w-fit rounded bg-muted px-1.5 py-0.2 text-[10px] font-semibold text-muted-foreground">
+                                            <span className="py-0.2 w-fit rounded bg-muted px-1.5 text-[10px] font-semibold text-muted-foreground">
                                                 {laporan.instansi.singkatan}
                                             </span>
                                         )}
@@ -135,8 +135,9 @@ export default function AntreanAuditorTable({
                                 </TableCell>
 
                                 {/* Status Keterlambatan / Waktu Masuk */}
-                                <TableCell className="align-top py-3.5 min-w-0">
-                                    {item.pemicu === 'SLA' && item.hari_terlambat > 0 ? (
+                                <TableCell className="min-w-0 py-3.5 align-top">
+                                    {item.pemicu === 'SLA' &&
+                                    item.hari_terlambat > 0 ? (
                                         <div className="flex items-center gap-1.5 text-caption-xs font-semibold text-destructive">
                                             <Clock className="size-3.5 shrink-0" />
                                             <span>
@@ -151,15 +152,15 @@ export default function AntreanAuditorTable({
                                             {item.pemicu === 'SANGGAHAN'
                                                 ? 'Menunggu putusan sanggahan'
                                                 : item.pemicu === 'RONDE'
-                                                ? 'Kebuntuan 4 ronde'
-                                                : 'Menunggu kuorum 14 hari'}
+                                                  ? 'Kebuntuan 4 ronde'
+                                                  : 'Menunggu kuorum 14 hari'}
                                         </span>
                                     )}
                                 </TableCell>
 
                                 {/* Aksi */}
-                                <TableCell className="align-top py-3.5 text-right whitespace-nowrap">
-                                    <div className="flex items-center justify-end gap-1.5 shrink-0">
+                                <TableCell className="py-3.5 text-right align-top whitespace-nowrap">
+                                    <div className="flex shrink-0 items-center justify-end gap-1.5">
                                         <Link
                                             href={`/auditor/antrean/${item.id}`}
                                             className={cn(
@@ -167,7 +168,7 @@ export default function AntreanAuditorTable({
                                                     variant: 'default',
                                                     size: 'sm',
                                                 }),
-                                                'h-8 gap-1.5 px-3 text-xs font-semibold whitespace-nowrap shrink-0',
+                                                'h-8 shrink-0 gap-1.5 px-3 text-xs font-semibold whitespace-nowrap',
                                             )}
                                         >
                                             <Scale className="size-3.5 shrink-0" />

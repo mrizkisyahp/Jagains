@@ -60,16 +60,26 @@ class GantiSandiPertamaController extends Controller
 
     private function redirectSesuaiPeran($user): RedirectResponse
     {
+        if ($user->peran === 'warga') {
+            session()->forget('url.intended');
+
+            return redirect()->to('/warga/beranda');
+        }
+
+        if ($user->peran === 'instansi') {
+            session()->forget('url.intended');
+
+            return redirect()->to('/instansi/dashboard');
+        }
+
         $intended = session()->get('url.intended');
 
         if ($intended) {
             $path = parse_url($intended, PHP_URL_PATH) ?? '';
 
             $isAllowed = match ($user->peran) {
-                'instansi' => str_starts_with($path, '/instansi') || str_starts_with($path, '/notifikasi'),
                 'auditor' => str_starts_with($path, '/auditor') || str_starts_with($path, '/notifikasi'),
                 'admin' => str_starts_with($path, '/admin') || str_starts_with($path, '/notifikasi'),
-                'warga' => ! str_starts_with($path, '/instansi') && ! str_starts_with($path, '/auditor') && ! str_starts_with($path, '/admin'),
                 default => false,
             };
 
@@ -79,10 +89,9 @@ class GantiSandiPertamaController extends Controller
         }
 
         return match ($user->peran) {
-            'instansi' => redirect()->intended('/instansi/antrean'),
             'auditor' => redirect()->intended('/auditor/antrean'),
             'admin' => redirect()->intended('/admin/antrean-routing'),
-            default => redirect()->intended('/'),
+            default => redirect()->to('/warga/beranda'),
         };
     }
 }

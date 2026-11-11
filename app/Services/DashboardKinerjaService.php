@@ -149,7 +149,9 @@ class DashboardKinerjaService
     {
         $query = Laporan::query();
 
-        if ($periode === '30_hari') {
+        if ($periode === '7_hari') {
+            $query->where('created_at', '>=', now()->subDays(7));
+        } elseif ($periode === '30_hari') {
             $query->where('created_at', '>=', now()->subDays(30));
         } elseif ($periode === '90_hari') {
             $query->where('created_at', '>=', now()->subDays(90));
@@ -164,7 +166,7 @@ class DashboardKinerjaService
      * @param  Collection<int, Laporan>  $laporanList
      * @return array<string, mixed>
      */
-    protected function kalkulasiMetrikBaris(int $id, string $nama, Collection $laporanList): array
+    public function kalkulasiMetrikBaris(int $id, string $nama, Collection $laporanList): array
     {
         $totalTiket = $laporanList->count();
         $tiketSelesai = $laporanList->filter(fn (Laporan $l) => in_array($l->status, ['TERTUTUP_WARGA', 'TERTUTUP_AUDITOR'], true))->count();

@@ -51,7 +51,7 @@ class GantiSandiPertamaTest extends TestCase
             'new_password_confirmation' => 'SandiBaruKuat456!',
         ]);
 
-        $response->assertRedirect('/instansi/antrean');
+        $response->assertRedirect('/instansi/dashboard');
         $petugas->refresh();
 
         $this->assertFalse($petugas->wajib_ganti_sandi);

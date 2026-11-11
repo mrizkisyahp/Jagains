@@ -1,5 +1,11 @@
 import { ReactNode } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Layers } from 'lucide-react';
 
@@ -21,11 +27,14 @@ export default function BlankPanel({
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <div className="flex items-center gap-2">
-                        <h2 className="font-display text-display-md font-bold tracking-tight text-foreground">
+                        <h2 className="text-display-md font-display font-bold tracking-tight text-foreground">
                             {title}
                         </h2>
                         {requirementCode && (
-                            <Badge variant="outline" className="text-caption-xs font-mono font-medium text-muted-foreground border-border">
+                            <Badge
+                                variant="outline"
+                                className="border-border text-caption-xs font-mono font-medium text-muted-foreground"
+                            >
                                 {requirementCode}
                             </Badge>
                         )}
@@ -40,20 +49,22 @@ export default function BlankPanel({
                 children
             ) : (
                 <Card className="border-dashed border-border bg-card shadow-xs">
-                    <CardHeader className="text-center pb-2">
-                        <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-2">
+                    <CardHeader className="pb-2 text-center">
+                        <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                             <Layers className="size-6 text-foreground/70" />
                         </div>
-                        <CardTitle className="font-display text-body-medium font-semibold text-foreground">
+                        <CardTitle className="text-body-medium font-display font-semibold text-foreground">
                             Panel Operasional {title}
                         </CardTitle>
-                        <CardDescription className="max-w-md mx-auto text-body-sm text-muted-foreground">
-                            Fitur dan komponen antarmuka untuk modul ini telah disiapkan dan siap menerima implementasi logika bisnis selanjutnya.
+                        <CardDescription className="mx-auto max-w-md text-body-sm text-muted-foreground">
+                            Fitur dan komponen antarmuka untuk modul ini telah
+                            disiapkan dan siap menerima implementasi logika
+                            bisnis selanjutnya.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="text-center pb-8 pt-2">
+                    <CardContent className="pt-2 pb-8 text-center">
                         <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1 text-caption-xs text-muted-foreground">
-                            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="size-2 animate-pulse rounded-full bg-emerald-500" />
                             Status Layout Terintegrasi
                         </div>
                     </CardContent>

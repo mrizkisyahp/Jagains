@@ -24,12 +24,22 @@ export default function AuditorTablePagination({
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-body-sm text-muted-foreground">
             <p>
                 {totalItems === 0 ? (
-                    <>Menampilkan <span className="font-medium text-foreground">0</span> {itemName}</>
+                    <>
+                        Menampilkan{' '}
+                        <span className="font-medium text-foreground">0</span>{' '}
+                        {itemName}
+                    </>
                 ) : (
                     <>
                         Menampilkan{' '}
-                        <span className="font-medium text-foreground">{from}</span>–
-                        <span className="font-medium text-foreground">{to}</span> dari{' '}
+                        <span className="font-medium text-foreground">
+                            {from}
+                        </span>
+                        –
+                        <span className="font-medium text-foreground">
+                            {to}
+                        </span>{' '}
+                        dari{' '}
                         <span className="font-medium text-foreground">
                             {totalItems}
                         </span>{' '}

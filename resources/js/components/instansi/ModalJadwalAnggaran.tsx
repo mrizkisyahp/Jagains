@@ -36,12 +36,14 @@ interface ModalJadwalAnggaranProps {
         nomor_tiket: string;
         judul: string;
     } | null;
+    onSuccess?: () => void;
 }
 
 export default function ModalJadwalAnggaran({
     open,
     onClose,
     laporan,
+    onSuccess,
 }: ModalJadwalAnggaranProps) {
     const [jenisPendanaan, setJenisPendanaan] = useState<string>('APBD_KOTA');
     const [tanggalTarget, setTanggalTarget] = useState<string>('');
@@ -101,7 +103,11 @@ export default function ModalJadwalAnggaran({
                 onClose();
                 setTanggalTarget('');
                 setCatatan('');
-                router.reload({ only: ['antrean', 'ringkasan'] });
+                if (onSuccess) {
+                    onSuccess();
+                } else {
+                    router.reload({ only: ['antrean', 'ringkasan'] });
+                }
             } else {
                 setFieldErrors(
                     Object.fromEntries(

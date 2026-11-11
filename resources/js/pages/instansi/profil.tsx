@@ -27,16 +27,6 @@ export default function ProfilInstansiPage() {
     return (
         <div className="flex min-w-0 flex-col gap-5">
             <Head title="Profil Dinas" />
-            <header className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-display-sm font-display font-semibold tracking-tight">
-                            Profil Dinas
-                        </h1>
-                        <p className="mt-1 text-body-sm text-muted-foreground">
-                            Informasi tentang dinas Anda.
-                        </p>
-                    </div>                                     
-            </header>
             <section className="overflow-hidden rounded-xl border border-border bg-card">
                 <div className="grid lg:grid-cols-[minmax(15rem,0.8fr)_minmax(0,1.6fr)]">
                     <div className="border-b border-border px-5 py-5 lg:border-r lg:border-b-0">

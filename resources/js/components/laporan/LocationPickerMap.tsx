@@ -24,7 +24,7 @@ interface LocationPickerMapProps {
         lng: number,
         akurasi: number | null,
         sumber: 'gps' | 'manual',
-        kelurahan: string | null
+        kelurahan: string | null,
     ) => void;
     onPrevStep?: () => void;
     onNextStep?: () => void;
@@ -54,7 +54,12 @@ export default function LocationPickerMap({
 
     // Verifikasi kelurahan titik via API
     const verifikasiTitikKelurahan = useCallback(
-        async (lat: number, lng: number, akurasi: number | null, sumber: 'gps' | 'manual') => {
+        async (
+            lat: number,
+            lng: number,
+            akurasi: number | null,
+            sumber: 'gps' | 'manual',
+        ) => {
             setIsCheckingKelurahan(true);
             setGeoError(null);
 
@@ -63,9 +68,13 @@ export default function LocationPickerMap({
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json',
+                        Accept: 'application/json',
                         'X-CSRF-TOKEN':
-                            (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                            (
+                                document.querySelector(
+                                    'meta[name="csrf-token"]',
+                                ) as HTMLMetaElement
+                            )?.content || '',
                     },
                     body: JSON.stringify({ lintang: lat, bujur: lng }),
                 });
@@ -76,7 +85,9 @@ export default function LocationPickerMap({
                     onChangeLocation(lat, lng, akurasi, sumber, wilayahLabel);
                 } else {
                     onChangeLocation(lat, lng, akurasi, sumber, null);
-                    setGeoError('Titik koordinat berada di luar wilayah jangkauan layanan (Jabodetabek).');
+                    setGeoError(
+                        'Titik koordinat berada di luar wilayah jangkauan layanan (Jabodetabek).',
+                    );
                 }
             } catch {
                 onChangeLocation(lat, lng, akurasi, sumber, null);
@@ -84,7 +95,7 @@ export default function LocationPickerMap({
                 setIsCheckingKelurahan(false);
             }
         },
-        [onChangeLocation]
+        [onChangeLocation],
     );
 
     // Deteksi GPS Peramban
@@ -92,7 +103,9 @@ export default function LocationPickerMap({
         (isAutoTrigger = false) => {
             if (!navigator.geolocation) {
                 if (!isAutoTrigger) {
-                    setGeoError('Peramban Anda tidak mendukung penentuan posisi GPS.');
+                    setGeoError(
+                        'Peramban Anda tidak mendukung penentuan posisi GPS.',
+                    );
                 }
                 return;
             }
@@ -134,21 +147,28 @@ export default function LocationPickerMap({
                     if (!isAutoTrigger) {
                         let pesan = 'Gagal membaca posisi GPS.';
                         if (err.code === err.PERMISSION_DENIED) {
-                            pesan = 'Izin GPS ditolak. Anda dapat menggeser pin secara manual pada peta.';
+                            pesan =
+                                'Izin GPS ditolak. Anda dapat menggeser pin secara manual pada peta.';
                         } else if (err.code === err.POSITION_UNAVAILABLE) {
-                            pesan = 'Sinyal GPS tidak tersedia. Silakan tandai titik secara manual.';
+                            pesan =
+                                'Sinyal GPS tidak tersedia. Silakan tandai titik secara manual.';
                         }
                         setGeoError(pesan);
                     }
                     // Jika auto-trigger gagal atau ditolak, gunakan posisi peta awal
                     if (!kelurahanNama) {
-                        verifikasiTitikKelurahan(lintang || -6.402484, bujur || 106.794240, null, 'manual');
+                        verifikasiTitikKelurahan(
+                            lintang || -6.402484,
+                            bujur || 106.79424,
+                            null,
+                            'manual',
+                        );
                     }
                 },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
             );
         },
-        [lintang, bujur, kelurahanNama, verifikasiTitikKelurahan]
+        [lintang, bujur, kelurahanNama, verifikasiTitikKelurahan],
     );
 
     // Inisialisasi Peta Leaflet
@@ -166,7 +186,7 @@ export default function LocationPickerMap({
         });
 
         const initialLat = lintang || -6.402484;
-        const initialLng = bujur || 106.794240;
+        const initialLng = bujur || 106.79424;
 
         const map = L.map(mapContainerRef.current, {
             attributionControl: false,
@@ -229,7 +249,12 @@ export default function LocationPickerMap({
             isAutoGpsAttempted.current = true;
             handleGetGpsLocation(true);
         } else if (!kelurahanNama) {
-            verifikasiTitikKelurahan(initialLat, initialLng, akurasiGpsM, lokasiSumber);
+            verifikasiTitikKelurahan(
+                initialLat,
+                initialLng,
+                akurasiGpsM,
+                lokasiSumber,
+            );
         }
 
         // Pastikan ukuran Leaflet pas setelah dirender
@@ -255,30 +280,36 @@ export default function LocationPickerMap({
     ]);
 
     return (
-        <div className="relative overflow-hidden rounded-3xl bg-zinc-950 aspect-[16/10] sm:aspect-[16/9] max-h-[580px] w-full flex items-center justify-center shadow-md border border-border/40">
+        <div className="relative flex aspect-[16/10] max-h-[580px] w-full items-center justify-center overflow-hidden rounded-3xl border border-border/40 bg-zinc-950 shadow-md sm:aspect-[16/9]">
             {/* Canvas Peta Leaflet */}
-            <div ref={mapContainerRef} className="size-full z-0" />
+            <div ref={mapContainerRef} className="z-0 size-full" />
 
             {/* Floating Top-Right Sesuai Wireframe: Teks Status & Tombol GPS */}
-            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[500] flex items-center gap-2.5 sm:gap-3 max-w-[calc(100%-4.5rem)] sm:max-w-lg">
-                <div className="min-w-0 flex-1 rounded-2xl bg-black/75 backdrop-blur-md border border-white/15 px-3.5 py-2 text-white text-caption-xs sm:text-body-sm shadow-xl font-medium">
+            <div className="absolute top-4 right-4 z-[500] flex max-w-[calc(100%-4.5rem)] items-center gap-2.5 sm:top-6 sm:right-6 sm:max-w-lg sm:gap-3">
+                <div className="min-w-0 flex-1 rounded-2xl border border-white/15 bg-black/75 px-3.5 py-2 text-caption-xs font-medium text-white shadow-xl backdrop-blur-md sm:text-body-sm">
                     {isLocating ? (
-                        <span className="flex items-center gap-2 min-w-0">
-                            <RefreshCw className="size-3.5 animate-spin text-white shrink-0" />
+                        <span className="flex min-w-0 items-center gap-2">
+                            <RefreshCw className="size-3.5 shrink-0 animate-spin text-white" />
                             <span className="truncate">Mendeteksi GPS...</span>
                         </span>
                     ) : kelurahanNama ? (
-                        <span className="flex items-center gap-2 min-w-0">
-                            <span className="size-2 rounded-full bg-emerald-400 shrink-0" />
+                        <span className="flex min-w-0 items-center gap-2">
+                            <span className="size-2 shrink-0 rounded-full bg-emerald-400" />
                             <span className="truncate">
-                                Lokasi: <strong className="font-semibold text-white">{kelurahanNama}</strong>
+                                Lokasi:{' '}
+                                <strong className="font-semibold text-white">
+                                    {kelurahanNama}
+                                </strong>
                             </span>
                         </span>
                     ) : geoError ? (
-                        <span className="text-amber-300 font-medium truncate block">{geoError}</span>
+                        <span className="block truncate font-medium text-amber-300">
+                            {geoError}
+                        </span>
                     ) : (
-                        <span className="text-white/90 line-clamp-2 text-caption-xs sm:text-body-sm">
-                            Lokasi tidak terdeteksi. Tekan tombol di samping untuk mengambil lokasi secara otomatis
+                        <span className="line-clamp-2 text-caption-xs text-white/90 sm:text-body-sm">
+                            Lokasi tidak terdeteksi. Tekan tombol di samping
+                            untuk mengambil lokasi secara otomatis
                         </span>
                     )}
                 </div>
@@ -287,22 +318,27 @@ export default function LocationPickerMap({
                     type="button"
                     onClick={() => handleGetGpsLocation(false)}
                     disabled={isLocating}
-                    className="size-11 sm:size-12 shrink-0 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-950 flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                    className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-2xl bg-white text-zinc-950 shadow-2xl transition-all hover:scale-105 hover:bg-zinc-100 active:scale-95 disabled:opacity-50 sm:size-12"
                     title="Ambil Lokasi Otomatis via GPS"
                     aria-label="Ambil Lokasi Otomatis via GPS"
                 >
-                    <Crosshair className={cn('size-6 text-zinc-950 shrink-0', isLocating && 'animate-spin')} />
+                    <Crosshair
+                        className={cn(
+                            'size-6 shrink-0 text-zinc-950',
+                            isLocating && 'animate-spin',
+                        )}
+                    />
                 </button>
             </div>
 
             {/* Floating Bottom-Left Sesuai Wireframe: [ ← Kembali ke Bukti Foto ] */}
             {onPrevStep && (
-                <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-[500]">
+                <div className="absolute bottom-4 left-4 z-[500] sm:bottom-6 sm:left-6">
                     <Button
                         type="button"
                         variant="secondary"
                         onClick={onPrevStep}
-                        className="h-11 px-4 sm:px-5 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-950 font-semibold text-body-sm shadow-xl flex items-center gap-2 cursor-pointer transition-transform hover:scale-102 active:scale-98"
+                        className="flex h-11 cursor-pointer items-center gap-2 rounded-2xl bg-white px-4 text-body-sm font-semibold text-zinc-950 shadow-xl transition-transform hover:scale-102 hover:bg-zinc-100 active:scale-98 sm:px-5"
                         title="Kembali ke Bukti Foto"
                     >
                         <ArrowLeft className="size-4 text-zinc-950" />
@@ -313,13 +349,17 @@ export default function LocationPickerMap({
 
             {/* Floating Bottom-Right Sesuai Wireframe: [ Selanjutnya → ] */}
             {onNextStep && (
-                <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-[500]">
+                <div className="absolute right-4 bottom-4 z-[500] sm:right-6 sm:bottom-6">
                     <Button
                         type="button"
                         onClick={onNextStep}
                         disabled={!canProceed}
-                        className="h-11 px-5 sm:px-6 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-body-sm shadow-xl flex items-center gap-2 cursor-pointer transition-transform hover:scale-102 active:scale-98 disabled:opacity-40"
-                        title={canProceed ? 'Lanjut ke Detail' : 'Tentukan titik dalam wilayah layanan'}
+                        className="flex h-11 cursor-pointer items-center gap-2 rounded-2xl bg-white px-5 text-body-sm font-bold text-zinc-950 shadow-xl transition-transform hover:scale-102 hover:bg-zinc-100 active:scale-98 disabled:opacity-40 sm:px-6"
+                        title={
+                            canProceed
+                                ? 'Lanjut ke Detail'
+                                : 'Tentukan titik dalam wilayah layanan'
+                        }
                     >
                         <span>Selanjutnya</span>
                         <ArrowRight className="size-4 text-zinc-950" />
