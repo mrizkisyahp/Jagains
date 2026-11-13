@@ -128,7 +128,7 @@ Untuk mempermudah pengujian seluruh peran pengguna, seeder telah menyiapkan akun
 | Peran                             | Username                                             | Password      | Deskripsi / Hak Akses                                                  |
 | --------------------------------- | ---------------------------------------------------- | ------------- | ---------------------------------------------------------------------- |
 | **Warga (Pelapor & Verifikator)** | `warga_demo_1`                                       | `password123` | Lapor kerusakan, pelacakan tiket, & verifikasi kuorum lapangan         |
-| **Instansi Dinas (Pelaksana)**    | `dpupr                                               ` | `password123` | Antrean kerja tiket, penerimaan, berita acara, & foto bukti fisik      |
+| **Instansi Dinas (Pelaksana)**    | `dpupr`                                              | `password123` | Antrean kerja tiket, penerimaan, berita acara, & foto bukti fisik      |
 | **Auditor Independen**            | `auditor1`                                           | `password123` | Antrean eskalasi, peninjauan SLA overdue, & penerbitan keputusan audit |
 | **Super Admin**                   | `admin1`                                             | `password123` | Konfigurasi SLA, routing instansi, manajemen akun, & audit log sistem  |
 
